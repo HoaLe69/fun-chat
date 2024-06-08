@@ -12,13 +12,19 @@ import { user } from '../api/mock'
 import DropMenuItem from './drop-menu-item'
 import { MenuItemType } from '../lib/app.type'
 import classNames from 'classnames'
+import ThemeToggleButton from './theme-toggle-button'
 
 const menus = [
   { tag: '@user', ...user },
   { tag: '@mention', name: 'Mentions', icon: <MentionIcon /> },
   { tag: '@dirMess', name: 'New Direct Message', icon: <PencilIcon /> },
   { tag: '@group', name: 'New group', icon: <GroupPeopleIcon /> },
-  { tag: '@theme', name: 'Dark Mode', icon: <MoonIcon /> },
+  {
+    tag: '@theme',
+    name: 'Dark Mode',
+    icon: <MoonIcon />,
+    right: <ThemeToggleButton />,
+  },
   { tag: '@logout', name: 'Sign Out', icon: <PersonIcon /> },
 ]
 const DropDownMenu = (): JSX.Element => {
@@ -28,8 +34,11 @@ const DropDownMenu = (): JSX.Element => {
         {({ active }) => (
           <span
             className={classNames(
-              'w-full h-full rounded-full  flex items-center justify-center',
-              { 'bg-grey-200 text-blue-500': active },
+              'w-full h-full rounded-full   flex items-center justify-center',
+              {
+                'bg-grey-200 dark:bg-grey-800 text-blue-500 dark:text-blue-400':
+                  active,
+              },
             )}
           >
             <MenuBurgerIcon />
@@ -47,9 +56,9 @@ const DropDownMenu = (): JSX.Element => {
       >
         <MenuItems
           anchor="bottom start"
-          className="w-menu drop-shadow-md rounded-md mt-2"
+          className="w-menu drop-shadow-md  rounded-md mt-2 "
         >
-          <div className=" bg-white">
+          <div className="bg-white dark:bg-grey-900">
             {menus.map((menuItem: MenuItemType) => (
               <DropMenuItem key={menuItem.tag} {...menuItem} />
             ))}

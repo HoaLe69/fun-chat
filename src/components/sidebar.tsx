@@ -1,15 +1,17 @@
 import { useState } from 'react'
 import { MenuBurgerIcon, SearchIcon } from './icons'
 import classNames from 'classnames'
+import DropDownMenu from './drop-menu'
 const Sidebar = (): JSX.Element => {
   const [isFocus, setIsFocus] = useState(false)
   return (
     <aside className="max-w-aside w-full">
       <header className="px-4 py-3 w-full">
         <div className="flex">
-          <div className="w-11 h-11  flex items-center justify-center">
-            <MenuBurgerIcon />
-          </div>
+          {/* <div className="w-11 h-11  flex items-center justify-center"> */}
+          {/*   <MenuBurgerIcon /> */}
+          {/* </div> */}
+          <DropDownMenu />
           <div
             className={classNames(
               'flex-shrink-0 flex-1 flex items-center justify-center ml-2 px-4 border-2  rounded-3xl',

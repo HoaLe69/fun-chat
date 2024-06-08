@@ -12,7 +12,7 @@ const Main = (): JSX.Element => {
   if (theme === 'light') document.documentElement.classList.remove('dark')
   else document.documentElement.classList.add('dark')
   return (
-    <main className="flex text-sm">
+    <main className="flex text-grey-950 dark:text-white">
       <Sidebar />
       <Messages />
     </main>
