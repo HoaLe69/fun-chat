@@ -9,6 +9,8 @@ import PencilIcon from './assets/pencil.svg?react'
 import GroupPeopleIcon from './assets/group-people.svg?react'
 import MoonIcon from './assets/moon.svg?react'
 import PersonIcon from './assets/person.svg?react'
+import SunnyIcon from './assets/sun.svg?react'
+import MoonSolidIcon from './assets/moon-solid.svg?react'
 
 export {
   MenuBurgerIcon,
@@ -22,4 +24,6 @@ export {
   GroupPeopleIcon,
   MoonIcon,
   PersonIcon,
+  SunnyIcon,
+  MoonSolidIcon,
 }
