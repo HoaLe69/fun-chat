@@ -13,13 +13,13 @@ export default {
       colors: {
         grey: {
           50: '#FFFFFF',
-          300: '#DBDDE1',
           200: '#E9EAED',
+          300: '#DBDDE1',
           400: '#B4B7BB',
           500: '#747881',
           700: '#272A30',
           800: '#1C1E22',
-          900: '#1C191C',
+          900: '#17191C',
           950: '#080707',
         },
         blue: {
@@ -28,7 +28,8 @@ export default {
         },
       },
       dropShadow: {
-        'tablet-modal-shadow': '0 0 10px 0 rgba(0 , 0 , 0 , 0.6)',
+        'tablet-modal-shadow': '0 0 10px  rgba(0 , 0 , 0 , 0.6)',
+        'tablet-modal-shadow-dark': '0 0 10px  rgba(0 , 0 , 0 , 1)',
       },
     },
   },

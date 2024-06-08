@@ -56,7 +56,7 @@ const DropDownMenu = (): JSX.Element => {
       >
         <MenuItems
           anchor="bottom start"
-          className="w-menu drop-shadow-md  rounded-md mt-2 "
+          className="w-menu drop-shadow-md dark:drop-shadow-tablet-modal-shadow-dark  rounded-md mt-2 "
         >
           <div className="bg-white dark:bg-grey-900">
             {menus.map((menuItem: MenuItemType) => (

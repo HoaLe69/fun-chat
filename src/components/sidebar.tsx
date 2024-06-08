@@ -1,27 +1,31 @@
 import { useState } from 'react'
-import { MenuBurgerIcon, SearchIcon } from './icons'
+import { SearchIcon } from './icons'
 import classNames from 'classnames'
 import DropDownMenu from './drop-menu'
+import Channels from './channels'
 const Sidebar = (): JSX.Element => {
   const [isFocus, setIsFocus] = useState(false)
   return (
-    <aside className="max-w-aside w-full">
+    <aside className="max-w-aside w-full bg-grey-50 dark:bg-grey-900 min-h-screen border-r-2 border-grey-300 dark:border-grey-700">
       <header className="px-4 py-3 w-full">
         <div className="flex">
-          {/* <div className="w-11 h-11  flex items-center justify-center"> */}
-          {/*   <MenuBurgerIcon /> */}
-          {/* </div> */}
           <DropDownMenu />
           <div
             className={classNames(
               'flex-shrink-0 flex-1 flex items-center justify-center ml-2 px-4 border-2  rounded-3xl',
-              { 'border-blue-500': isFocus, 'border-grey-300': !isFocus },
+              {
+                'border-blue-500 dark:border-blue-400': isFocus,
+                'border-grey-300  dark:border-grey-700': !isFocus,
+              },
             )}
           >
             <span
-              className={classNames('text-grey-500', {
-                'text-blue-500': isFocus,
-              })}
+              className={classNames(
+                { 'text-grey-500': !isFocus },
+                {
+                  'text-blue-500 dark:text-blue-400': isFocus,
+                },
+              )}
             >
               <SearchIcon />
             </span>
@@ -32,14 +36,16 @@ const Sidebar = (): JSX.Element => {
               onBlur={() => setIsFocus(false)}
               id="search"
               className={classNames(
-                'flex-1 h-full border-none outline-none px-2 text-grey-950',
+                'flex-1 h-full dark:bg-grey-900 border-none outline-none px-2 text-grey-950',
                 { 'caret-blue-500': isFocus },
               )}
             />
           </div>
         </div>
       </header>
-      <div className="w-30 h-20 dark:bg-slate-800">he</div>
+      <div>
+        <Channels />
+      </div>
     </aside>
   )
 }
