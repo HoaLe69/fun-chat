@@ -11,6 +11,8 @@ import MoonIcon from './assets/moon.svg?react'
 import PersonIcon from './assets/person.svg?react'
 import SunnyIcon from './assets/sun.svg?react'
 import MoonSolidIcon from './assets/moon-solid.svg?react'
+import ReplyIcon from './assets/reply.svg?react'
+import TrashIcon from './assets/trash.svg?react'
 
 export {
   MenuBurgerIcon,
@@ -26,6 +28,8 @@ export {
   PersonIcon,
   SunnyIcon,
   MoonSolidIcon,
+  ReplyIcon,
+  TrashIcon,
 }
 
 export const LaughSmallIcon = () => {
