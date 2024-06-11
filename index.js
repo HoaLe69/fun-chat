@@ -1,10 +1,13 @@
 const express = require("express")
+require("module-alias/register")
 const morgan = require("morgan")
 const dotenv = require("dotenv")
 const bodyParser = require("body-parser")
+const db = require("@config/db")
 const app = express()
-
-// appl middleware
+// connect database
+db.connect()
+// apply middleware
 dotenv.config() // allow read environment variable in .env file
 app.use(morgan("dev")) // automatically log comming requiest
 app.use(bodyParser.urlencoded({ extended: false })) // parse application/-WWW-urlencoded
