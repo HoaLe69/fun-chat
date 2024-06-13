@@ -3,10 +3,11 @@ import { SearchIcon } from './icons'
 import classNames from 'classnames'
 import DropDownMenu from './drop-menu'
 import Channels from './channels'
+
 const Sidebar = (): JSX.Element => {
   const [isFocus, setIsFocus] = useState(false)
   return (
-    <aside className="max-w-aside w-full bg-grey-50 dark:bg-grey-900 min-h-screen border-r-2 border-grey-300 dark:border-grey-700">
+    <aside className="flex flex-col max-w-aside w-full bg-grey-50 dark:bg-grey-900 h-screen border-r-2 border-grey-300 dark:border-grey-700">
       <header className="px-4 py-3 w-full">
         <div className="flex">
           <DropDownMenu />
@@ -36,14 +37,14 @@ const Sidebar = (): JSX.Element => {
               onBlur={() => setIsFocus(false)}
               id="search"
               className={classNames(
-                'flex-1 h-full dark:bg-grey-900 border-none outline-none px-2 text-grey-950',
+                'flex-1 h-full dark:bg-grey-900 border-none outline-none px-2 text-grey-950 dark:text-grey-50',
                 { 'caret-blue-500': isFocus },
               )}
             />
           </div>
         </div>
       </header>
-      <div>
+      <div className="flex-1 overflow-y-auto">
         <Channels />
       </div>
     </aside>

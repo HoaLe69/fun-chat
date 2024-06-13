@@ -1,9 +1,9 @@
 import classNames from 'classnames'
 import moment from 'moment'
-
 import type { MessageType } from '../lib/app.type'
 import UserAvatar from './user-avatar'
-import { LaughSmallIcon, ThreeDotVerticalIcon } from './icons'
+import ReactionPicker from './reaction-picker'
+import ContextualMenu from './contextual-menu'
 
 const Message: React.FC<MessageType> = ({
   userId,
@@ -26,7 +26,7 @@ const Message: React.FC<MessageType> = ({
           'items-end': isCurrentUser,
         })}
       >
-        <div className={classNames('max-w-[50%] w-max flex items-end')}>
+        <div className={classNames('flex items-end')}>
           {!isCurrentUser && (
             <div className="mr-2">
               <UserAvatar alt={name} src={avatar_path} />
@@ -40,7 +40,7 @@ const Message: React.FC<MessageType> = ({
           >
             <div
               className={classNames(
-                'px-4 py-2 rounded-t-[18px] flex-1',
+                'px-4 py-2 rounded-t-[18px] max-w-[60%]',
                 {
                   'bg-grey-200 dark:bg-grey-800 rounded-br-[18px] rounded-bl-sm':
                     !isCurrentUser,
@@ -54,13 +54,9 @@ const Message: React.FC<MessageType> = ({
               <p className="text-sm">{message}</p>
             </div>
             {/*ICON*/}
-            <div className="flex items-center opacity-0 group-hover:opacity-100">
-              <span className="btn_icon">
-                <LaughSmallIcon />
-              </span>
-              <span className="btn_icon ">
-                <ThreeDotVerticalIcon />
-              </span>
+            <div className="flex items-center">
+              <ReactionPicker />
+              <ContextualMenu />
             </div>
           </div>
         </div>

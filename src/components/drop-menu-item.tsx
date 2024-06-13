@@ -13,7 +13,7 @@ const DropMenuItem: React.FC<MenuItemType> = props => {
         className="w-full h-14 px-5 flex items-center hover:bg-grey-300 dark:hover:bg-grey-700 cursor-pointer"
       >
         {icon ? (
-          <span className="w-9 flex justify-center">{icon}</span>
+          <span className="w-9 flex justify-center text-grey-500">{icon}</span>
         ) : (
           <UserAvatar alt={name} src={avatar_path ?? 'in'} />
         )}

@@ -14,3 +14,12 @@
     font-family: 'Roboto', sans-serif;
   }
 }
+
+@layer components {
+  .btn_icon {
+    @apply w-8 h-8 text-grey-500 text-sm rounded-full flex items-center justify-center hover:bg-grey-100 hover:dark:bg-grey-900 opacity-0 group-hover:opacity-100 cursor-pointer;
+  }
+  .reaction_icon {
+    @apply w-[46px] h-[46px] rounded-2xl hover:bg-blue-300 dark:hover:bg-blue-700 not-first:not-last:mx-2 flex flex items-center justify-center cursor-pointer;
+  }
+}

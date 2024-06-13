@@ -25,7 +25,7 @@ const ThemeToggleButton = (): JSX.Element => {
     <div
       className={classNames('bg-grey-400 p-1 flex items-center rounded-3xl')}
     >
-      {themes.map((th: any) => {
+      {themes.map((th: string) => {
         const t = th === 'dark'
         return (
           <button

@@ -45,7 +45,6 @@ const MessageHeader: React.FC = () => {
 }
 
 const MessageTyping: React.FC = () => {
-  const [isFocus, setIsFocus] = useState<boolean>(false)
   const [isActiveSend, setIsActiveSend] = useState<boolean>(false)
   const [message, setMessage] = useState<string>('')
 
@@ -69,18 +68,12 @@ const MessageTyping: React.FC = () => {
         <div className="flex-1 h-full px-3">
           <div
             className={classNames(
-              'flex items-center h-full rounded-3xl flex-1 pl-4 pr-2 border-2 bg-grey-50 dark:bg-grey-900 caret-blue-500 ',
-              { 'border-grey-300 dark:border-grey-700 ': !isFocus },
-              {
-                'border-blue-500 dark:border-blue-400 ': isFocus,
-              },
+              'flex items-center h-full border-grey-300 dark:border-grey-700 focus-within:border-blue-500  dark:focus-within:border-blue-400 rounded-3xl flex-1 pl-4 pr-2 border-2 bg-grey-50 dark:bg-grey-900 caret-blue-500 ',
             )}
           >
             <input
-              onFocus={() => setIsFocus(true)}
               value={message}
               onChange={handleChange}
-              onBlur={() => setIsFocus(false)}
               className="h-full flex-1 dark:bg-grey-900 outline-none border-none pr-2"
               name="message"
               id="message"

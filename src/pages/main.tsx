@@ -1,4 +1,4 @@
-import Messages from '../components/messages'
+import MessageContainer from '../components/message-container'
 import Sidebar from '../components/sidebar'
 
 const Main = (): JSX.Element => {
@@ -14,7 +14,7 @@ const Main = (): JSX.Element => {
   return (
     <main className="flex text-grey-950 dark:text-white">
       <Sidebar />
-      <Messages />
+      <MessageContainer />
     </main>
   )
 }
