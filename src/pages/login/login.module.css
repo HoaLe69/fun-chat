@@ -10,6 +10,7 @@
   padding: 0 16px;
   width: 364px;
   margin: 18px 0;
+  border: 1px solid transparent;
 }
 
 .input {

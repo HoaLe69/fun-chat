@@ -1,15 +1,28 @@
 import s from './login.module.css'
 import { LockIcon, PersonIcon } from '../../components/icons'
 import { GoogleLogin } from '@react-oauth/google'
+import React from 'react'
+import { apiClient } from '../../api/apiClient'
 
 const Login: React.FC = () => {
+  const handleLogin = async (token: string) => {
+    try {
+      if (!token) return
+      const res = await apiClient.post('/user/login', {
+        id_token: token,
+      })
+    } catch (error) {
+      console.error(error)
+    }
+  }
   return (
     <div className="h-screen w-screen">
       <div className="w-full h-full flex items-center justify-center">
         <div className="text-center">
           <form className="text-center">
             <h1 className="text-3xl font-bold">
-              <strong className="text-blue-500">FUN</strong>CHAT
+              <strong className="text-blue-500">FUN</strong>
+              CHAT
             </h1>
             <p className="text-grey-800 mb-6">
               Connect people around the world
@@ -47,7 +60,9 @@ const Login: React.FC = () => {
               <span className="w-28 h-[1px] bg-grey-200 inline-block" />
             </div>
             <GoogleLogin
-              onSuccess={credentialResponse => console.log(credentialResponse)}
+              onSuccess={credentialResponse =>
+                handleLogin(credentialResponse.credential ?? '')
+              }
               logo_alignment="center"
               text="signin_with"
             />
