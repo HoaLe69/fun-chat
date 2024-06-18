@@ -5,10 +5,12 @@ const dotenv = require("dotenv")
 const bodyParser = require("body-parser")
 const cors = require("cors")
 const morgan = require("morgan")
+const cookies = require("cookie-parser")
 
 const db = require("@config/db.js")
 const router = require("@routes")
 
+app.use(cookies())
 // connect database
 db.connect()
 
@@ -16,6 +18,7 @@ db.connect()
 app.use(
   cors({
     origin: "http://localhost:5173",
+    credentials: true,
   }),
 )
 dotenv.config() // allow read environment variable in .env file
@@ -32,7 +35,7 @@ app.use((err, req, res, next) => {
 })
 
 app.get("/", (req, res) => {
-  res.json({ message: "welcome to funchat" })
+  res.json({ message: "Hello ! Welcome to funchat" })
 })
 //app routing
 app.use("/api/v1", router)
