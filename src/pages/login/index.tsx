@@ -1,20 +1,31 @@
 import s from './login.module.css'
 import { LockIcon, PersonIcon } from '../../components/icons'
 import { GoogleLogin } from '@react-oauth/google'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { apiClient } from '../../api/apiClient'
+import { useNavigate } from 'react-router-dom'
+import { useAppSelector } from '../../hooks'
+import { userSelector } from '../../redux/user.store'
 
 const Login: React.FC = () => {
+  const navigate = useNavigate()
+  const authenticated = useAppSelector(userSelector.selectAuthenticated)
   const handleLogin = async (token: string) => {
     try {
       if (!token) return
-      const res = await apiClient.post('/user/login', {
+      await apiClient.post('/users/login', {
         id_token: token,
       })
+      navigate('/')
     } catch (error) {
       console.error(error)
     }
   }
+  useEffect(() => {
+    if (authenticated) {
+      navigate('/')
+    }
+  }, [])
   return (
     <div className="h-screen w-screen">
       <div className="w-full h-full flex items-center justify-center">
