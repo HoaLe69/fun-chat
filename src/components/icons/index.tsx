@@ -14,6 +14,7 @@ import MoonSolidIcon from './assets/moon-solid.svg?react'
 import ReplyIcon from './assets/reply.svg?react'
 import TrashIcon from './assets/trash.svg?react'
 import LockIcon from './assets/lock.svg?react'
+import ArrowLeftIcon from './assets/arrow-left.svg?react'
 
 export {
   MenuBurgerIcon,
@@ -32,6 +33,7 @@ export {
   ReplyIcon,
   TrashIcon,
   LockIcon,
+  ArrowLeftIcon,
 }
 
 export const LaughSmallIcon = () => {

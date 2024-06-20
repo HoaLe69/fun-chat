@@ -8,3 +8,16 @@ export const verifyAsync = createAsyncThunk<any, void>(
     return res.data
   },
 )
+
+export const searchUser = createAsyncThunk<
+  any,
+  { email: string; userId: string | null }
+>('user/search', async ({ email, userId }) => {
+  // await new Promise(resolve => {
+  //   setTimeout(resolve, 3000)
+  // })
+  const res = await apiClient.get(
+    `/users/search?email=${email}&userId=${userId}`,
+  )
+  return res.data
+})
