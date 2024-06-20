@@ -1,18 +1,20 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { verifyAsync } from '../api/user.api'
+import { searchUser, verifyAsync } from '../api/user.api'
 import { RootState } from './store'
 
-type UserStore = {
-  user?: {
-    id: string
-    name: string
-    display_name: string
-    email: string
-    picture: string
-  }
-  isAuthenticated?: boolean
+const initialState = {
+  user: {
+    _id: null,
+    display_name: null,
+    picture: null,
+    email: null,
+  },
+  isAuthenticated: null,
+  search: {
+    loading: false,
+    result: [],
+  },
 }
-const initialState: UserStore = {}
 const userSlice = createSlice({
   name: 'user',
   initialState,
@@ -20,12 +22,24 @@ const userSlice = createSlice({
   extraReducers: builder => {
     builder
       .addCase(verifyAsync.rejected, state => {
+        //@ts-ignore
         state.isAuthenticated = false
         window.location.href = '/login'
       })
       .addCase(verifyAsync.fulfilled, (state, action) => {
         state.user = action.payload
+        //@ts-ignore
         state.isAuthenticated = true
+      })
+      .addCase(searchUser.pending, state => {
+        state.search.loading = true
+      })
+      .addCase(searchUser.fulfilled, (state, action) => {
+        state.search.loading = false
+        state.search.result = action.payload
+      })
+      .addCase(searchUser.rejected, state => {
+        state.search.loading = false
       })
   },
 })
@@ -33,5 +47,7 @@ const userSlice = createSlice({
 export const userSelector = {
   selectUser: (state: RootState) => state.user.user,
   selectAuthenticated: (state: RootState) => state.user.isAuthenticated,
+  selectLoadingSearch: (state: RootState) => state.user.search.loading,
+  selectSearchResult: (state: RootState) => state.user.search.result,
 }
 export default userSlice.reducer

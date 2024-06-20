@@ -34,7 +34,7 @@ const MessageHeader: React.FC = () => {
   return (
     <div className="h-[68px] bg-grey-50 dark:bg-grey-900 border-b-2 border-grey-300 dark:border-grey-700">
       <div className="flex items-center h-full p-2 gap-4">
-        <UserAvatar alt={user.name} src={user.avatar_path} size="md" />
+        <UserAvatar alt={user.name} src={user.picture} size="md" />
         <div className="flex flex-col justify-start">
           <p className="font-bold leading-5">{user.name}</p>
           <span className="text-grey-500 text-sm">Online for 10 mins</span>

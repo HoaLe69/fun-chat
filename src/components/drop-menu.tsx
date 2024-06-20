@@ -8,14 +8,14 @@ import {
   PersonIcon,
 } from './icons'
 import { Fragment } from 'react/jsx-runtime'
-import { user } from '../api/mock'
-import DropMenuItem from './drop-menu-item'
+import DropMenuItem, { DropMenuUserItem } from './drop-menu-item'
 import { MenuItemType } from '../lib/app.type'
 import classNames from 'classnames'
 import ThemeToggleButton from './theme-toggle-button'
+import { useAppSelector } from '../hooks'
+import { userSelector } from '../redux/user.store'
 
 const menus = [
-  { tag: '@user', ...user },
   { tag: '@mention', name: 'Mentions', icon: <MentionIcon /> },
   { tag: '@dirMess', name: 'New Direct Message', icon: <PencilIcon /> },
   { tag: '@group', name: 'New group', icon: <GroupPeopleIcon /> },
@@ -28,6 +28,7 @@ const menus = [
   { tag: '@logout', name: 'Sign Out', icon: <PersonIcon /> },
 ]
 const DropDownMenu = (): JSX.Element => {
+  const _user = useAppSelector(userSelector.selectUser)
   return (
     <Menu>
       <MenuButton className="w-11 h-11">
@@ -59,6 +60,7 @@ const DropDownMenu = (): JSX.Element => {
           className="w-menu drop-shadow-md dark:drop-shadow-tablet-modal-shadow-dark  rounded-md mt-2 "
         >
           <div className="bg-white dark:bg-grey-900">
+            {_user && <DropMenuUserItem {..._user} />}
             {menus.map((menuItem: MenuItemType) => (
               <DropMenuItem key={menuItem.tag} {...menuItem} />
             ))}
