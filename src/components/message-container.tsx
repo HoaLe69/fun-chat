@@ -9,17 +9,27 @@ import { user } from '../api/mock'
 import Message from './message'
 import UserAvatar from './user-avatar'
 import { PlusCircleIcon, SendIcon, LaughIcon } from './icons'
+import Empty from './common/empty-sate'
 
 const MessageContainer = (): JSX.Element => {
+  const isEmpry = true
   return (
     <div className="flex-1 h-screen bg-grey-50 dark:bg-grey-950 overflow-x-hidden">
       <div className="flex flex-col h-full">
         <MessageHeader />
         <div className="flex-1 flex flex-col justify-end h-[calc(100vh-68px)]">
           <div className="h-full overflow-y-auto overflow-x-hidden">
-            {messages.map((message: MessageType) => (
-              <Message key={message.id} {...message} />
-            ))}
+            {isEmpry ? (
+              <div className="h-full flex items-center justify-center">
+                <Empty content="No chats here yet" />
+              </div>
+            ) : (
+              <>
+                {messages.map((message: MessageType) => (
+                  <Message key={message.id} {...message} />
+                ))}
+              </>
+            )}
           </div>
           <MessageTyping />
         </div>

@@ -1,21 +1,23 @@
 import { channels } from '../api/mock'
 import { ChannelType } from '../lib/app.type'
 import UserAvatar from './user-avatar'
+import Empty from './common/empty-sate'
 
 const Channels: React.FC = () => {
+  const isEmpty = true
   return (
-    <div>
-      <ul className="overflow-x-hidden w-full">
-        {channels.map((channel: ChannelType) => {
-          return <Channel key={channel.name} {...channel} />
-        })}
-        {channels.map((channel: ChannelType) => {
-          return <Channel key={channel.name} {...channel} />
-        })}
-        {channels.map((channel: ChannelType) => {
-          return <Channel key={channel.name} {...channel} />
-        })}
-      </ul>
+    <div className="h-full">
+      {isEmpty ? (
+        <div className="flex items-center justify-center h-full">
+          <Empty content="You currently have no channels" />
+        </div>
+      ) : (
+        <ul className="overflow-x-hidden w-full">
+          {channels.map((channel: ChannelType) => {
+            return <Channel key={channel.name} {...channel} />
+          })}
+        </ul>
+      )}
     </div>
   )
 }

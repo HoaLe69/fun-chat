@@ -15,6 +15,7 @@ import ReplyIcon from './assets/reply.svg?react'
 import TrashIcon from './assets/trash.svg?react'
 import LockIcon from './assets/lock.svg?react'
 import ArrowLeftIcon from './assets/arrow-left.svg?react'
+import MessageIcon from './assets/message.svg?react'
 
 export {
   MenuBurgerIcon,
@@ -34,6 +35,7 @@ export {
   TrashIcon,
   LockIcon,
   ArrowLeftIcon,
+  MessageIcon,
 }
 
 export const LaughSmallIcon = () => {

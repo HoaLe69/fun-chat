@@ -17,8 +17,7 @@ const Message: React.FC<MessageType> = ({
     <div
       className={classNames(
         'w-full flex items-center px-2 py-1 group',
-        { 'justify-end': isCurrentUser },
-        { 'justify-start': !isCurrentUser },
+        isCurrentUser ? 'justify-end' : 'justify-start',
       )}
     >
       <div
@@ -41,14 +40,9 @@ const Message: React.FC<MessageType> = ({
             <div
               className={classNames(
                 'px-4 py-2 rounded-t-[18px] max-w-[60%]',
-                {
-                  'bg-grey-200 dark:bg-grey-800 rounded-br-[18px] rounded-bl-sm':
-                    !isCurrentUser,
-                },
-                {
-                  'bg-blue-100 dark:bg-blue-900 rounded-bl-[18px] rounded-br-sm':
-                    isCurrentUser,
-                },
+                isCurrentUser
+                  ? 'bg-blue-100 dark:bg-blue-900 rounded-bl-[18px] rounded-br-sm'
+                  : 'bg-grey-200 dark:bg-grey-800 rounded-br-[18px] rounded-bl-sm',
               )}
             >
               <p className="text-sm">{message}</p>
