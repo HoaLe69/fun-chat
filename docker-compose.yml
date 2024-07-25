@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  fun-chat-ui:
+    container_name: fun-chat-ui
+    build:
+      context: ./fun-chat-ui
+      dockerfile: ./Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./fun-chat-ui/src:/app/src
+      - ./fun-chat-ui/public:/app/public
+      - "./fun-chat-ui/tailwind.config.js:/app/tailwind.config.js"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+
+  apis:
+    container_name: fun-chat-apis
+    build:
+      context: ./apis
+      dockerfile: ./Dockerfile
+    ports:
+      - "8082:8082"
+    env_file: ./apis/.env
+    volumes:
+      - ./apis/src/:/app/src
+      - ./apis/index.js:/app/index.js
+    depends_on:
+      - mongodb
+
+  mongodb:
+    container_name: fun-chat-mogodb
+    image: mongo
+    restart: always
+    ports:
+      - 27018:27017
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:
