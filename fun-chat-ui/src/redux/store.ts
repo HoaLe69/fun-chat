@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit'
 import userReducer from './user.store'
-import roomReducer from './channel.store'
+import roomReducer from './room.store'
 import messageReducer from './message.store'
 
 export const store = configureStore({

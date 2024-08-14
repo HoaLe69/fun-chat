@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { searchUser, verifyAsync } from '../api/user.api'
+import { verifyAsync } from '../api/user.api'
 import { RootState } from './store'
 
 const initialState = {
@@ -10,10 +10,6 @@ const initialState = {
     email: null,
   },
   isAuthenticated: null,
-  search: {
-    loading: false,
-    result: [],
-  },
 }
 const userSlice = createSlice({
   name: 'user',
@@ -31,23 +27,21 @@ const userSlice = createSlice({
         //@ts-ignore
         state.isAuthenticated = true
       })
-      .addCase(searchUser.pending, state => {
-        state.search.loading = true
-      })
-      .addCase(searchUser.fulfilled, (state, action) => {
-        state.search.loading = false
-        state.search.result = action.payload
-      })
-      .addCase(searchUser.rejected, state => {
-        state.search.loading = false
-      })
+    // .addCase(searchUser.pending, state => {
+    //   state.search.loading = true
+    // })
+    // .addCase(searchUser.fulfilled, (state, action) => {
+    //   state.search.loading = false
+    //   state.search.result = action.payload
+    // })
+    // .addCase(searchUser.rejected, state => {
+    //   state.search.loading = false
+    // })
   },
 })
 
 export const userSelector = {
   selectUser: (state: RootState) => state.user.user,
   selectAuthenticated: (state: RootState) => state.user.isAuthenticated,
-  selectLoadingSearch: (state: RootState) => state.user.search.loading,
-  selectSearchResult: (state: RootState) => state.user.search.result,
 }
 export default userSlice.reducer

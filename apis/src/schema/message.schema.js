@@ -3,26 +3,22 @@ const { Schema } = mongoose
 
 const messageSchema = new Schema(
   {
-    content: {
+    text: {
       type: String,
       required: [true, "Message is require"],
     },
-    channel_id: {
+    room_id: {
       type: String,
       required: true,
     },
-    userId: {
+    owner_id: {
       type: String,
       required: [true, "UserId is require"],
-    },
-    seen_by: {
-      type: Array,
-      default: [],
     },
     react: {
       type: [
         {
-          ownerId: { type: String, required: true },
+          owner_id: { type: String, required: true },
           emoji: { type: String, required: true },
         },
       ],

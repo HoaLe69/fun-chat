@@ -1,5 +1,5 @@
-const express = require("express")
 require("module-alias/register")
+const express = require("express")
 const app = express()
 const dotenv = require("dotenv")
 const bodyParser = require("body-parser")
@@ -8,6 +8,7 @@ const morgan = require("morgan")
 const cookies = require("cookie-parser")
 const http = require("http")
 const socketIo = require("socket.io")
+const path = require("path")
 const handleSocket = require("./src/utils/socket.js")
 const db = require("@config/db.js")
 const { createRandomUser } = require("./src/utils/faker.js")
@@ -48,16 +49,15 @@ app.use((err, req, res, next) => {
   res.status(500).send("something broke!")
 })
 
-app.post("/seed", async (req, res) => {
-  for (let i = 0; i < 2; i++) {
+app.post("/seed-data-user", async (req, res) => {
+  for (let i = 0; i < 20; i++) {
     await createRandomUser()
   }
   return res.status(200).json({ message: "seeded" })
 })
 
-app.get("/", (req, res) => {
-  res.json({ greet: "Hi hiih" })
-})
+app.use(express.static(path.join(__dirname, "public")))
+
 //app routing
 app.use("/api/v1", router)
 

@@ -10,13 +10,11 @@ export type UserType = {
   picture: string
   display_name: string
 }
-export type ChannelType = {
+export type RoomChatType = {
   _id: string
-  picture: string
-  channel_name: string
   latest_message: string
-  time?: string
   members?: Array<string>
+  status?: string
 }
 
 export type MessageType = {

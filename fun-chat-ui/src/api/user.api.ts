@@ -13,22 +13,20 @@ export const verifyAsync = createAsyncThunk<any, void>(
   },
 )
 
-export const searchUser = createAsyncThunk<
-  any,
-  { email: string; userId: string | null }
->('user/search', async ({ email, userId }) => {
+export const searchUser = async ({
+  q,
+  userId,
+}: {
+  q: string
+  userId: string
+}) => {
   try {
-    // await new Promise(resolve => {
-    //   setTimeout(resolve, 3000)
-    // })
-    const res = await apiClient.get(
-      `/users/search?email=${email}&userId=${userId}`,
-    )
+    const res = await apiClient.get(`/users/search?q=${q}&userId=${userId}`)
     return res.data
   } catch (err) {
     console.log(err)
   }
-})
+}
 
 export const fetchUser = async (userId: string | undefined) => {
   try {

@@ -7,6 +7,6 @@ const userController = require("@controller/user.controller")
 router.post("/login", userController.login)
 router.get("/", verify_user, userController.verifyUser)
 router.get("/search", verify_user, userController.search)
-router.get("/getUserById/:userId", verify_user, userController.getUser)
+router.get("/getUserById/:userId", verify_user, userController.getUserById)
 
 module.exports = router

@@ -1,11 +1,13 @@
 import classNames from 'classnames'
 import moment from 'moment'
-import type { MessageType } from '../../lib/app.type'
-import UserAvatar from '../user-avatar'
-import ReactionPicker from '../reaction-picker'
-import ContextualMenu from '../contextual-menu'
-import { useAppSelector } from '../../hooks'
-import { userSelector } from '../../redux/user.store'
+
+import type { MessageType } from 'lib/app.type'
+import UserAvatar from 'components/user-avatar'
+
+import ReactionPicker from 'components/reaction-picker'
+import ContextualMenu from 'components/contextual-menu'
+import { useAppSelector } from 'hooks'
+import { userSelector } from 'redux/user.store'
 
 type MessageProps = MessageType & {
   picture?: string
@@ -22,6 +24,20 @@ const Message: React.FC<MessageProps> = ({
   const user = useAppSelector(userSelector.selectUser)
   const isCurrentUser = user._id === userId
   const fallbackImg = 'https://placehold.co/600x400.png'
+
+  const renderTextMessage = () => (
+    <div
+      className={classNames(
+        'px-4 py-2 rounded-t-[18px] max-w-[60%]',
+        isCurrentUser
+          ? 'bg-blue-100 dark:bg-blue-900 rounded-bl-[18px] rounded-br-sm'
+          : 'bg-grey-200 dark:bg-grey-800 rounded-br-[18px] rounded-bl-sm',
+      )}
+    >
+      <p className="text-sm">{content}</p>
+    </div>
+  )
+
   return (
     <div
       className={classNames(
@@ -43,23 +59,12 @@ const Message: React.FC<MessageProps> = ({
               />
             </div>
           )}
-          {/*CONTENT MESSAGE*/}
           <div
             className={classNames('flex items-center gap-4', {
               'flex-row-reverse': isCurrentUser,
             })}
           >
-            <div
-              className={classNames(
-                'px-4 py-2 rounded-t-[18px] max-w-[60%]',
-                isCurrentUser
-                  ? 'bg-blue-100 dark:bg-blue-900 rounded-bl-[18px] rounded-br-sm'
-                  : 'bg-grey-200 dark:bg-grey-800 rounded-br-[18px] rounded-bl-sm',
-              )}
-            >
-              <p className="text-sm">{content}</p>
-            </div>
-            {/*ICON*/}
+            {renderTextMessage()}
             <div className="flex items-center">
               <ReactionPicker />
               <ContextualMenu />

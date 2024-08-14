@@ -1,67 +1,93 @@
-import React, { useEffect, useState } from 'react'
-import classNames from 'classnames'
-import { UserType, type MessageType } from '../../lib/app.type'
-
 import Message from './message'
-import UserAvatar from '../user-avatar'
-import { PlusCircleIcon, SendIcon, LaughIcon } from '../icons'
-import Empty from '../common/empty-sate'
-import { socket } from '../../hooks/useSocket'
-import { useParams } from 'react-router-dom'
-import { useAppSelector } from '../../hooks'
-import { userSelector } from '../../redux/user.store'
-import { roomSelector } from '../../redux/channel.store'
-import { fetchUser } from '../../api/user.api'
-import { createMessageAsync } from '../../api/message.api'
-import { apiClient } from '../../api/apiClient'
+import UserAvatar from 'components/user-avatar'
+import Empty from 'components/common/empty-sate'
+import ChatForm from './chat-form'
+import type { UserType, MessageType } from 'lib/app.type'
+import { useEffect, useState } from 'react'
+
+import { socket } from 'hooks/useSocket'
+import { useAppDispatch, useAppSelector } from 'hooks'
+import { userSelector } from 'redux/user.store'
+import { fetchUser } from 'api/user.api'
+import { apiClient } from 'api/apiClient'
+import {
+  updateLatestMessage,
+  updateStatusRoom,
+  roomSelector,
+} from 'redux/room.store'
 
 const MessageContainer = (): JSX.Element => {
   const [messages, setMessages] = useState([])
   const [partner, setPartner] = useState<UserType>()
+  const dispatch = useAppDispatch()
 
-  // id esstensial from store
   const roomSelectedId = useAppSelector(roomSelector.selectRoomId)
   const partnerId = useAppSelector(roomSelector.selectRoomPartnerId)
-  // fallback id use it when user reloading page
-  const { roomId: roomIdFromParam, partnerId: partnerIdFromParam } = useParams()
+
+  const typeOfRoom = useAppSelector(roomSelector.selectRoomType)
   const user = useAppSelector(userSelector.selectUser)
 
-  const channelId = roomSelectedId || roomIdFromParam
-  const otherId = partnerId || partnerIdFromParam
-
-  const isEmpty = false
-
+  // join room
   useEffect(() => {
-    if (channelId) {
-      socket.emit('join', channelId)
+    if (roomSelectedId) {
+      socket.emit('join', roomSelectedId)
     }
-  }, [channelId])
+  }, [roomSelectedId])
 
   useEffect(() => {
-    socket.on('getMessage', msg => {
+    // reveive message realtime
+    const handleGetMessage = (msg: any) => {
       //@ts-ignore
       setMessages(pre => [...pre, msg])
-    })
+      dispatch(
+        updateLatestMessage({
+          room_id: msg?.roomId,
+          latest_message: msg?.content,
+        }),
+      )
+    }
+
+    // check typing of partner
+    const handleCheckTyping = (msg: any) => {
+      dispatch(updateStatusRoom({ ...msg }))
+    }
+    socket.on('getMessage', handleGetMessage)
+    socket.on('user_typing', handleCheckTyping)
   }, [])
 
   useEffect(() => {
+    // load message and infor of partner on init room
     const fetchData = async () => {
-      const res = await fetchUser(otherId)
-      const msgs = await apiClient.get(`/message/list/${channelId}`)
+      const res = await fetchUser(partnerId ?? '')
+      const msgs = await apiClient.get(`/message/list/${roomSelectedId}`)
       if (res) setPartner(res)
       if (msgs) setMessages(msgs.data)
     }
-    fetchData()
-  }, [channelId, otherId])
+    if (partnerId && roomSelectedId) fetchData()
+  }, [roomSelectedId, partnerId])
 
-  const sendMessage = (message: string) => {
-    socket.emit('sendMessage', {
-      content: message,
-      room: channelId,
+  // run when room is not exist in db
+  useEffect(() => {
+    const getInforOfPartner = async () => {
+      const res = await fetchUser(typeOfRoom ?? '')
+      setPartner(res)
+    }
+    if (typeOfRoom) getInforOfPartner()
+  }, [typeOfRoom])
+
+  // send message to socket server
+  const sendMessage = (
+    destination: string,
+    data: { content?: string; isTyping?: boolean },
+  ) => {
+    socket.emit(destination, {
+      room_id: roomSelectedId,
       userId: user?._id,
+      ...data,
     })
   }
-  if (!channelId || !otherId)
+
+  if ((!roomSelectedId || !partnerId) && !typeOfRoom)
     return (
       <div className="flex-1 flex items-center justify-center h-screen bg-grey-50 dark:bg-grey-950 overflow-x-hidden">
         <Empty content="No room selected" />
@@ -85,26 +111,28 @@ const MessageContainer = (): JSX.Element => {
         </div>
         <div className="flex-1 flex flex-col justify-end h-[calc(100vh-68px)]">
           <div className="h-full overflow-y-auto overflow-x-hidden">
-            {isEmpty ? (
-              <div className="h-full flex items-center justify-center">
-                <Empty content="No chats here yet" />
-              </div>
-            ) : (
-              <>
-                {messages.map((message: MessageType, index: number) => (
-                  <Message
-                    key={index}
-                    picture={partner?.picture}
-                    name={partner?.display_name}
-                    {...message}
-                  />
-                ))}
-              </>
-            )}
+            <>
+              {messages?.length > 0 ? (
+                <>
+                  {messages.map((message: MessageType, index: number) => (
+                    <Message
+                      key={index}
+                      picture={partner?.picture}
+                      name={partner?.display_name}
+                      {...message}
+                    />
+                  ))}
+                </>
+              ) : (
+                <div className="h-full flex items-center justify-center">
+                  <Empty content="No chats here yet" />
+                </div>
+              )}
+            </>
           </div>
-          <MessageTyping
+          <ChatForm
             sendMessage={sendMessage}
-            channelId={channelId}
+            channelId={roomSelectedId ?? ''}
             senderId={user?._id}
           />
         </div>
@@ -114,85 +142,3 @@ const MessageContainer = (): JSX.Element => {
 }
 
 export default MessageContainer
-
-const MessageTyping = ({
-  sendMessage,
-  channelId,
-  senderId,
-}: {
-  sendMessage: (m: string) => void
-  channelId: string
-  senderId: string | null
-}): JSX.Element => {
-  const [isActiveSend, setIsActiveSend] = useState<boolean>(false)
-  const [message, setMessage] = useState<string>('')
-
-  // Event handler
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target
-    if (!value) {
-      setIsActiveSend(false)
-      setMessage(value)
-      return
-    }
-    setIsActiveSend(true)
-    setMessage(value)
-  }
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    sendMessage(message)
-    setMessage('')
-    setIsActiveSend(false)
-    const msg = {
-      channel_id: channelId,
-      userId: senderId,
-      content: message,
-    }
-    await createMessageAsync(msg)
-  }
-  return (
-    <div className="border-t-2 bg-grey-50 dark:bg-grey-900 border-grey-300 dark:border-grey-700 h-14 py-1">
-      <div className="flex items-center h-full px-3">
-        <span className="text-grey-500">
-          <PlusCircleIcon />
-        </span>
-        <form
-          onSubmit={handleSubmit}
-          className="h-full w-full flex items-center"
-        >
-          <div className="flex-1 h-full px-3">
-            <div
-              className={classNames(
-                'flex items-center h-full border-grey-300 dark:border-grey-700 focus-within:border-blue-500  dark:focus-within:border-blue-400 rounded-3xl flex-1 pl-4 pr-2 border-2 bg-grey-50 dark:bg-grey-900 caret-blue-500 ',
-              )}
-            >
-              <input
-                value={message}
-                autoComplete="off"
-                onChange={handleChange}
-                className="h-full flex-1 dark:bg-grey-900 outline-none border-none pr-2"
-                name="message"
-                id="message"
-                placeholder="Type your message"
-              />
-              <span className="text-grey-500 ">
-                <LaughIcon />
-              </span>
-            </div>
-          </div>
-          <button
-            type="submit"
-            className={classNames(
-              'w-10 h-10 rounded-full inline-flex items-center justify-center',
-              { 'bg-grey-400 dark:bg-grey-600': !isActiveSend },
-              { 'bg-blue-500 dark:bg-blue-400': isActiveSend },
-            )}
-          >
-            <SendIcon />
-          </button>
-        </form>
-      </div>
-    </div>
-  )
-}

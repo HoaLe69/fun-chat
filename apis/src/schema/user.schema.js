@@ -21,6 +21,9 @@ const userScheme = new Schema(
       type: String,
       required: [true, "Display name is require"],
     },
+    normalized_name: {
+      type: String,
+    },
     friends: {
       type: Array,
       default: [],

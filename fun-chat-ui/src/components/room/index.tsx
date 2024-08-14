@@ -1,19 +1,21 @@
-import Empty from '../common/empty-sate'
-import { ChannelType } from '../../lib/app.type'
 import { TabGroup, TabList, TabPanel, TabPanels, Tab } from '@headlessui/react'
-import s from './channel.module.css'
-import classNames from 'classnames'
-import { useAppSelector, useAppDispatch } from '../../hooks'
-import { roomSelector } from '../../redux/channel.store'
-import { useEffect } from 'react'
-import { fetchListRoomAsync } from '../../api/room.api'
-import { userSelector } from '../../redux/user.store'
-import Channel from './channel'
+import Empty from 'components/common/empty-sate'
+import { RoomChatType } from 'lib/app.type'
+import RoomChat from './room'
 
-const Channels: React.FC = () => {
-  const channels = useAppSelector(roomSelector.selectListRooms)
+import s from './room.module.css'
+import classNames from 'classnames'
+import { useAppSelector, useAppDispatch } from 'hooks'
+import { roomSelector } from 'redux/room.store'
+import { useEffect } from 'react'
+import { fetchListRoomAsync } from 'api/room.api'
+import { userSelector } from 'redux/user.store'
+
+const RoomChats: React.FC = () => {
+  const roomChats = useAppSelector(roomSelector.selectListRooms)
   const user = useAppSelector(userSelector.selectUser)
   const dispatch = useAppDispatch()
+
   useEffect(() => {
     if (user?._id) dispatch(fetchListRoomAsync({ userLoginId: user?._id }))
   }, [user])
@@ -55,12 +57,12 @@ const Channels: React.FC = () => {
         <TabPanels>
           <TabPanel>
             <ul className="overflow-x-hidden w-full">
-              {channels.map((channel: ChannelType) => {
+              {roomChats.map((roomChat: RoomChatType) => {
                 return (
-                  <Channel
+                  <RoomChat
                     userLoginId={user?._id}
-                    key={channel._id}
-                    {...channel}
+                    key={roomChat._id}
+                    {...roomChat}
                   />
                 )
               })}
@@ -77,4 +79,4 @@ const Channels: React.FC = () => {
   )
 }
 
-export default Channels
+export default RoomChats

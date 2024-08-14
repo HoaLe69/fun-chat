@@ -13,7 +13,6 @@ export const fetchListMessageAsync = createAsyncThunk<
 >('/message/list', async ({ channelId }) => {
   try {
     const res = await apiClient.get(`/message/list/${channelId}`)
-    console.log(res.data)
     return res.data
   } catch (err) {
     console.log(err)
