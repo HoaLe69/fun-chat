@@ -4,36 +4,34 @@ import UserAvatar from 'components/user-avatar'
 
 import { useEffect, useState } from 'react'
 import { fetchUser } from 'api/user.api'
-import { selectRoom } from 'redux/room.store'
-import { useAppDispatch, useAppSelector } from 'hooks'
-import { userSelector } from 'redux/user.store'
+import { selectedRoom } from 'redux/room.store'
+import { useAppDispatch } from 'hooks'
+import moment from 'moment'
 
 type Props = RoomChatType & {
   userLoginId: string | null
-  status?: { userId: string; isTyping: boolean }
 }
 
 const RoomChat: React.FC<Props> = props => {
-  const { _id, members, userLoginId, latest_message, status } = props
-  const [receiveUser, setReceiveUser] = useState<UserType>()
-  // @ts-ignore
-  const receiver: any = members?.find(m => m?.userId !== userLoginId)
-  const user = useAppSelector(userSelector.selectUser)
+  const { _id, members, userLoginId, latestMessage } = props
+  const [recipient, setRecipient] = useState<UserType>()
+
+  const recipientId = members?.find(m => m !== userLoginId)
+
   const dispatch = useAppDispatch()
 
   useEffect(() => {
     const getUser = async () => {
-      const res = await fetchUser(receiver?.userId)
-      if (res) setReceiveUser(res)
+      const res = await fetchUser(recipientId)
+      if (res) setRecipient(res)
     }
-    if (receiver?.userId) {
+    if (recipientId) {
       getUser()
     }
-  }, [receiver])
+  }, [recipientId])
 
-  // change url without reloading page
   const handleSelectRoom = () => {
-    dispatch(selectRoom({ id: _id, partnerId: receiver?.userId }))
+    dispatch(selectedRoom({ roomId: _id, recipient }))
   }
   return (
     <li
@@ -42,25 +40,24 @@ const RoomChat: React.FC<Props> = props => {
     >
       <div className="flex items-center px-2 py-3">
         <div>
-          {receiveUser && (
+          {recipient && (
             <UserAvatar
-              alt={receiveUser?.display_name}
-              src={receiveUser?.picture}
+              alt={recipient?.display_name}
+              src={recipient?.picture}
               size="lg"
             />
           )}
         </div>
         <div className="pl-2 flex-1 pr-2 flex flex-col">
-          {receiveUser && (
-            <span className="font-bold">{receiveUser?.display_name}</span>
+          {recipient && (
+            <span className="font-bold">{recipient?.display_name}</span>
           )}
-          <div className="flex items-center text-grey-500">
-            <p className="text-sm  max-w-44 truncate ">
-              {status?.userId === user?._id
-                ? latest_message ?? 'Not message yet'
-                : status?.isTyping
-                  ? 'Typing...'
-                  : latest_message ?? 'Not message yet'}
+          <div className="flex items-center text-grey-500 justify-between">
+            <p className="text-sm  max-w-44 truncate  flex-1">
+              {latestMessage?.text}
+            </p>
+            <p className="text-sm">
+              {moment(latestMessage?.createdAt).format('LT')}
             </p>
           </div>
         </div>

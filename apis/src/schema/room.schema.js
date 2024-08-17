@@ -1,10 +1,18 @@
 const mongoose = require("mongoose")
 const { Schema } = mongoose
 
+const latestMessageScheam = new Schema(
+  {
+    text: String,
+    createdAt: Date,
+  },
+  { _id: false },
+)
+
 const roomSchema = new Schema(
   {
-    latest_message: {
-      type: String,
+    latestMessage: {
+      type: latestMessageScheam,
       default: null,
     },
     members: {

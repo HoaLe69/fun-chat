@@ -18,6 +18,11 @@ const handleSocket = io => {
       })
     })
 
+    socket.on("room:createRoomChat", info => {
+      const { roomInfo, recipientId } = info
+      io.to(recipientId).emit("room:getNewChatInfo", roomInfo)
+    })
+
     socket.on("sendMessage", data => {
       const { room_id, content, userId } = data
       const timestamp = Date.now()

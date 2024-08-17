@@ -1,69 +1,86 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useState, useRef } from 'react'
 import classNames from 'classnames'
 import { SendIcon, LaughIcon, PlusCircleIcon } from 'components/icons'
 import useDebounce from 'hooks/useDebounce'
-
+import useSocket from 'hooks/useSocket'
+import { createRoomAsync } from 'api/room.api'
 import { createMessageAsync } from 'api/message.api'
+import { userSelector } from 'redux/user.store'
+import { addRoomChat, selectedRoomId } from 'redux/room.store'
+import { useAppDispatch, useAppSelector } from 'hooks'
+import { STATUS_CODES } from 'const'
 
 type Props = {
-  sendMessage: (
-    destination: string,
-    d: { content?: string; isTyping?: boolean },
-  ) => void
-  channelId?: string
-  senderId: string | null
+  roomId: string | null
+  userLoginId: string | null
+  recipientId?: string | null
 }
 
-const ChatForm: React.FC<Props> = ({ sendMessage, channelId, senderId }) => {
-  const [isActiveSend, setIsActiveSend] = useState<boolean>(false)
-  const [message, setMessage] = useState<string>('')
+const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
+  const dispatch = useAppDispatch()
+  const userLogin = useAppSelector(userSelector.selectUser)
+  const [isActiveSendBtn, setIsActiveSendBtn] = useState<boolean>(false)
+  const [textMessage, setTextMessage] = useState<string>('')
+  const { sendMessage } = useSocket()
   const refInput = useRef<HTMLInputElement>(null)
 
-  const debounceValue = useDebounce(message, 200)
-
-  useEffect(() => {
-    if (!debounceValue.trim()) return
-    sendMessage('typing', { isTyping: true })
-  }, [debounceValue])
-  // Event handler
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target
-    if (!value) {
-      setIsActiveSend(false)
-      setMessage(value)
-      return
+  const addNewMessage = async (roomId: string) => {
+    const message = {
+      ownerId: userLogin?._id,
+      text: textMessage,
+      roomId,
     }
-    setIsActiveSend(true)
-    setMessage(value)
+    await createMessageAsync(message)
   }
 
-  // detect receive user is stop typing
-  useEffect(() => {
-    const inputEl = refInput.current
-    let timer: number
-    const detectStopTyping = () => {
-      clearTimeout(timer)
-      timer = setTimeout(() => {
-        sendMessage('typing', { isTyping: false })
-      }, 1000)
+  const startWithNewChat = async () => {
+    try {
+      const room = {
+        members: [userLoginId, recipientId],
+        status: 'spam',
+        latestMessage: {
+          text: textMessage,
+          createdAt: Date.now(),
+        },
+      }
+      // @ts-ignore
+      const response = await createRoomAsync({ room })
+      if (response?.status === STATUS_CODES.CREATED) {
+        await addNewMessage(response?.data._id)
+        dispatch(selectedRoomId(response.data._id))
+        dispatch(addRoomChat(response?.data))
+        sendMessage({
+          destination: 'room:createRoomChat',
+          data: { roomInfo: response?.data, recipientId },
+        })
+      }
+    } catch (error) {
+      console.log(error)
     }
-    inputEl?.addEventListener('keyup', detectStopTyping)
-    return () => inputEl?.removeEventListener('keyup', detectStopTyping)
-  }, [])
+  }
+
+  const debounceValue = useDebounce(textMessage, 200)
+
+  const resetForm = () => {
+    setTextMessage('')
+    setIsActiveSendBtn(false)
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (!message.trim()) return
-    sendMessage('sendMessage', { content: message })
-    setMessage('')
-    setIsActiveSend(false)
-    const msg = {
-      channel_id: channelId,
-      userId: senderId,
-      content: message,
+    if (!debounceValue) return
+    if (!roomId) {
+      await startWithNewChat()
     }
-    await createMessageAsync(msg)
-    sendMessage('typing', { isTyping: false })
+    resetForm()
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target
+    setTextMessage(value)
+    if (!isActiveSendBtn) {
+      setIsActiveSendBtn(true)
+    }
   }
 
   return (
@@ -84,7 +101,7 @@ const ChatForm: React.FC<Props> = ({ sendMessage, channelId, senderId }) => {
             >
               <input
                 ref={refInput}
-                value={message}
+                value={textMessage}
                 autoComplete="off"
                 onChange={handleChange}
                 className="h-full flex-1 dark:bg-grey-900 outline-none border-none pr-2"
@@ -101,8 +118,8 @@ const ChatForm: React.FC<Props> = ({ sendMessage, channelId, senderId }) => {
             type="submit"
             className={classNames(
               'w-10 h-10 rounded-full inline-flex items-center justify-center',
-              { 'bg-grey-400 dark:bg-grey-600': !isActiveSend },
-              { 'bg-blue-500 dark:bg-blue-400': isActiveSend },
+              { 'bg-grey-400 dark:bg-grey-600': !isActiveSendBtn },
+              { 'bg-blue-500 dark:bg-blue-400': isActiveSendBtn },
             )}
           >
             <SendIcon />

@@ -2,24 +2,22 @@
 // @ts-nocheck
 import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from './store'
-import { createRoomAsync, fetchListRoomAsync } from 'api/room.api'
+import { fetchListRoomAsync } from 'api/room.api'
+import type { UserType } from 'lib/app.type'
 
 const initialState = {
-  create: {
-    loading: false,
-    room: {
-      _id: null,
-      members: [],
-    },
-  },
   fetchList: {
     loading: false,
     rooms: [],
   },
   selectedRoom: {
     id: null,
-    partnerId: null,
-    type: null,
+    recipient: {
+      _id: null,
+      display_name: null,
+      picture: null,
+      email: null,
+    },
   },
 }
 
@@ -27,11 +25,13 @@ const roomSlice = createSlice({
   name: 'room',
   initialState,
   reducers: {
-    selectRoom: (state, action) => {
-      const { type, roomId, partnerId } = action.payload
+    selectedRoom: (state, action) => {
+      const { roomId, recipient } = action.payload
       state.selectedRoom.id = roomId
-      state.selectedRoom.partnerId = partnerId
-      state.selectedRoom.type = type
+      state.selectedRoom.recipient = recipient
+    },
+    selectedRoomId: (state, action) => {
+      state.selectedRoom.id = action.payload
     },
     // TODO: remove @ts-ignore
     updateLatestMessage: (state, action) => {
@@ -43,8 +43,11 @@ const roomSlice = createSlice({
         return room?._id === room_id ? { ...room, latest_message } : room
       })
     },
+    addRoomChat(state, action) {
+      state.fetchList.rooms = [action.payload, ...state.fetchList.rooms]
+    },
     // detect user is typing
-    updateStatusRoom: (state, action) => {
+    updateStatusRoom(state, action) {
       const _rooms = [...state.fetchList.rooms]
       const { room_id, isTyping, userId } = action.payload
       state.fetchList.rooms = _rooms.map(room => {
@@ -56,16 +59,6 @@ const roomSlice = createSlice({
   },
   extraReducers(builder) {
     builder
-      .addCase(createRoomAsync.pending, state => {
-        state.create.loading = true
-      })
-      .addCase(createRoomAsync.fulfilled, (state, action) => {
-        state.create.loading = false
-        state.create.room = action.payload
-      })
-      .addCase(createRoomAsync.rejected, state => {
-        state.create.loading = false
-      })
       // fetch list room by your login id
       .addCase(fetchListRoomAsync.pending, state => {
         state.fetchList.loading = true
@@ -86,10 +79,14 @@ export const roomSelector = {
   selectListRooms: (state: RootState) => state.room.fetchList.rooms,
   selectListRoomsLoading: (state: RootState) => state.room.fetchList.loading,
   selectRoomId: (state: RootState) => state.room.selectedRoom.id,
-  selectRoomPartnerId: (state: RootState) => state.room.selectedRoom.partnerId,
-  selectRoomType: (state: RootState) => state.room.selectedRoom.type,
+  selectRoomRecipient: (state: RootState) => state.room.selectedRoom.recipient,
 }
-export const { selectRoom, updateLatestMessage, updateStatusRoom } =
-  roomSlice.actions
+export const {
+  selectedRoom,
+  selectedRoomId,
+  updateLatestMessage,
+  updateStatusRoom,
+  addRoomChat,
+} = roomSlice.actions
 
 export default roomSlice.reducer

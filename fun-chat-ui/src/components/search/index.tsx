@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import classNames from 'classnames'
 
 import { useAppSelector, useAppDispatch } from 'hooks'
-import { selectRoom } from 'redux/room.store'
+import type { UserType } from 'lib/app.type'
+import { selectedRoom } from 'redux/room.store'
 import { userSelector } from 'redux/user.store'
 import useDebounce from 'hooks/useDebounce'
 import { searchUser } from 'api/user.api'
@@ -12,9 +13,13 @@ import { apiClient } from 'api/apiClient'
 
 type Props = {
   searchTerm?: string
+  handleCloseSearchAndClearInput: () => void
 }
 
-const SearchResult: React.FC<Props> = ({ searchTerm }) => {
+const SearchResult: React.FC<Props> = ({
+  searchTerm,
+  handleCloseSearchAndClearInput,
+}) => {
   const dispatch = useAppDispatch()
   const [peoples, setPeoples] = useState([])
   const [activeTab, setActiveTab] = useState<number>(0)
@@ -38,21 +43,23 @@ const SearchResult: React.FC<Props> = ({ searchTerm }) => {
     fetchSearch()
   }, [debouncedSearchTerm, activeTab])
 
-  const handleSelectRooms = async (userId: string) => {
+  const handleSelectRooms = async (recipient: UserType) => {
     // check if room is exist
     try {
-      const response = await apiClient.get('/channel/check-room', {
+      const response = await apiClient.get('/room/check-room', {
         params: {
           userId1: user?._id,
-          userId2: userId,
+          userId2: recipient?._id,
         },
       })
       if (response.status === 200) {
-        // TODO: navigate to room chat
-        dispatch(selectRoom({ roomId: response.data._id, partnerId: userId }))
+        // navigate to chat
+        dispatch(selectedRoom({ roomId: response.data._id, recipient }))
       } else {
-        dispatch(selectRoom({ type: userId }))
+        // new chat
+        dispatch(selectedRoom({ roomId: null, recipient }))
       }
+      handleCloseSearchAndClearInput()
     } catch (error) {
       console.error(error)
     }
@@ -61,7 +68,7 @@ const SearchResult: React.FC<Props> = ({ searchTerm }) => {
   return (
     <div>
       <TabGroup onChange={index => setActiveTab(index)}>
-        <TabList className="flex">
+        <TabList className="flex px-2 gap-2">
           <Tab className="flex-1">
             {({ hover, selected }) => (
               <span
@@ -99,10 +106,10 @@ const SearchResult: React.FC<Props> = ({ searchTerm }) => {
         </TabList>
         <TabPanels>
           <TabPanel className="pt-2  overflow-hidden">
-            {peoples.map((people: any) => {
+            {peoples.map((people: UserType) => {
               return (
                 <div
-                  onClick={() => handleSelectRooms(people?._id)}
+                  onClick={() => handleSelectRooms(people)}
                   key={people?._id}
                   className="hover:bg-grey-200 dark:hover:bg-grey-800 cursor-pointer"
                 >

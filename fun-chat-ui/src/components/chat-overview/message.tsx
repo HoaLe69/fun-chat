@@ -6,23 +6,22 @@ import UserAvatar from 'components/user-avatar'
 
 import ReactionPicker from 'components/reaction-picker'
 import ContextualMenu from 'components/contextual-menu'
-import { useAppSelector } from 'hooks'
-import { userSelector } from 'redux/user.store'
 
 type MessageProps = MessageType & {
-  picture?: string
-  name?: string
+  picture: string | null
+  ownerName: string | null
+  userLoginId: string | null
 }
 
 const Message: React.FC<MessageProps> = ({
-  userId,
-  name,
-  content,
+  ownerId,
+  text,
+  ownerName,
   picture,
   createdAt,
+  userLoginId,
 }) => {
-  const user = useAppSelector(userSelector.selectUser)
-  const isCurrentUser = user._id === userId
+  const isCurrentUser = userLoginId === ownerId
   const fallbackImg = 'https://placehold.co/600x400.png'
 
   const renderTextMessage = () => (
@@ -34,7 +33,7 @@ const Message: React.FC<MessageProps> = ({
           : 'bg-grey-200 dark:bg-grey-800 rounded-br-[18px] rounded-bl-sm',
       )}
     >
-      <p className="text-sm">{content}</p>
+      <p className="text-sm">{text}</p>
     </div>
   )
 
@@ -54,7 +53,7 @@ const Message: React.FC<MessageProps> = ({
           {!isCurrentUser && (
             <div className="mr-2">
               <UserAvatar
-                alt={name ?? 'invidual image'}
+                alt={ownerName ?? 'invidual image'}
                 src={picture ?? fallbackImg}
               />
             </div>

@@ -1,4 +1,5 @@
-import { MessageIcon } from '../icons'
+import { MessageIcon } from 'components/icons'
+
 const Empty = ({ content }: { content: string }) => {
   return (
     <div className="flex flex-col items-center gap-4">

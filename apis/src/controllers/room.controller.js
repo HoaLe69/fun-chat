@@ -15,7 +15,7 @@ const roomController = {
     try {
       const rooms = await Room.find({
         members: req.params.userId,
-      })
+      }).sort({ "latestMessage.createdAt": -1 })
       return res.status(200).json(rooms)
     } catch (err) {
       console.log(err)

@@ -1,22 +1,22 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { apiClient } from './apiClient'
 
-export const createRoomAsync = createAsyncThunk<
-  any,
-  {
-    room: {
-      members: Array<{ userId: string | null; display_name: string | null }>
-      status: string
-    }
+export const createRoomAsync = async ({
+  room,
+}: {
+  room: {
+    members: Array<string>
+    status: string
+    latestMessage: string
   }
->('/room/create', async ({ room }) => {
+}) => {
   try {
     const res = await apiClient.post('/room/create', { ...room })
-    return res.data
+    return res
   } catch (err) {
     console.log(err)
   }
-})
+}
 
 export const fetchListRoomAsync = createAsyncThunk<
   any,

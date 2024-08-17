@@ -2,9 +2,9 @@ import { createAsyncThunk } from '@reduxjs/toolkit'
 import { apiClient } from './apiClient'
 
 type MessageRequest = {
-  channel_id: string
-  userId: string | null
-  content: string
+  roomId: string
+  ownerId: string | null
+  text: string
 }
 
 export const fetchListMessageAsync = createAsyncThunk<

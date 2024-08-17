@@ -7,18 +7,18 @@ const messageSchema = new Schema(
       type: String,
       required: [true, "Message is require"],
     },
-    room_id: {
+    roomId: {
       type: String,
       required: true,
     },
-    owner_id: {
+    ownerId: {
       type: String,
       required: [true, "UserId is require"],
     },
     react: {
       type: [
         {
-          owner_id: { type: String, required: true },
+          ownerId: { type: String, required: true },
           emoji: { type: String, required: true },
         },
       ],

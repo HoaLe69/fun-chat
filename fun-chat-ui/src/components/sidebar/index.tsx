@@ -13,8 +13,9 @@ const Sidebar = (): JSX.Element => {
   const handleStartingSearch = () => {
     setOpenSearch(true)
   }
-  const handleEndSearch = () => {
+  const handleCloseSearchAndClearInput = () => {
     setOpenSearch(false)
+    setSearchValue('')
   }
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value)
@@ -26,7 +27,7 @@ const Sidebar = (): JSX.Element => {
         <div className="flex">
           {openSearch ? (
             <span
-              onClick={handleEndSearch}
+              onClick={handleCloseSearchAndClearInput}
               className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-grey-200 dark:hover:bg-grey-800 cursor-pointer text-grey-950 dark:text-grey-50"
             >
               <ArrowLeftIcon />
@@ -54,7 +55,10 @@ const Sidebar = (): JSX.Element => {
       <div className="flex-1 overflow-y-auto relative">
         {openSearch ? (
           <div className="search absolute inset-0">
-            <SearchResult searchTerm={searchValue} />
+            <SearchResult
+              searchTerm={searchValue}
+              handleCloseSearchAndClearInput={handleCloseSearchAndClearInput}
+            />
           </div>
         ) : (
           <RoomChats />

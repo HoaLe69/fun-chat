@@ -12,14 +12,17 @@ export type UserType = {
 }
 export type RoomChatType = {
   _id: string
-  latest_message: string
+  latestMessage: {
+    text: string
+    createdAt: string
+  }
   members?: Array<string>
   status?: string
 }
 
 export type MessageType = {
   _id?: string
-  userId: string
-  content: string
+  ownerId: string
+  text: string
   createdAt: string
 }
