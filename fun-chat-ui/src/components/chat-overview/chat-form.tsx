@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react'
 import classNames from 'classnames'
 import { SendIcon, LaughIcon, PlusCircleIcon } from 'components/icons'
-import useDebounce from 'hooks/useDebounce'
 import useSocket from 'hooks/useSocket'
 import { createRoomAsync } from 'api/room.api'
 import { createMessageAsync } from 'api/message.api'
@@ -59,18 +58,37 @@ const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
     }
   }
 
-  const debounceValue = useDebounce(textMessage, 200)
+  const startWithExistChat = async () => {
+    try {
+      if (!roomId) return
+      await addNewMessage(roomId)
+      sendMessage({
+        destination: 'room:sendMessage',
+        data: { roomId, ownerId: userLogin?._id, text: textMessage },
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   const resetForm = () => {
     setTextMessage('')
     setIsActiveSendBtn(false)
+    setTimeout(() => {
+      const refElement = refInput.current
+      if (refElement) {
+        refElement.focus()
+      }
+    }, 0)
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (!debounceValue) return
+    if (!textMessage) return
     if (!roomId) {
       await startWithNewChat()
+    } else {
+      startWithExistChat()
     }
     resetForm()
   }

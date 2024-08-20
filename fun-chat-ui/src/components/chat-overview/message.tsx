@@ -22,6 +22,7 @@ const Message: React.FC<MessageProps> = ({
   userLoginId,
 }) => {
   const isCurrentUser = userLoginId === ownerId
+
   const fallbackImg = 'https://placehold.co/600x400.png'
 
   const renderTextMessage = () => (

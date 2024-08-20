@@ -13,7 +13,6 @@ const Main = (): JSX.Element => {
       socket.emit('join', userLogin?._id)
     }
     return () => {
-      console.log('user leave them room')
       socket.emit('leave', userLogin?._id)
     }
   }, [])

@@ -30,6 +30,9 @@ const RoomChats: React.FC = () => {
     socket.on('room:getNewChatInfo', room => {
       dispatch(addRoomChat(room))
     })
+    return () => {
+      socket.off('room:getNewChatInfo')
+    }
   }, [])
 
   useEffect(() => {

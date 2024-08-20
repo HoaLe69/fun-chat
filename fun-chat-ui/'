@@ -17,8 +17,16 @@ const MessageContainer = (): JSX.Element => {
   const { socket } = useSocket()
 
   const roomSelectedId = useAppSelector(roomSelector.selectRoomId)
+  const stackRooms = []
   const recipient = useAppSelector(roomSelector.selectRoomRecipient)
   const userLogin = useAppSelector(userSelector.selectUser)
+
+  useEffect(() => {
+    if (roomSelectedId) {
+      stackRooms.push(roomSelectedId)
+    }
+  }, [roomSelectedId])
+  console.log(stackRooms)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,12 +44,7 @@ const MessageContainer = (): JSX.Element => {
 
   useEffect(() => {
     if (roomSelectedId) {
-      console.log(`user join to room ${roomSelectedId}`)
       socket.emit('join', roomSelectedId)
-    }
-    return () => {
-      console.log(`user left room ${roomSelectedId}`)
-      socket.emit('leave', roomSelectedId)
     }
   }, [roomSelectedId])
 
@@ -51,9 +54,6 @@ const MessageContainer = (): JSX.Element => {
         //@ts-ignore
         setMessages(pre => [...pre, msg])
       })
-    }
-    return () => {
-      socket.off('room:getMessage')
     }
   }, [roomSelectedId])
 
