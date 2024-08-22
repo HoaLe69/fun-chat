@@ -36,11 +36,11 @@ const roomSlice = createSlice({
     // TODO: remove @ts-ignore
     updateLatestMessage: (state, action) => {
       const _rooms = [...state.fetchList.rooms]
-      const { room_id, latest_message } = action.payload
+      const { roomId, latestMessage } = action.payload
       // @ts-ignore
       state.fetchList.rooms = _rooms.map(room => {
         // @ts-ignore
-        return room?._id === room_id ? { ...room, latest_message } : room
+        return room?._id === roomId ? { ...room, latestMessage } : room
       })
     },
     addRoomChat(state, action) {

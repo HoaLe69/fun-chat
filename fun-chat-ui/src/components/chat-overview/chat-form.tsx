@@ -5,7 +5,11 @@ import useSocket from 'hooks/useSocket'
 import { createRoomAsync } from 'api/room.api'
 import { createMessageAsync } from 'api/message.api'
 import { userSelector } from 'redux/user.store'
-import { addRoomChat, selectedRoomId } from 'redux/room.store'
+import {
+  addRoomChat,
+  selectedRoomId,
+  updateLatestMessage,
+} from 'redux/room.store'
 import { useAppDispatch, useAppSelector } from 'hooks'
 import { STATUS_CODES } from 'const'
 
@@ -29,7 +33,8 @@ const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
       text: textMessage,
       roomId,
     }
-    await createMessageAsync(message)
+    const msg = await createMessageAsync(message)
+    return msg?.data
   }
 
   const startWithNewChat = async () => {
@@ -61,11 +66,25 @@ const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
   const startWithExistChat = async () => {
     try {
       if (!roomId) return
-      await addNewMessage(roomId)
+      const msg = await addNewMessage(roomId)
       sendMessage({
-        destination: 'room:sendMessage',
-        data: { roomId, ownerId: userLogin?._id, text: textMessage },
+        destination: 'chat:sendMessage',
+        data: {
+          roomId,
+          ownerId: userLogin?._id,
+          text: textMessage,
+          recipientId,
+        },
       })
+      dispatch(
+        updateLatestMessage({
+          roomId: msg.roomId,
+          latestMessage: {
+            text: msg.text,
+            createdAt: msg.createdAt,
+          },
+        }),
+      )
     } catch (error) {
       console.log(error)
     }

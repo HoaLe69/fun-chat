@@ -48,10 +48,11 @@ const SearchResult: React.FC<Props> = ({
     try {
       const response = await apiClient.get('/room/check-room', {
         params: {
-          userId1: user?._id,
-          userId2: recipient?._id,
+          senderId: user?._id,
+          recipientId: recipient?._id,
         },
       })
+      console.log({ response })
       if (response.status === 200) {
         // navigate to chat
         dispatch(selectedRoom({ roomId: response.data._id, recipient }))

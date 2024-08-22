@@ -6,8 +6,8 @@ import type { MessageType } from 'lib/app.type'
 import { userSelector } from 'redux/user.store'
 import { useState, useEffect } from 'react'
 
-import { useAppSelector } from 'hooks'
-import { roomSelector } from 'redux/room.store'
+import { useAppSelector, useAppDispatch } from 'hooks'
+import { roomSelector, updateLatestMessage } from 'redux/room.store'
 
 import useSocket from 'hooks/useSocket'
 import { apiClient } from 'api/apiClient'
@@ -15,6 +15,7 @@ import { apiClient } from 'api/apiClient'
 const MessageContainer = (): JSX.Element => {
   const [messages, setMessages] = useState([])
   const { socket } = useSocket()
+  const dispatch = useAppDispatch()
 
   const roomSelectedId = useAppSelector(roomSelector.selectRoomId)
   const recipient = useAppSelector(roomSelector.selectRoomRecipient)
@@ -31,6 +32,7 @@ const MessageContainer = (): JSX.Element => {
         console.log(error)
       }
     }
+    if (!roomSelectedId) setMessages([])
     if (roomSelectedId) fetchData()
   }, [roomSelectedId])
 
@@ -47,13 +49,22 @@ const MessageContainer = (): JSX.Element => {
 
   useEffect(() => {
     if (roomSelectedId) {
-      socket.on('room:getMessage', msg => {
+      socket.on('chat:getMessage', msg => {
         //@ts-ignore
         setMessages(pre => [...pre, msg])
+        // dispatch(
+        //   updateLatestMessage({
+        //     roomId: msg.roomId,
+        //     latestMessage: {
+        //       text: msg.text,
+        //       createdAt: msg.createdAt,
+        //     },
+        //   }),
+        // )
       })
     }
     return () => {
-      socket.off('room:getMessage')
+      socket.off('chat:getMessage')
     }
   }, [roomSelectedId])
 

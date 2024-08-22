@@ -57,8 +57,7 @@ const RoomChat: React.FC<Props> = props => {
               {latestMessage?.text}
             </p>
             <p className="text-sm">
-              {/* {moment(latestMessage?.createdAt).format('LT')} */}
-              {moment(latestMessage?.createdAt).fromNow()}
+              {moment(latestMessage?.createdAt).format('LT')}
             </p>
           </div>
         </div>
