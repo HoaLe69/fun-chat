@@ -5,6 +5,8 @@ import { RootState } from './store'
 import { fetchListRoomAsync } from 'api/room.api'
 import type { UserType } from 'lib/app.type'
 
+const MAXIMUM_ROOM_AMOUNT = 3
+
 const initialState = {
   fetchList: {
     loading: false,
@@ -19,6 +21,7 @@ const initialState = {
       email: null,
     },
   },
+  selectedRoomList: [],
 }
 
 const roomSlice = createSlice({
@@ -46,13 +49,27 @@ const roomSlice = createSlice({
     addRoomChat(state, action) {
       state.fetchList.rooms = [action.payload, ...state.fetchList.rooms]
     },
+    addSelectedRoomToStack(state, action) {
+      const { roomId } = action.payload
+      const currentListRoomSelected = state.selectedRoomList
+      const isRoomAlreadyExist = currentListRoomSelected.some(
+        currentRoomId => currentRoomId === roomId,
+      )
+      if (isRoomAlreadyExist) return
+      if (currentListRoomSelected.length >= MAXIMUM_ROOM_AMOUNT) {
+        currentListRoomSelected.shift() // remove first room
+        state.selectedRoomList = [...currentListRoomSelected, roomId]
+      } else {
+        state.selectedRoomList = [...currentListRoomSelected, roomId]
+      }
+    },
     // detect user is typing
-    updateStatusRoom(state, action) {
+    updateStatusOfLatestMessage(state, action) {
       const _rooms = [...state.fetchList.rooms]
-      const { room_id, isTyping, userId } = action.payload
+      const { roomId, isTyping, userId } = action.payload
       state.fetchList.rooms = _rooms.map(room => {
-        return room?._id === room_id
-          ? { ...room, status: { userId, isTyping } }
+        return room?._id === roomId
+          ? { ...room, t: { userId, isTyping } }
           : room
       })
     },
@@ -80,13 +97,16 @@ export const roomSelector = {
   selectListRoomsLoading: (state: RootState) => state.room.fetchList.loading,
   selectRoomId: (state: RootState) => state.room.selectedRoom.id,
   selectRoomRecipient: (state: RootState) => state.room.selectedRoom.recipient,
+  selectListRoomAlreadyVisited: (state: RootState) =>
+    state.room.selectedRoomList,
 }
 export const {
   selectedRoom,
   selectedRoomId,
   updateLatestMessage,
-  updateStatusRoom,
+  updateStatusOfLatestMessage,
   addRoomChat,
+  addSelectedRoomToStack,
 } = roomSlice.actions
 
 export default roomSlice.reducer

@@ -28,7 +28,7 @@ const Message: React.FC<MessageProps> = ({
   const renderTextMessage = () => (
     <div
       className={classNames(
-        'px-4 py-2 rounded-t-[18px] max-w-[60%]',
+        'px-4 py-2 rounded-t-[18px] max-w-[80%]',
         isCurrentUser
           ? 'bg-blue-100 dark:bg-blue-900 rounded-bl-[18px] rounded-br-sm'
           : 'bg-grey-200 dark:bg-grey-800 rounded-br-[18px] rounded-bl-sm',

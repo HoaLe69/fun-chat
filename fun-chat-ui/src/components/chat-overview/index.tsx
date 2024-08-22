@@ -7,7 +7,7 @@ import { userSelector } from 'redux/user.store'
 import { useState, useEffect } from 'react'
 
 import { useAppSelector, useAppDispatch } from 'hooks'
-import { roomSelector, updateLatestMessage } from 'redux/room.store'
+import { roomSelector } from 'redux/room.store'
 
 import useSocket from 'hooks/useSocket'
 import { apiClient } from 'api/apiClient'
@@ -36,31 +36,22 @@ const MessageContainer = (): JSX.Element => {
     if (roomSelectedId) fetchData()
   }, [roomSelectedId])
 
-  useEffect(() => {
-    if (roomSelectedId) {
-      console.log(`user join to room ${roomSelectedId}`)
-      socket.emit('join', roomSelectedId)
-    }
-    return () => {
-      console.log(`user left room ${roomSelectedId}`)
-      socket.emit('leave', roomSelectedId)
-    }
-  }, [roomSelectedId])
+  // useEffect(() => {
+  //   if (roomSelectedId) {
+  //     console.log(`user join to room ${roomSelectedId}`)
+  //     socket.emit('join', roomSelectedId)
+  //   }
+  //   return () => {
+  //     console.log(`user left room ${roomSelectedId}`)
+  //     socket.emit('leave', roomSelectedId)
+  //   }
+  // }, [roomSelectedId])
 
   useEffect(() => {
     if (roomSelectedId) {
       socket.on('chat:getMessage', msg => {
         //@ts-ignore
         setMessages(pre => [...pre, msg])
-        // dispatch(
-        //   updateLatestMessage({
-        //     roomId: msg.roomId,
-        //     latestMessage: {
-        //       text: msg.text,
-        //       createdAt: msg.createdAt,
-        //     },
-        //   }),
-        // )
       })
     }
     return () => {

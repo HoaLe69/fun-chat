@@ -5,7 +5,7 @@ import RoomChat from './room'
 
 import classNames from 'classnames'
 import { useAppSelector, useAppDispatch } from 'hooks'
-import { roomSelector } from 'redux/room.store'
+import { roomSelector, updateStatusOfLatestMessage } from 'redux/room.store'
 import { useEffect } from 'react'
 import { fetchListRoomAsync } from 'api/room.api'
 import { userSelector } from 'redux/user.store'
@@ -23,6 +23,9 @@ const RoomChatSpam = () => {
 const RoomChats: React.FC = () => {
   const roomChats = useAppSelector(roomSelector.selectListRooms)
   const user = useAppSelector(userSelector.selectUser)
+  const roomSelectedList = useAppSelector(
+    roomSelector.selectListRoomAlreadyVisited,
+  )
   const dispatch = useAppDispatch()
   const { socket } = useSocket()
 
@@ -38,6 +41,35 @@ const RoomChats: React.FC = () => {
   useEffect(() => {
     if (user?._id) dispatch(fetchListRoomAsync({ userLoginId: user?._id }))
   }, [user])
+
+  useEffect(() => {
+    socket.on('chat:typingStart', msg => {
+      const { roomId, userId } = msg
+      dispatch(updateStatusOfLatestMessage({ roomId, userId, isTyping: true }))
+    })
+    socket.on('chat:typingStop', msg => {
+      const { roomId, userId } = msg
+      dispatch(updateStatusOfLatestMessage({ roomId, userId, isTyping: false }))
+    })
+    return () => {
+      socket.off('chat:typingStart')
+      socket.off('chat:typingStop')
+    }
+  }, [])
+
+  useEffect(() => {
+    roomSelectedList.forEach(room => {
+      socket.emit('join', room)
+      console.log(`you joined into room ${room}`)
+    })
+
+    return () => {
+      roomSelectedList.forEach(room => {
+        socket.emit('leave', room)
+        console.log(`you left room  ${room}`)
+      })
+    }
+  }, [roomSelectedList])
 
   return (
     <div className="h-full">

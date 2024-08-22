@@ -4,16 +4,22 @@ import UserAvatar from 'components/user-avatar'
 
 import { useEffect, useState } from 'react'
 import { fetchUser } from 'api/user.api'
-import { selectedRoom } from 'redux/room.store'
+import { addSelectedRoomToStack, selectedRoom } from 'redux/room.store'
 import { useAppDispatch } from 'hooks'
 import moment from 'moment'
 
+import TypingIndicator from 'components/common/typing-indicator'
+
 type Props = RoomChatType & {
   userLoginId: string | null
+  t?: {
+    userId?: string
+    isTyping?: boolean
+  }
 }
 
 const RoomChat: React.FC<Props> = props => {
-  const { _id, members, userLoginId, latestMessage } = props
+  const { _id, members, userLoginId, latestMessage, t } = props
   const [recipient, setRecipient] = useState<UserType>()
 
   const recipientId = members?.find(m => m !== userLoginId)
@@ -32,6 +38,12 @@ const RoomChat: React.FC<Props> = props => {
 
   const handleSelectRoom = () => {
     dispatch(selectedRoom({ roomId: _id, recipient }))
+    dispatch(addSelectedRoomToStack({ roomId: _id }))
+  }
+  const renderLatestMessage = () => {
+    return (
+      <p className="text-sm max-w-44 truncate  flex-1">{latestMessage?.text}</p>
+    )
   }
   return (
     <li
@@ -53,9 +65,15 @@ const RoomChat: React.FC<Props> = props => {
             <span className="font-bold">{recipient?.display_name}</span>
           )}
           <div className="flex items-center text-grey-500 justify-between">
-            <p className="text-sm  max-w-44 truncate  flex-1">
-              {latestMessage?.text}
-            </p>
+            {t?.isTyping ? (
+              t.userId !== userLoginId ? (
+                <TypingIndicator />
+              ) : (
+                renderLatestMessage()
+              )
+            ) : (
+              renderLatestMessage()
+            )}
             <p className="text-sm">
               {moment(latestMessage?.createdAt).format('LT')}
             </p>

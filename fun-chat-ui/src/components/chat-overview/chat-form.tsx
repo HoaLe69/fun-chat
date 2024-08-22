@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import classNames from 'classnames'
 import { SendIcon, LaughIcon, PlusCircleIcon } from 'components/icons'
 import useSocket from 'hooks/useSocket'
@@ -12,6 +12,7 @@ import {
 } from 'redux/room.store'
 import { useAppDispatch, useAppSelector } from 'hooks'
 import { STATUS_CODES } from 'const'
+import useDebounce from 'hooks/useDebounce'
 
 type Props = {
   roomId: string | null
@@ -21,11 +22,14 @@ type Props = {
 
 const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
   const dispatch = useAppDispatch()
-  const userLogin = useAppSelector(userSelector.selectUser)
+  const { sendMessage } = useSocket()
   const [isActiveSendBtn, setIsActiveSendBtn] = useState<boolean>(false)
   const [textMessage, setTextMessage] = useState<string>('')
-  const { sendMessage } = useSocket()
   const refInput = useRef<HTMLInputElement>(null)
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const userLogin = useAppSelector(userSelector.selectUser)
+
+  const debounceTextMessage = useDebounce(textMessage, 500)
 
   const addNewMessage = async (roomId: string) => {
     const message = {
@@ -94,11 +98,8 @@ const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
     setTextMessage('')
     setIsActiveSendBtn(false)
     setTimeout(() => {
-      const refElement = refInput.current
-      if (refElement) {
-        refElement.focus()
-      }
-    }, 0)
+      console.log('user stop to typing')
+    }, 1000)
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -112,13 +113,47 @@ const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
     resetForm()
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target
     setTextMessage(value)
     if (!isActiveSendBtn) {
       setIsActiveSendBtn(true)
     }
+    if (!value) setIsActiveSendBtn(false)
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      sendMessage({
+        destination: 'chat:typingStop',
+        data: {
+          roomId,
+          userId: userLoginId,
+        },
+      })
+    }, 1000)
   }
+
+  // clearTimeout and state when change room
+  useEffect(() => {
+    setTextMessage('')
+    setIsActiveSendBtn(false)
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current)
+      }
+    }
+  }, [roomId])
+
+  useEffect(() => {
+    if (!debounceTextMessage) return
+    sendMessage({
+      destination: 'chat:typingStart',
+      data: { roomId, userId: userLoginId },
+    })
+  }, [debounceTextMessage])
 
   return (
     <div className="border-t-2 bg-grey-50 dark:bg-grey-900 border-grey-300 dark:border-grey-700 h-14 py-1">
@@ -140,7 +175,7 @@ const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
                 ref={refInput}
                 value={textMessage}
                 autoComplete="off"
-                onChange={handleChange}
+                onChange={handleInputChange}
                 className="h-full flex-1 dark:bg-grey-900 outline-none border-none pr-2"
                 name="message"
                 id="message"
