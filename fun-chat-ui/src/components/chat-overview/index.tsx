@@ -13,9 +13,8 @@ import useSocket from 'hooks/useSocket'
 import { apiClient } from 'api/apiClient'
 
 const MessageContainer = (): JSX.Element => {
-  const [messages, setMessages] = useState([])
+  const [messages, setMessages] = useState<MessageType[]>([])
   const { socket } = useSocket()
-  const dispatch = useAppDispatch()
 
   const roomSelectedId = useAppSelector(roomSelector.selectRoomId)
   const recipient = useAppSelector(roomSelector.selectRoomRecipient)
@@ -53,9 +52,21 @@ const MessageContainer = (): JSX.Element => {
         //@ts-ignore
         setMessages(pre => [...pre, msg])
       })
+      socket.on('chat:getReactIcon', msg => {
+        const { messageId, emoji, ownerId } = msg
+        setMessages(pre => {
+          const _messages = pre.map(msg => {
+            if (msg._id === messageId)
+              return { ...msg, react: [...msg.react, { ownerId, emoji }] }
+            return msg
+          })
+          return _messages
+        })
+      })
     }
     return () => {
       socket.off('chat:getMessage')
+      socket.off('chat:getReactIcon')
     }
   }, [roomSelectedId])
 
@@ -83,7 +94,7 @@ const MessageContainer = (): JSX.Element => {
           </div>
         </div>
         <div className="flex-1 flex flex-col justify-end h-[calc(100vh-68px)]">
-          <div className="h-full overflow-y-auto overflow-x-hidden">
+          <div className="h-full overflow-y-auto overflow-x-hidden px-2">
             <>
               {messages?.length > 0 ? (
                 <>
@@ -91,8 +102,10 @@ const MessageContainer = (): JSX.Element => {
                     <Message
                       key={index}
                       userLoginId={userLogin?._id}
-                      picture={recipient?.picture}
-                      ownerName={recipient?.display_name}
+                      recipient={{
+                        picture: recipient?.picture,
+                        displayName: recipient?.display_name,
+                      }}
                       {...message}
                     />
                   ))}

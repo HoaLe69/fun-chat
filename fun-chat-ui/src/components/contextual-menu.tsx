@@ -19,7 +19,10 @@ const ContextualMenu = () => {
               <ThreeDotVerticalIcon />
             </span>
           </PopoverButton>
-          <PopoverPanel anchor="top start" className="shadow-xl rounded-2xl">
+          <PopoverPanel
+            anchor="top start"
+            className="[--anchor-gap:10px] shadow-xl rounded-2xl"
+          >
             <ul className="bg-grey-50 dark:bg-grey-900 text-grey-950 dark:text-grey-50 w-60 rounded-2xl overflow-hidden">
               <li className={classes}>
                 <span className="mr-4">

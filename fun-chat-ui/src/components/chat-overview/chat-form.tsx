@@ -97,9 +97,6 @@ const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
   const resetForm = () => {
     setTextMessage('')
     setIsActiveSendBtn(false)
-    setTimeout(() => {
-      console.log('user stop to typing')
-    }, 1000)
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

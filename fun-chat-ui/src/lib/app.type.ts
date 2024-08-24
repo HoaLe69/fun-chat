@@ -24,5 +24,7 @@ export type MessageType = {
   _id?: string
   ownerId: string
   text: string
+  roomId: string
   createdAt: string
+  react: Array<{ ownerId: string; emoji: string }>
 }

@@ -1,8 +1,53 @@
-import { Popover, PopoverPanel, PopoverButton } from '@headlessui/react'
+import {
+  Popover,
+  CloseButton,
+  PopoverPanel,
+  PopoverButton,
+} from '@headlessui/react'
 import classNames from 'classnames'
 import { LaughSmallIcon } from './icons'
+import useSocket from 'hooks/useSocket'
+import { apiClient } from 'api/apiClient'
 
-const ReactionPicker = (): JSX.Element => {
+type Props = {
+  messageId?: string
+  userLoginId: string | null
+  roomId: string | null
+}
+
+const ReactionPicker: React.FC<Props> = ({
+  messageId,
+  userLoginId,
+  roomId,
+}) => {
+  const reactIcons = ['❤️', '👍', '👎', '😂', '😮', '😞']
+  const { sendMessage } = useSocket()
+  const updateMessage = async (icon: string) => {
+    try {
+      await apiClient.patch(`/message/react/${messageId}`, {
+        react: {
+          ownerId: userLoginId,
+          emoji: icon,
+        },
+      })
+    } catch (error) {
+      console.error(error)
+    }
+  }
+  const handlePickReactIcon = async (icon: string) => {
+    if (!icon) return
+    sendMessage({
+      destination: 'chat:sendReactIcon',
+      data: {
+        roomId,
+        messageId,
+        userLoginId,
+        icon,
+      },
+    })
+    await updateMessage(icon)
+  }
+
   return (
     <Popover>
       {({ open }) => (
@@ -17,15 +62,22 @@ const ReactionPicker = (): JSX.Element => {
               <LaughSmallIcon />
             </span>
           </PopoverButton>
-          <PopoverPanel anchor="top" className="shadow-xl rounded-2xl">
+          <PopoverPanel
+            anchor="top"
+            className=" [--anchor-gap:10px] shadow-xl mb-9 rounded-2xl"
+          >
             <div className="p-2 rounded-2xl bg-grey-50  dark:bg-grey-900">
               <ul className="flex items-center">
-                <li className="reaction_icon">❤️</li>
-                <li className="reaction_icon">👍</li>
-                <li className="reaction_icon">👎</li>
-                <li className="reaction_icon">😂</li>
-                <li className="reaction_icon">😮</li>
-                <li className="reaction_icon">😞</li>
+                {reactIcons.map(icon => (
+                  <CloseButton key={icon}>
+                    <li
+                      onClick={() => handlePickReactIcon(icon)}
+                      className="reaction_icon"
+                    >
+                      {icon}
+                    </li>
+                  </CloseButton>
+                ))}
               </ul>
             </div>
           </PopoverPanel>
