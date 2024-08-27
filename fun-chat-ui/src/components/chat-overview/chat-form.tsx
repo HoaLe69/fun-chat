@@ -74,9 +74,7 @@ const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
       sendMessage({
         destination: 'chat:sendMessage',
         data: {
-          roomId,
-          ownerId: userLogin?._id,
-          text: textMessage,
+          ...msg,
           recipientId,
         },
       })
