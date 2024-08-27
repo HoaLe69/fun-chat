@@ -52,10 +52,15 @@ const SearchResult: React.FC<Props> = ({
           recipientId: recipient?._id,
         },
       })
-      console.log({ response })
       if (response.status === 200) {
         // navigate to chat
-        dispatch(selectedRoom({ roomId: response.data._id, recipient }))
+        dispatch(
+          selectedRoom({
+            roomId: response.data._id,
+            recipient,
+            latestMessage: response.data.latestMessage,
+          }),
+        )
       } else {
         // new chat
         dispatch(selectedRoom({ roomId: null, recipient }))

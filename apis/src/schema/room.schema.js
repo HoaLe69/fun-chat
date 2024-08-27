@@ -1,7 +1,7 @@
 const mongoose = require("mongoose")
 const { Schema } = mongoose
 
-const latestMessageScheam = new Schema(
+const latestMessageSchema = new Schema(
   {
     text: String,
     createdAt: Date,
@@ -12,7 +12,7 @@ const latestMessageScheam = new Schema(
 const roomSchema = new Schema(
   {
     latestMessage: {
-      type: latestMessageScheam,
+      type: latestMessageSchema,
       default: null,
     },
     members: {

@@ -23,6 +23,7 @@ const RoomChatSpam = () => {
 const RoomChats: React.FC = () => {
   const roomChats = useAppSelector(roomSelector.selectListRooms)
   const user = useAppSelector(userSelector.selectUser)
+
   const roomSelectedList = useAppSelector(
     roomSelector.selectListRoomAlreadyVisited,
   )

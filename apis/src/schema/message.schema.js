@@ -1,6 +1,14 @@
 const mongoose = require("mongoose")
 const { Schema } = mongoose
 
+const reactIconSchema = new Schema(
+  {
+    ownerId: { type: String, required: true },
+    emoji: { type: String, required: true },
+  },
+  { _id: false },
+)
+
 const messageSchema = new Schema(
   {
     text: {
@@ -15,13 +23,12 @@ const messageSchema = new Schema(
       type: String,
       required: [true, "UserId is require"],
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
     react: {
-      type: [
-        {
-          ownerId: { type: String, required: true },
-          emoji: { type: String, required: true },
-        },
-      ],
+      type: [reactIconSchema],
       default: [],
     },
   },

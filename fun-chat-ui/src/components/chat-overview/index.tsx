@@ -6,7 +6,7 @@ import type { MessageType } from 'lib/app.type'
 import { userSelector } from 'redux/user.store'
 import { useState, useEffect } from 'react'
 
-import { useAppSelector, useAppDispatch } from 'hooks'
+import { useAppSelector } from 'hooks'
 import { roomSelector } from 'redux/room.store'
 
 import useSocket from 'hooks/useSocket'
@@ -35,17 +35,6 @@ const MessageContainer = (): JSX.Element => {
     if (roomSelectedId) fetchData()
   }, [roomSelectedId])
 
-  // useEffect(() => {
-  //   if (roomSelectedId) {
-  //     console.log(`user join to room ${roomSelectedId}`)
-  //     socket.emit('join', roomSelectedId)
-  //   }
-  //   return () => {
-  //     console.log(`user left room ${roomSelectedId}`)
-  //     socket.emit('leave', roomSelectedId)
-  //   }
-  // }, [roomSelectedId])
-
   useEffect(() => {
     if (roomSelectedId) {
       socket.on('chat:getMessage', msg => {
@@ -63,10 +52,20 @@ const MessageContainer = (): JSX.Element => {
           return _messages
         })
       })
+      socket.on('chat:getRecallMessage', msg => {
+        const { messageId, isDeleted } = msg
+        setMessages(pre =>
+          pre.map(msg => {
+            if (msg._id === messageId) return { ...msg, isDeleted }
+            return msg
+          }),
+        )
+      })
     }
     return () => {
       socket.off('chat:getMessage')
       socket.off('chat:getReactIcon')
+      socket.off('chat:getRecallMessage')
     }
   }, [roomSelectedId])
 
@@ -103,6 +102,7 @@ const MessageContainer = (): JSX.Element => {
                       key={index}
                       userLoginId={userLogin?._id}
                       recipient={{
+                        _id: recipient?._id,
                         picture: recipient?.picture,
                         displayName: recipient?.display_name,
                       }}

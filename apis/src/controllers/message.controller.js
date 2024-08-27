@@ -7,8 +7,15 @@ const messageController = {
       const newMsg = await new Message(req.body).save()
       // update latest message
       await Room.findOneAndUpdate(
-        { _id: req.body.channel_id },
-        { $set: { latest_message: req.body.content } },
+        { _id: req.body.roomId },
+        {
+          $set: {
+            latestMessage: {
+              text: req.body.text,
+              createdAt: newMsg.createdAt,
+            },
+          },
+        },
         { new: true },
       )
       return res.status(200).json(newMsg)
@@ -16,12 +23,45 @@ const messageController = {
       console.log(err)
     }
   },
-  list: async (req, res) => {
+  dropReact: async (req, res) => {
     try {
-      const room_id = req.params.room_id
-      if (!room_id) return res.status(400).send("Invalid params ")
+      const reactMessage = req.body.react
+      const messageId = req.params.messageId
+      const msg = await Message.findOneAndUpdate(
+        { _id: messageId },
+        {
+          $push: { react: reactMessage },
+        },
+        { new: true },
+      )
+      return res.status(200).json(msg)
+    } catch (error) {
+      console.error(error)
+    }
+  },
+  recall: async (req, res) => {
+    try {
+      const messageId = req.params.messageId
+      const msg = await Message.findOneAndUpdate(
+        { _id: messageId },
+        {
+          $set: {
+            isDeleted: true,
+          },
+        },
+        { new: true },
+      )
+      return res.status(200).json(msg)
+    } catch (error) {
+      console.error(error)
+    }
+  },
+  getList: async (req, res) => {
+    try {
+      const roomId = req.params.roomId
+      if (!roomId) return res.status(400).send("Invalid params ")
       const messages = await Message.find({
-        room_id,
+        roomId,
       })
       return res.status(200).json(messages)
     } catch (err) {

@@ -39,22 +39,44 @@ const handleSocket = io => {
     })
 
     socket.on("chat:sendReactIcon", data => {
-      const { messageId, roomId, icon, ownerId } = data
+      const { icon, roomId, ownerId, messageId } = data
       const message = {
-        messageId,
         ownerId,
+        messageId,
         emoji: icon,
       }
       io.to(roomId).emit("chat:getReactIcon", { ...message })
     })
 
-    socket.on("chat:recallMessage", data => {})
+    socket.on("chat:recallMessage", data => {
+      const { roomId, messageId, recipientId, isNotifyRecipient, modifyTime } =
+        data
+      console.log({ data })
+      io.to(roomId).emit("chat:getRecallMessage", {
+        messageId,
+        isDeleted: true,
+      })
+      if (isNotifyRecipient) {
+        io.to(recipientId).emit("room:getIncomingMessages", {
+          text: "Message was recall",
+          createdAt: modifyTime,
+          roomId,
+        })
+      }
+    })
     socket.on("chat:sendMessage", data => {
+      console.log({ data })
       const message = {
         ...data,
       }
-      io.to(data.recipientId).emit("room:getIncomingMessages", { ...message })
-      io.to(data.roomId).emit("chat:getMessage", { ...message })
+      io.to(data.recipientId).emit("room:getIncomingMessages", {
+        text: message.text,
+        roomId: message.roomId,
+        createdAt: message.createdAt,
+      })
+      io.to(data.roomId).emit("chat:getMessage", {
+        ...message,
+      })
     })
   })
 }

@@ -21,10 +21,32 @@ const roomController = {
       console.log(err)
     }
   },
+  updateLatestMessage: async (req, res) => {
+    try {
+      const roomId = req.params.roomId
+
+      const latestMessage = {
+        ...req.body.latestMessage,
+      }
+
+      await Room.findOneAndUpdate(
+        { _id: roomId },
+        {
+          $set: {
+            latestMessage,
+          },
+        },
+      )
+      return res.status(204).send("ok")
+    } catch (error) {
+      console.error(error)
+    }
+  },
   checkRoomExist: async (req, res) => {
     try {
+      const { senderId, recipientId } = req.query
       const room = await Room.findOne({
-        members: { $all: req.query.members },
+        members: { $all: [senderId, recipientId] },
       })
       if (!room) return res.status(204).send("Not found")
       return res.status(200).json(room)

@@ -11,14 +11,16 @@ import { apiClient } from 'api/apiClient'
 
 type Props = {
   messageId?: string
-  userLoginId: string | null
+  createdAt?: string
   roomId: string | null
+  userLoginId: string | null
+  recipientId: string | null
 }
 
 const ReactionPicker: React.FC<Props> = ({
+  roomId,
   messageId,
   userLoginId,
-  roomId,
 }) => {
   const reactIcons = ['❤️', '👍', '👎', '😂', '😮', '😞']
   const { sendMessage } = useSocket()
@@ -34,18 +36,19 @@ const ReactionPicker: React.FC<Props> = ({
       console.error(error)
     }
   }
-  const handlePickReactIcon = async (icon: string) => {
+  const handleReactMessage = async (icon: string) => {
     if (!icon) return
+
+    await updateMessage(icon)
     sendMessage({
       destination: 'chat:sendReactIcon',
       data: {
+        icon,
         roomId,
         messageId,
-        userLoginId,
-        icon,
+        ownerId: userLoginId,
       },
     })
-    await updateMessage(icon)
   }
 
   return (
@@ -71,7 +74,7 @@ const ReactionPicker: React.FC<Props> = ({
                 {reactIcons.map(icon => (
                   <CloseButton key={icon}>
                     <li
-                      onClick={() => handlePickReactIcon(icon)}
+                      onClick={() => handleReactMessage(icon)}
                       className="reaction_icon"
                     >
                       {icon}

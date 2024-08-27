@@ -20,6 +20,10 @@ const initialState = {
       picture: null,
       email: null,
     },
+    latestMessage: {
+      text: null,
+      createdAt: null,
+    },
   },
   selectedRoomList: [],
 }
@@ -29,9 +33,10 @@ const roomSlice = createSlice({
   initialState,
   reducers: {
     selectedRoom: (state, action) => {
-      const { roomId, recipient } = action.payload
+      const { roomId, recipient, latestMessage } = action.payload
       state.selectedRoom.id = roomId
       state.selectedRoom.recipient = recipient
+      state.selectedRoom.latestMessage = latestMessage
     },
     selectedRoomId: (state, action) => {
       state.selectedRoom.id = action.payload
@@ -40,6 +45,7 @@ const roomSlice = createSlice({
     updateLatestMessage: (state, action) => {
       const _rooms = [...state.fetchList.rooms]
       const { roomId, latestMessage } = action.payload
+      state.selectedRoom.latestMessage = latestMessage
       // @ts-ignore
       state.fetchList.rooms = _rooms.map(room => {
         // @ts-ignore
@@ -99,6 +105,8 @@ export const roomSelector = {
   selectRoomRecipient: (state: RootState) => state.room.selectedRoom.recipient,
   selectListRoomAlreadyVisited: (state: RootState) =>
     state.room.selectedRoomList,
+  selectLatestMessageOfSelectdRoom: (state: RootState) =>
+    state.room.selectedRoom.latestMessage,
 }
 export const {
   selectedRoom,

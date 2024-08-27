@@ -26,5 +26,6 @@ export type MessageType = {
   text: string
   roomId: string
   createdAt: string
+  isDeleted?: boolean
   react: Array<{ ownerId: string; emoji: string }>
 }

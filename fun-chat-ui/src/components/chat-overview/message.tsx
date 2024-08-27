@@ -9,6 +9,7 @@ import ContextualMenu from 'components/contextual-menu'
 
 type MessageProps = MessageType & {
   recipient: {
+    _id: string | null
     picture: string | null
     displayName: string | null
   }
@@ -21,6 +22,7 @@ type ReactType = {
 }
 
 const combineDuplicateElement = (reacts: Array<ReactType>) => {
+  if (!reacts.length) return []
   const reactCollections: Record<
     string,
     {
@@ -48,18 +50,18 @@ const combineDuplicateElement = (reacts: Array<ReactType>) => {
 
 const Message: React.FC<MessageProps> = ({
   _id,
-  ownerId,
   text,
+  react,
+  roomId,
+  ownerId,
+  isDeleted,
   recipient,
   createdAt,
   userLoginId,
-  roomId,
-  react,
 }) => {
   const isCurrentUser = userLoginId === ownerId
 
   const fallbackImg = 'https://placehold.co/600x400.png'
-
   const renderTextMessage = () => (
     <div
       className={classNames(
@@ -69,7 +71,13 @@ const Message: React.FC<MessageProps> = ({
           : 'bg-grey-200 dark:bg-grey-800 rounded-br-[18px] rounded-bl-sm',
       )}
     >
-      <p className="text-sm">{text}</p>
+      <p className="text-sm">
+        {isDeleted ? (
+          <i className="text-grey-600">Message wall recall</i>
+        ) : (
+          text
+        )}
+      </p>
     </div>
   )
 
@@ -80,14 +88,15 @@ const Message: React.FC<MessageProps> = ({
       })}
     >
       <div className="flex items-center mb-1 gap-1">
-        {combineDuplicateElement(react).map((item, index) => (
-          <span
-            key={index}
-            className="px-2 py-1 text-[12px] rounded-md bg-grey-100 dark:bg-grey-900"
-          >
-            {item.emoji} {item.amount}
-          </span>
-        ))}
+        {!isDeleted &&
+          combineDuplicateElement(react).map((item, index) => (
+            <span
+              key={index}
+              className="px-2 py-1 text-[12px] rounded-md bg-grey-100 dark:bg-grey-900"
+            >
+              {item.emoji} {item.amount}
+            </span>
+          ))}
       </div>
       <div
         className={classNames('relative flex-1 flex items-center gap-2', {
@@ -103,12 +112,24 @@ const Message: React.FC<MessageProps> = ({
             />
           </div>
         )}
-        <ReactionPicker
-          messageId={_id}
-          userLoginId={userLoginId}
-          roomId={roomId}
-        />
-        <ContextualMenu />
+        {!isDeleted && (
+          <>
+            <ReactionPicker
+              roomId={roomId}
+              messageId={_id}
+              createdAt={createdAt}
+              userLoginId={userLoginId}
+              recipientId={recipient?._id}
+            />
+            <ContextualMenu
+              roomId={roomId}
+              messageId={_id}
+              createdAt={createdAt}
+              recipientId={recipient?._id}
+              isCurrentUser={isCurrentUser}
+            />
+          </>
+        )}
         <div className="flex-[1]" />
       </div>
       <div>

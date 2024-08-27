@@ -37,7 +37,7 @@ const RoomChat: React.FC<Props> = props => {
   }, [recipientId])
 
   const handleSelectRoom = () => {
-    dispatch(selectedRoom({ roomId: _id, recipient }))
+    dispatch(selectedRoom({ roomId: _id, recipient, latestMessage }))
     dispatch(addSelectedRoomToStack({ roomId: _id }))
   }
   const renderLatestMessage = () => {
