@@ -2,7 +2,7 @@ import Message from './message'
 import UserAvatar from 'components/user-avatar'
 import Empty from 'components/common/empty-sate'
 import ChatForm from './chat-form'
-import type { MessageType } from 'lib/app.type'
+import type { MessageType, UserType } from 'lib/app.type'
 import { userSelector } from 'redux/user.store'
 import { useState, useEffect } from 'react'
 
@@ -12,7 +12,7 @@ import { roomSelector } from 'redux/room.store'
 import useSocket from 'hooks/useSocket'
 import { apiClient } from 'api/apiClient'
 
-const MessageContainer = (): JSX.Element => {
+const MessageContainer: React.FC = () => {
   const [messages, setMessages] = useState<MessageType[]>([])
   const { socket } = useSocket()
 
@@ -38,8 +38,9 @@ const MessageContainer = (): JSX.Element => {
   useEffect(() => {
     if (roomSelectedId) {
       socket.on('chat:getMessage', msg => {
-        //@ts-ignore
-        setMessages(pre => [...pre, msg])
+        if (msg.roomId == roomSelectedId)
+          //@ts-ignore
+          setMessages(pre => [...pre, msg])
       })
       socket.on('chat:getReactIcon', msg => {
         const { messageId, emoji, ownerId } = msg
