@@ -4,11 +4,16 @@ import UserAvatar from 'components/user-avatar'
 
 import { useEffect, useState } from 'react'
 import { fetchUser } from 'api/user.api'
-import { addSelectedRoomToStack, selectedRoom } from 'redux/room.store'
-import { useAppDispatch } from 'hooks'
+import {
+  addSelectedRoomToStack,
+  roomSelector,
+  selectedRoom,
+} from 'redux/room.store'
+import { useAppDispatch, useAppSelector } from 'hooks'
 import moment from 'moment'
 
 import TypingIndicator from 'components/common/typing-indicator'
+import classNames from 'classnames'
 
 type Props = RoomChatType & {
   userLoginId: string | null
@@ -21,6 +26,8 @@ type Props = RoomChatType & {
 const RoomChat: React.FC<Props> = props => {
   const { _id, members, userLoginId, latestMessage, t } = props
   const [recipient, setRecipient] = useState<UserType>()
+
+  const roomSelectedId = useAppSelector(roomSelector.selectRoomId)
 
   const recipientId = members?.find(m => m !== userLoginId)
 
@@ -45,10 +52,17 @@ const RoomChat: React.FC<Props> = props => {
       <p className="text-sm max-w-44 truncate  flex-1">{latestMessage?.text}</p>
     )
   }
+
+  const isActiveRoom = roomSelectedId === _id
   return (
     <li
       onClick={handleSelectRoom}
-      className="hover:bg-grey-200 dark:hover:bg-grey-800 cursor-pointer"
+      className={classNames(
+        'hover:bg-grey-200 dark:hover:bg-grey-800 cursor-pointer',
+        {
+          'bg-grey-300 dark:bg-grey-700': isActiveRoom,
+        },
+      )}
     >
       <div className="flex items-center px-2 py-3">
         <div>
