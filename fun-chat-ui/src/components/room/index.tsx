@@ -111,7 +111,7 @@ const RoomChats: React.FC = () => {
         </TabList>
         <TabPanels>
           <TabPanel>
-            <ul className="overflow-x-hidden w-full">
+            <ul className="overflow-x-hidden w-full transition-all">
               {roomChats.map((roomChat: RoomChatType) => {
                 return (
                   <RoomChat

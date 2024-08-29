@@ -41,15 +41,19 @@ const roomSlice = createSlice({
     selectedRoomId: (state, action) => {
       state.selectedRoom.id = action.payload
     },
-    // TODO: remove @ts-ignore
     updateLatestMessage: (state, action) => {
-      const _rooms = [...state.fetchList.rooms]
       const { roomId, latestMessage } = action.payload
       state.selectedRoom.latestMessage = latestMessage
-      // @ts-ignore
-      state.fetchList.rooms = _rooms.map(room => {
-        // @ts-ignore
+      const _room = state.fetchList.rooms.map(room => {
         return room?._id === roomId ? { ...room, latestMessage } : room
+      })
+
+      state.fetchList.rooms = _room.sort((roomA, roomB) => {
+        const lstMsgTimeA = roomA.latestMessage.createdAt
+        const lstMsgTimeB = roomB.latestMessage.createdAt
+        if (lstMsgTimeA > lstMsgTimeB) return -1
+        if (lstMsgTimeA < lstMsgTimeB) return 1
+        return 0
       })
     },
     addRoomChat(state, action) {

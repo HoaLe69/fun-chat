@@ -2,7 +2,7 @@ import Message from './message'
 import UserAvatar from 'components/user-avatar'
 import Empty from 'components/common/empty-sate'
 import ChatForm from './chat-form'
-import type { MessageType, UserType } from 'lib/app.type'
+import type { MessageType } from 'lib/app.type'
 import { userSelector } from 'redux/user.store'
 import { useState, useEffect } from 'react'
 
@@ -21,7 +21,7 @@ const MessageContainer: React.FC = () => {
   const userLogin = useAppSelector(userSelector.selectUser)
 
   useEffect(() => {
-    const fetchData = async () => {
+    const loadMessages = async () => {
       try {
         const messagesRes = await apiClient.get(
           `/message/list/${roomSelectedId}`,
@@ -32,15 +32,13 @@ const MessageContainer: React.FC = () => {
       }
     }
     if (!roomSelectedId) setMessages([])
-    if (roomSelectedId) fetchData()
+    if (roomSelectedId) loadMessages()
   }, [roomSelectedId])
 
   useEffect(() => {
     if (roomSelectedId) {
       socket.on('chat:getMessage', msg => {
-        if (msg.roomId == roomSelectedId)
-          //@ts-ignore
-          setMessages(pre => [...pre, msg])
+        if (msg.roomId == roomSelectedId) setMessages(pre => [...pre, msg])
       })
       socket.on('chat:getReactIcon', msg => {
         const { messageId, emoji, ownerId } = msg

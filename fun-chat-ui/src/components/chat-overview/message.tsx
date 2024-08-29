@@ -81,12 +81,8 @@ const Message: React.FC<MessageProps> = ({
     </div>
   )
 
-  return (
-    <div
-      className={classNames('flex py-2 flex-col pl-10 items-start group', {
-        'items-end': isCurrentUser,
-      })}
-    >
+  const renderReactInMessage = () => {
+    return (
       <div className="flex items-center mb-1 gap-1">
         {!isDeleted &&
           combineDuplicateElement(react).map((item, index) => (
@@ -98,6 +94,16 @@ const Message: React.FC<MessageProps> = ({
             </span>
           ))}
       </div>
+    )
+  }
+
+  return (
+    <div
+      className={classNames('flex py-2 flex-col pl-10 items-start group', {
+        'items-end': isCurrentUser,
+      })}
+    >
+      {renderReactInMessage()}
       <div
         className={classNames('relative flex-1 flex items-center gap-2', {
           'flex-row-reverse': isCurrentUser,

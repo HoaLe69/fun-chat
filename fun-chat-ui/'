@@ -56,11 +56,9 @@ const ContextualMenu: React.FC<Props> = ({
       await apiClient.patch(`/room/update/latestMessage/${roomId}`, {
         latestMessage,
       })
-      // sync latest messsage current user room
       dispatch(updateLatestMessage({ roomId, latestMessage }))
     }
 
-    // send to socket server
     sendMessage({
       destination: 'chat:recallMessage',
       data: {
