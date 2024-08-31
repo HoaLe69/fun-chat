@@ -1,14 +1,16 @@
 import s from './login.module.css'
-import { LockIcon, PersonIcon } from '../../components/icons'
+import { LockIcon, PersonIcon } from 'components/icons'
 import { GoogleLogin } from '@react-oauth/google'
 import React, { useEffect, useState } from 'react'
-import { apiClient } from '../../api/apiClient'
+import { apiClient } from 'api/apiClient'
 import { useNavigate } from 'react-router-dom'
-import { useAppSelector } from '../../hooks'
-import { userSelector } from '../../redux/user.store'
+import { useAppSelector, useAppDispatch } from 'hooks'
+import { userSelector } from 'redux/user.store'
+import { verifyAsync } from 'api/user.api'
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState<string>('')
+  const dispatch = useAppDispatch()
   const [password, setPassword] = useState<string>('')
   const navigate = useNavigate()
   const authenticated = useAppSelector(userSelector.selectAuthenticated)
@@ -36,10 +38,11 @@ const Login: React.FC = () => {
     }
   }
   useEffect(() => {
+    dispatch(verifyAsync())
     if (authenticated) {
       navigate('/')
     }
-  }, [])
+  }, [authenticated])
   return (
     <div className="h-screen w-screen">
       <div className="w-full h-full flex items-center justify-center">

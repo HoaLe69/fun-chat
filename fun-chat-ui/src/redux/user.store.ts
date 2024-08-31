@@ -17,15 +17,14 @@ const userSlice = createSlice({
   reducers: {},
   extraReducers: builder => {
     builder
-      .addCase(verifyAsync.rejected, state => {
-        //@ts-ignore
-        state.isAuthenticated = false
-        window.location.href = '/login'
-      })
       .addCase(verifyAsync.fulfilled, (state, action) => {
         state.user = action.payload
         //@ts-ignore
         state.isAuthenticated = true
+      })
+      .addCase(verifyAsync.rejected, state => {
+        //@ts-ignore
+        state.isAuthenticated = false
       })
     // .addCase(searchUser.pending, state => {
     //   state.search.loading = true

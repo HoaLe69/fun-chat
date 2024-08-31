@@ -1,8 +1,8 @@
 import { ReactNode, useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
-import { useAppDispatch, useAppSelector } from '../hooks'
-import { userSelector } from '../redux/user.store'
-import { verifyAsync } from '../api/user.api'
+import { useAppDispatch, useAppSelector } from 'hooks'
+import { userSelector } from 'redux/user.store'
+import { verifyAsync } from 'api/user.api'
 
 export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const authenticated = useAppSelector(userSelector.selectAuthenticated)

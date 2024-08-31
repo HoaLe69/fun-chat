@@ -8,7 +8,8 @@ export const verifyAsync = createAsyncThunk<any, void>(
       const res = await apiClient.get('/users')
       return res.data
     } catch (err) {
-      console.log(err)
+      throw new Error('Something went wrong')
+      console.error(err)
     }
   },
 )
