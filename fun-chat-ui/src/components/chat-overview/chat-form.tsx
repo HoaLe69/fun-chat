@@ -28,10 +28,9 @@ const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
   const [textMessage, setTextMessage] = useState<string>('')
   const [isOpenEmojiPicker, setIsOpenEmojiPicker] = useState<boolean>(false)
   const refInput = useRef<HTMLInputElement>(null)
-  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const userLogin = useAppSelector(userSelector.selectUser)
 
-  const debounceTextMessage = useDebounce(textMessage, 500)
+  const debounceTextMessage = useDebounce(textMessage, 300)
 
   const addNewMessage = async (roomId: string) => {
     const message = {
@@ -112,12 +111,15 @@ const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target
     setTextMessage(value)
+  }
 
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current)
-    }
+  useEffect(() => {
+    setTextMessage('')
+  }, [roomId])
 
-    typingTimeoutRef.current = setTimeout(() => {
+  useEffect(() => {
+    const timerID = setTimeout(() => {
+      console.log('user stop typing')
       sendMessage({
         destination: 'chat:typingStop',
         data: {
@@ -126,24 +128,13 @@ const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
         },
       })
     }, 1000)
-  }
-
-  // clearTimeout and state when change room
-  useEffect(() => {
-    setTextMessage('')
-    return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current)
-      }
-    }
-  }, [roomId])
-
-  useEffect(() => {
     if (!debounceTextMessage) return
     sendMessage({
       destination: 'chat:typingStart',
       data: { roomId, userId: userLoginId },
     })
+
+    return () => clearTimeout(timerID)
   }, [debounceTextMessage])
 
   const appendEmojiToText = (emoji: string) => {

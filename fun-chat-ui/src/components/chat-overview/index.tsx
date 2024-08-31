@@ -4,7 +4,7 @@ import Empty from 'components/common/empty-sate'
 import ChatForm from './chat-form'
 import type { MessageType } from 'lib/app.type'
 import { userSelector } from 'redux/user.store'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 import { useAppSelector } from 'hooks'
 import { roomSelector } from 'redux/room.store'
@@ -14,6 +14,7 @@ import { apiClient } from 'api/apiClient'
 
 const MessageContainer: React.FC = () => {
   const [messages, setMessages] = useState<MessageType[]>([])
+  const refContainer = useRef<HTMLDivElement>(null)
   const { socket } = useSocket()
 
   const roomSelectedId = useAppSelector(roomSelector.selectRoomId)
@@ -68,6 +69,13 @@ const MessageContainer: React.FC = () => {
     }
   }, [roomSelectedId])
 
+  useEffect(() => {
+    const containerEl = refContainer.current
+    if (containerEl) {
+      containerEl.scrollTop = containerEl.scrollHeight
+    }
+  }, [messages])
+
   if (!roomSelectedId && !recipient?._id) {
     return (
       <div className="flex-1 flex items-center justify-center h-screen bg-grey-50 dark:bg-grey-950 overflow-x-hidden">
@@ -92,7 +100,10 @@ const MessageContainer: React.FC = () => {
           </div>
         </div>
         <div className="flex-1 flex flex-col justify-end h-[calc(100vh-68px)]">
-          <div className="h-full overflow-y-auto overflow-x-hidden px-2">
+          <div
+            ref={refContainer}
+            className="h-full overflow-y-auto overflow-x-hidden px-2"
+          >
             <>
               {messages?.length > 0 ? (
                 <>
