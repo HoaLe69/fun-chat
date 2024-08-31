@@ -14,6 +14,8 @@ import { useAppDispatch, useAppSelector } from 'hooks'
 import { STATUS_CODES } from 'const'
 import useDebounce from 'hooks/useDebounce'
 
+import EmojiPicker from 'components/emoji-picker'
+
 type Props = {
   roomId: string | null
   userLoginId: string | null
@@ -23,8 +25,8 @@ type Props = {
 const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
   const dispatch = useAppDispatch()
   const { sendMessage } = useSocket()
-  const [isActiveSendBtn, setIsActiveSendBtn] = useState<boolean>(false)
   const [textMessage, setTextMessage] = useState<string>('')
+  const [isOpenEmojiPicker, setIsOpenEmojiPicker] = useState<boolean>(false)
   const refInput = useRef<HTMLInputElement>(null)
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const userLogin = useAppSelector(userSelector.selectUser)
@@ -94,7 +96,6 @@ const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
 
   const resetForm = () => {
     setTextMessage('')
-    setIsActiveSendBtn(false)
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -111,10 +112,6 @@ const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target
     setTextMessage(value)
-    if (!isActiveSendBtn) {
-      setIsActiveSendBtn(true)
-    }
-    if (!value) setIsActiveSendBtn(false)
 
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current)
@@ -134,7 +131,6 @@ const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
   // clearTimeout and state when change room
   useEffect(() => {
     setTextMessage('')
-    setIsActiveSendBtn(false)
     return () => {
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current)
@@ -150,10 +146,18 @@ const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
     })
   }, [debounceTextMessage])
 
+  const appendEmojiToText = (emoji: string) => {
+    setTextMessage(pre => pre + emoji)
+  }
+
+  const onClose = () => {
+    setIsOpenEmojiPicker(false)
+  }
+
   return (
     <div className="border-t-2 bg-grey-50 dark:bg-grey-900 border-grey-300 dark:border-grey-700 h-14 py-1">
       <div className="flex items-center h-full px-3">
-        <span className="text-grey-500">
+        <span className="text-grey-500 ">
           <PlusCircleIcon />
         </span>
         <form
@@ -176,8 +180,19 @@ const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
                 id="message"
                 placeholder="Type your message"
               />
-              <span className="text-grey-500 ">
-                <LaughIcon />
+              <span className="text-grey-500 relative">
+                <LaughIcon
+                  className="cursor-pointer"
+                  onClick={e => {
+                    e.stopPropagation()
+                    setIsOpenEmojiPicker(true)
+                  }}
+                />
+                <EmojiPicker
+                  appendEmojiToText={appendEmojiToText}
+                  isOpen={isOpenEmojiPicker}
+                  onClose={onClose}
+                />
               </span>
             </div>
           </div>
@@ -185,8 +200,9 @@ const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
             type="submit"
             className={classNames(
               'w-10 h-10 rounded-full inline-flex items-center justify-center',
-              { 'bg-grey-400 dark:bg-grey-600': !isActiveSendBtn },
-              { 'bg-blue-500 dark:bg-blue-400': isActiveSendBtn },
+              textMessage?.length == 0
+                ? 'bg-grey-400 dark:bg-grey-600'
+                : 'bg-blue-500 dark:bg-blue-400',
             )}
           >
             <SendIcon />
