@@ -1,12 +1,14 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from './store'
 import { fetchListMessageAsync } from '../api/message.api'
+
 const initialState = {
   list: {
     loading: false,
     msgs: [],
   },
 }
+
 const messageSlice = createSlice({
   name: 'message',
   initialState,

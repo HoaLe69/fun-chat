@@ -33,7 +33,7 @@ const SearchResult: React.FC<Props> = ({
       try {
         const users = await searchUser({
           q: debouncedSearchTerm,
-          userId: 'hi',
+          userId: user._id || 'hi',
         })
         setPeoples(users)
       } catch (error) {
