@@ -28,4 +28,5 @@ export type MessageType = {
   createdAt: string
   isDeleted?: boolean
   react: Array<{ ownerId: string; emoji: string }>
+  timeLine?: string
 }

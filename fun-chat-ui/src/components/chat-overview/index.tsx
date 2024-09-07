@@ -11,6 +11,7 @@ import { roomSelector } from 'redux/room.store'
 
 import useSocket from 'hooks/useSocket'
 import { apiClient } from 'api/apiClient'
+import { groupMessages } from 'utils/message'
 
 const MessageContainer: React.FC = () => {
   const [messages, setMessages] = useState<MessageType[]>([])
@@ -76,6 +77,14 @@ const MessageContainer: React.FC = () => {
     }
   }, [messages])
 
+  const renderTimeLine = (timeLine: string) => (
+    <div key={timeLine} className="flex items-center justify-center gap-2">
+      <div className="w-12 h-[1px] bg-grey-500 rounded-xl" />
+      <p className="text-center text-[12px] my-2 text-gray-500">{timeLine}</p>
+      <div className="w-12 h-[1px] bg-grey-500 rounded-xl" />
+    </div>
+  )
+
   if (!roomSelectedId && !recipient?._id) {
     return (
       <div className="flex-1 flex items-center justify-center h-screen bg-grey-50 dark:bg-grey-950 overflow-x-hidden">
@@ -107,18 +116,25 @@ const MessageContainer: React.FC = () => {
             <>
               {messages?.length > 0 ? (
                 <>
-                  {messages.map((message: MessageType, index: number) => (
-                    <Message
-                      key={index}
-                      userLoginId={userLogin?._id}
-                      recipient={{
-                        _id: recipient?._id,
-                        picture: recipient?.picture,
-                        displayName: recipient?.display_name,
-                      }}
-                      {...message}
-                    />
-                  ))}
+                  {groupMessages(messages).map(
+                    (message: MessageType, index: number) => {
+                      if (message.timeLine) {
+                        return renderTimeLine(message.timeLine)
+                      }
+                      return (
+                        <Message
+                          key={index}
+                          userLoginId={userLogin?._id}
+                          recipient={{
+                            _id: recipient?._id,
+                            picture: recipient?.picture,
+                            displayName: recipient?.display_name,
+                          }}
+                          {...message}
+                        />
+                      )
+                    },
+                  )}
                 </>
               ) : (
                 <div className="h-full flex items-center justify-center">
