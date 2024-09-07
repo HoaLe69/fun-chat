@@ -15,6 +15,7 @@ export type RoomChatType = {
   latestMessage: {
     text: string
     createdAt: string
+    ownerId?: string
   }
   members?: Array<string>
   status?: string

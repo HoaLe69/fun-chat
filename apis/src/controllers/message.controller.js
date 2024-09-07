@@ -13,6 +13,7 @@ const messageController = {
             latestMessage: {
               text: req.body.text,
               createdAt: newMsg.createdAt,
+              ownerId: req.body.ownerId,
             },
           },
         },
@@ -64,6 +65,20 @@ const messageController = {
         roomId,
       })
       return res.status(200).json(messages)
+      // const groupMessage = await Message.aggregate([
+      //   {
+      //     $match: { roomId },
+      //   },
+      //   {
+      //     $group: {
+      //       _id: {
+      //         $dateToString: { format: "%d/%m/%Y", date: "$createdAt" },
+      //       },
+      //       messages: { $push: "$$ROOT" },
+      //     },
+      //   },
+      //   { $sort: { _id: -1 } }, // sort by date descending
+      // ])
     } catch (err) {
       console.log(err)
     }

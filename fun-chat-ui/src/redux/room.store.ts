@@ -3,7 +3,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from './store'
 import { fetchListRoomAsync } from 'api/room.api'
-import type { UserType } from 'lib/app.type'
 
 const MAXIMUM_ROOM_AMOUNT = 3
 

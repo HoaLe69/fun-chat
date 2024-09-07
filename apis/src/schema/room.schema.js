@@ -5,6 +5,7 @@ const latestMessageSchema = new Schema(
   {
     text: String,
     createdAt: Date,
+    ownerId: String,
   },
   { _id: false },
 )

@@ -7,7 +7,11 @@ export const createRoomAsync = async ({
   room: {
     members: Array<string>
     status: string
-    latestMessage: string
+    latestMessage: {
+      text: string
+      createdAt: string
+      ownerId: string
+    }
   }
 }) => {
   try {

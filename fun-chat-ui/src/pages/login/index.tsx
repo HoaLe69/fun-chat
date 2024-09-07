@@ -43,6 +43,7 @@ const Login: React.FC = () => {
       navigate('/')
     }
   }, [authenticated])
+
   return (
     <div className="h-screen w-screen">
       <div className="w-full h-full flex items-center justify-center">

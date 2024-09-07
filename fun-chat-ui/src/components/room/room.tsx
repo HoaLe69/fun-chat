@@ -14,6 +14,7 @@ import moment from 'moment'
 
 import TypingIndicator from 'components/common/typing-indicator'
 import classNames from 'classnames'
+import { minimalTime } from 'utils/time'
 
 type Props = RoomChatType & {
   userLoginId: string | null
@@ -49,7 +50,11 @@ const RoomChat: React.FC<Props> = props => {
   }
   const renderLatestMessage = () => {
     return (
-      <p className="text-sm max-w-44 truncate  flex-1">{latestMessage?.text}</p>
+      <p className="text-[12px] max-w-44 truncate  flex-1">
+        {latestMessage?.ownerId === userLoginId
+          ? `You: ${latestMessage?.text}`
+          : latestMessage.text}
+      </p>
     )
   }
 
@@ -88,8 +93,8 @@ const RoomChat: React.FC<Props> = props => {
             ) : (
               renderLatestMessage()
             )}
-            <p className="text-sm">
-              {moment(latestMessage?.createdAt).format('LT')}
+            <p className="text-[12px]">
+              {minimalTime(moment(latestMessage?.createdAt).fromNow())}
             </p>
           </div>
         </div>

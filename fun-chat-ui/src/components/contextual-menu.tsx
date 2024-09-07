@@ -1,7 +1,7 @@
 import { Popover, PopoverPanel, PopoverButton } from '@headlessui/react'
 import { ThreeDotVerticalIcon, TrashIcon, ReplyIcon } from './icons'
 import { useState } from 'react'
-import moment from 'moment'
+import { timeToSeconds } from 'utils/time'
 
 import AppModal from 'components/common/app-modal'
 
@@ -11,10 +11,6 @@ import { roomSelector, updateLatestMessage } from 'redux/room.store'
 import useSocket from 'hooks/useSocket'
 import { apiClient } from 'api/apiClient'
 
-const timeToSeconds = (input?: string | null) => {
-  if (!input) return
-  return moment(input).unix()
-}
 type Props = {
   roomId?: string
   createdAt: string

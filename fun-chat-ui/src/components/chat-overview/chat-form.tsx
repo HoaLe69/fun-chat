@@ -32,11 +32,12 @@ const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
 
   const debounceTextMessage = useDebounce(textMessage, 300)
 
-  const addNewMessage = async (roomId: string) => {
+  const addNewMessage = async (roomId: string, createdAt?: string) => {
     const message = {
       ownerId: userLogin?._id,
       text: textMessage,
       roomId,
+      createdAt,
     }
     const msg = await createMessageAsync(message)
     return msg?.data
@@ -50,12 +51,15 @@ const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
         latestMessage: {
           text: textMessage,
           createdAt: Date.now(),
+          ownerId: userLoginId,
         },
       }
-      // @ts-ignore
       const response = await createRoomAsync({ room })
       if (response?.status === STATUS_CODES.CREATED) {
-        await addNewMessage(response?.data._id)
+        await addNewMessage(
+          response?.data._id,
+          response?.data.latestMessage.createdAt,
+        )
         dispatch(selectedRoomId(response.data._id))
         dispatch(addRoomChat(response?.data))
         sendMessage({
@@ -85,6 +89,7 @@ const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
           latestMessage: {
             text: msg.text,
             createdAt: msg.createdAt,
+            ownerId: msg.ownerId,
           },
         }),
       )

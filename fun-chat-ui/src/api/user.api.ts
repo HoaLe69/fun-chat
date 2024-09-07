@@ -9,7 +9,6 @@ export const verifyAsync = createAsyncThunk<any, void>(
       return res.data
     } catch (err) {
       throw new Error('Something went wrong')
-      console.error(err)
     }
   },
 )

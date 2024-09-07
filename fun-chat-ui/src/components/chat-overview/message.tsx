@@ -6,6 +6,7 @@ import UserAvatar from 'components/user-avatar'
 
 import ReactionPicker from 'components/reaction-picker'
 import ContextualMenu from 'components/contextual-menu'
+import { reactsMessageStack } from 'utils/message'
 
 type MessageProps = MessageType & {
   recipient: {
@@ -14,38 +15,6 @@ type MessageProps = MessageType & {
     displayName: string | null
   }
   userLoginId: string | null
-}
-
-type ReactType = {
-  emoji: string
-  ownerId: string
-}
-
-const combineDuplicateElement = (reacts: Array<ReactType>) => {
-  if (!reacts.length) return []
-  const reactCollections: Record<
-    string,
-    {
-      ownerId: string
-      amount: number
-    }
-  > = {}
-  for (const react of reacts) {
-    if (reactCollections[react.emoji]) {
-      reactCollections[react.emoji] = {
-        ownerId: react.ownerId,
-        amount: reactCollections[react.emoji].amount + 1,
-      }
-    } else
-      reactCollections[react.emoji] = {
-        ownerId: react.ownerId,
-        amount: 1,
-      }
-  }
-  return Object.keys(reactCollections).map(key => ({
-    ...reactCollections[key],
-    emoji: key,
-  }))
 }
 
 const Message: React.FC<MessageProps> = ({
@@ -60,8 +29,8 @@ const Message: React.FC<MessageProps> = ({
   userLoginId,
 }) => {
   const isCurrentUser = userLoginId === ownerId
-
   const fallbackImg = 'https://placehold.co/600x400.png'
+
   const renderTextMessage = () => (
     <div
       className={classNames(
@@ -85,7 +54,7 @@ const Message: React.FC<MessageProps> = ({
     return (
       <div className="flex items-center mb-1 gap-1">
         {!isDeleted &&
-          combineDuplicateElement(react).map((item, index) => (
+          reactsMessageStack(react).map((item, index) => (
             <span
               key={index}
               className="px-2 py-1 text-[12px] rounded-md bg-grey-100 dark:bg-grey-900"
