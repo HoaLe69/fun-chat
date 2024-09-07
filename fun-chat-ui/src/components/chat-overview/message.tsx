@@ -7,6 +7,8 @@ import UserAvatar from 'components/user-avatar'
 import ReactionPicker from 'components/reaction-picker'
 import ContextualMenu from 'components/contextual-menu'
 import { reactsMessageStack } from 'utils/message'
+import { useState } from 'react'
+import MessageReactionsModal from 'components/modal-message-reactions'
 
 type MessageProps = MessageType & {
   recipient: {
@@ -28,8 +30,14 @@ const Message: React.FC<MessageProps> = ({
   createdAt,
   userLoginId,
 }) => {
+  const [showModal, setShowModal] = useState<boolean>(false)
+
   const isCurrentUser = userLoginId === ownerId
   const fallbackImg = 'https://placehold.co/600x400.png'
+
+  const onClose = () => {
+    setShowModal(false)
+  }
 
   const renderTextMessage = () => (
     <div
@@ -51,15 +59,19 @@ const Message: React.FC<MessageProps> = ({
   )
 
   const renderReactInMessage = () => {
+    const handleShowListReactInfo = () => {
+      setShowModal(true)
+    }
     return (
       <div className="flex items-center mb-1 gap-1">
         {!isDeleted &&
           reactsMessageStack(react).map((item, index) => (
             <span
+              onClick={handleShowListReactInfo}
               key={index}
-              className="px-2 py-1 text-[12px] rounded-md bg-grey-100 dark:bg-grey-900"
+              className="px-2 py-1 text-[12px] rounded-md bg-grey-100 dark:bg-grey-900 cursor-pointer"
             >
-              {item.emoji} {item.amount}
+              {item.emoji} {item.ownerIds.length}
             </span>
           ))}
       </div>
@@ -112,6 +124,14 @@ const Message: React.FC<MessageProps> = ({
           {moment(createdAt).format('LT')}
         </span>
       </div>
+      {showModal && (
+        <MessageReactionsModal
+          reacts={reactsMessageStack(react)}
+          isOpen={showModal}
+          onClose={onClose}
+          recipient={recipient}
+        />
+      )}
     </div>
   )
 }

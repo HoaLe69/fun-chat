@@ -1,19 +1,13 @@
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
-import Button from './button'
+import { ReactNode } from 'react'
+
 type Props = {
   isOpen: boolean
   onClose: () => void
   title?: string
-  message?: string
-  callback?: () => void
+  children: ReactNode
 }
-const AppModal: React.FC<Props> = ({
-  isOpen,
-  onClose,
-  title,
-  message,
-  callback,
-}) => {
+const AppModal: React.FC<Props> = ({ isOpen, onClose, title, children }) => {
   return (
     <>
       <Dialog
@@ -31,11 +25,7 @@ const AppModal: React.FC<Props> = ({
               >
                 {title}
               </DialogTitle>
-              <p className="mt-2 text-grey-950 dark:text-grey-50">{message}</p>
-              <div className="flex items-center justify-end py-2">
-                <Button title="Cancel" textBold onClick={onClose} />
-                <Button title="DELETE" textBold onClick={callback} />
-              </div>
+              {children}
             </DialogPanel>
           </div>
         </div>

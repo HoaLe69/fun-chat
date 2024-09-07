@@ -2,6 +2,7 @@ import { Popover, PopoverPanel, PopoverButton } from '@headlessui/react'
 import { ThreeDotVerticalIcon, TrashIcon, ReplyIcon } from './icons'
 import { useState } from 'react'
 import { timeToSeconds } from 'utils/time'
+import Button from 'components/common/button'
 
 import AppModal from 'components/common/app-modal'
 
@@ -114,13 +115,15 @@ const ContextualMenu: React.FC<Props> = ({
           </>
         )}
       </Popover>
-      <AppModal
-        isOpen={showModal}
-        callback={handleRecallMessage}
-        onClose={onClose}
-        title="Delete Message"
-        message="Are you sure you want to permanently delete this message"
-      />
+      <AppModal isOpen={showModal} onClose={onClose} title="Delete Message">
+        <p className="mt-2 text-grey-950 dark:text-grey-50">
+          Are you sure you want to permanently delete this message
+        </p>
+        <div className="flex items-center justify-end py-2">
+          <Button title="Cancel" textBold onClick={onClose} />
+          <Button title="DELETE" textBold onClick={handleRecallMessage} />
+        </div>
+      </AppModal>
     </>
   )
 }

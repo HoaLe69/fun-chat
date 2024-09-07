@@ -1,7 +1,7 @@
 import { MessageType } from 'lib/app.type'
 import moment from 'moment'
 
-type ReactType = {
+type MessageReactType = {
   emoji: string
   ownerId: string
 }
@@ -21,29 +21,19 @@ export const groupMessages = (messages: Array<MessageType>) => {
   return result
 }
 
-export const reactsMessageStack = (reacts: Array<ReactType>) => {
+export const reactsMessageStack = (reacts: Array<MessageReactType>) => {
   if (!reacts.length) return []
-  const reactCollections: Record<
-    string,
-    {
-      ownerId: string
-      amount: number
-    }
-  > = {}
+  const reactCollections: Record<string, Array<string>> = {}
   for (const react of reacts) {
-    if (reactCollections[react.emoji]) {
-      reactCollections[react.emoji] = {
-        ownerId: react.ownerId,
-        amount: reactCollections[react.emoji].amount + 1,
-      }
-    } else
-      reactCollections[react.emoji] = {
-        ownerId: react.ownerId,
-        amount: 1,
-      }
+    if (reactCollections[react.emoji] !== undefined) {
+      if (reactCollections[react.emoji].includes(react.ownerId)) continue
+      reactCollections[react.emoji].push(react.ownerId)
+    } else {
+      reactCollections[react.emoji] = [react.ownerId]
+    }
   }
   return Object.keys(reactCollections).map(key => ({
-    ...reactCollections[key],
     emoji: key,
+    ownerIds: reactCollections[key],
   }))
 }
