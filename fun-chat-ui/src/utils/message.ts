@@ -6,7 +6,7 @@ type MessageReactType = {
   ownerId: string
 }
 
-export const groupMessages = (messages: Array<MessageType>) => {
+export const groupMessagesByTime = (messages: Array<MessageType>) => {
   const timeLines: Record<string, boolean> = {}
   const result: Array<MessageType | any> = []
 
@@ -21,19 +21,67 @@ export const groupMessages = (messages: Array<MessageType>) => {
   return result
 }
 
-export const reactsMessageStack = (reacts: Array<MessageReactType>) => {
+export const groupReactMessageByEmoji = (reacts: Array<MessageReactType>) => {
   if (!reacts.length) return []
-  const reactCollections: Record<string, Array<string>> = {}
+  const reactCollections: Record<
+    string,
+    {
+      ownerIds: Array<string>
+      amount: number
+    }
+  > = {}
   for (const react of reacts) {
     if (reactCollections[react.emoji] !== undefined) {
-      if (reactCollections[react.emoji].includes(react.ownerId)) continue
-      reactCollections[react.emoji].push(react.ownerId)
+      if (!reactCollections[react.emoji].ownerIds.includes(react.ownerId))
+        reactCollections[react.emoji].ownerIds.push(react.ownerId)
+      reactCollections[react.emoji].amount =
+        reactCollections[react.emoji].amount + 1
     } else {
-      reactCollections[react.emoji] = [react.ownerId]
+      reactCollections[react.emoji] = {
+        ownerIds: [react.ownerId],
+        amount: 1,
+      }
     }
   }
   return Object.keys(reactCollections).map(key => ({
     emoji: key,
-    ownerIds: reactCollections[key],
+    ownerIds: reactCollections[key].ownerIds,
+    amount: reactCollections[key].amount,
+  }))
+}
+
+export const groupEmojiByUserId = (reacts: Array<MessageReactType>) => {
+  const cols: Record<
+    string,
+    {
+      emojis: Array<string>
+      amount: number
+    }
+  > = {}
+
+  for (const react of reacts) {
+    if (cols[react.ownerId] !== undefined) {
+      if (!cols[react.ownerId].emojis.includes(react.emoji)) {
+        cols[react.ownerId] = {
+          emojis: [...cols[react.ownerId].emojis, react.emoji],
+          amount: cols[react.ownerId].amount + 1,
+        }
+      } else {
+        cols[react.ownerId] = {
+          emojis: [...cols[react.ownerId].emojis],
+          amount: cols[react.ownerId].amount + 1,
+        }
+      }
+    } else {
+      cols[react.ownerId] = {
+        emojis: [react.emoji],
+        amount: 1,
+      }
+    }
+  }
+  return Object.keys(cols).map(key => ({
+    ownerId: key,
+    emojis: cols[key].emojis,
+    amount: cols[key].amount,
   }))
 }

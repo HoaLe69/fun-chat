@@ -6,50 +6,13 @@ import {
 } from '@headlessui/react'
 import classNames from 'classnames'
 import { LaughSmallIcon } from './icons'
-import useSocket from 'hooks/useSocket'
-import { apiClient } from 'api/apiClient'
 
 type Props = {
-  messageId?: string
-  createdAt?: string
-  roomId: string | null
-  userLoginId: string | null
-  recipientId: string | null
+  onReact: (emoji: string) => void
 }
 
-const ReactionPicker: React.FC<Props> = ({
-  roomId,
-  messageId,
-  userLoginId,
-}) => {
+const ReactionPicker: React.FC<Props> = ({ onReact }) => {
   const reactIcons = ['❤️', '👍', '👎', '😂', '😮', '😞']
-  const { sendMessage } = useSocket()
-  const updateMessage = async (icon: string) => {
-    try {
-      await apiClient.patch(`/message/react/${messageId}`, {
-        react: {
-          ownerId: userLoginId,
-          emoji: icon,
-        },
-      })
-    } catch (error) {
-      console.error(error)
-    }
-  }
-  const handleReactMessage = async (icon: string) => {
-    if (!icon) return
-
-    await updateMessage(icon)
-    sendMessage({
-      destination: 'chat:sendReactIcon',
-      data: {
-        icon,
-        roomId,
-        messageId,
-        ownerId: userLoginId,
-      },
-    })
-  }
 
   return (
     <Popover>
@@ -73,10 +36,7 @@ const ReactionPicker: React.FC<Props> = ({
               <ul className="flex items-center">
                 {reactIcons.map(icon => (
                   <CloseButton key={icon}>
-                    <li
-                      onClick={() => handleReactMessage(icon)}
-                      className="reaction_icon"
-                    >
+                    <li onClick={() => onReact(icon)} className="reaction_icon">
                       {icon}
                     </li>
                   </CloseButton>

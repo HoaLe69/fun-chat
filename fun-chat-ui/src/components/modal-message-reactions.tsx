@@ -6,11 +6,12 @@ import { userSelector } from 'redux/user.store'
 import classNames from 'classnames'
 import UserAvatar from './user-avatar'
 import { Fragment } from 'react/jsx-runtime'
+import { groupEmojiByUserId } from 'utils/message'
 
 type Props = {
   isOpen: boolean
   onClose: () => void
-  reacts: Array<{ emoji: string; ownerIds: Array<string> }>
+  reacts: Array<{ emoji: string; ownerId: string }>
   recipient: {
     _id: string | null
     picture: string | null
@@ -24,6 +25,7 @@ const MessageReactionsModal: React.FC<Props> = ({
   recipient,
 }) => {
   const userLogin = useAppSelector(userSelector.selectUser)
+  console.log({ reacts })
 
   const renderTab = (emoji: string) => {
     return (
@@ -80,27 +82,17 @@ const MessageReactionsModal: React.FC<Props> = ({
   return (
     <AppModal isOpen={isOpen} onClose={onClose} title="Message Reactions">
       <TabGroup>
-        <TabList className="flex items-center">
-          {renderTab('All')}
-          {reacts.map(react =>
-            renderTab(react.emoji + ' ' + react.ownerIds.length),
-          )}
-        </TabList>
+        <TabList className="flex items-center">{renderTab('All')}</TabList>
         <TabPanels className="max-h-80 overflow-auto">
           <TabPanel>
-            {reacts.map(react => {
-              return react.ownerIds.map((owner: string) => {
-                return renderUserReactInfo({ _id: owner, emoji: react.emoji })
+            {groupEmojiByUserId(reacts).map(react => {
+              console.log({ react })
+              return renderUserReactInfo({
+                _id: react.ownerId,
+                emoji: react.emojis.join(' ') + ' ' + react.amount,
               })
             })}
           </TabPanel>
-          {reacts.map(react => (
-            <TabPanel key={react.emoji}>
-              {react.ownerIds.map((owner: string) =>
-                renderUserReactInfo({ _id: owner, emoji: react.emoji }),
-              )}
-            </TabPanel>
-          ))}
         </TabPanels>
       </TabGroup>
     </AppModal>

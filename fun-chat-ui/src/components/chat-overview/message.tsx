@@ -6,9 +6,15 @@ import UserAvatar from 'components/user-avatar'
 
 import ReactionPicker from 'components/reaction-picker'
 import ContextualMenu from 'components/contextual-menu'
-import { reactsMessageStack } from 'utils/message'
+import { groupReactMessageByEmoji } from 'utils/message'
 import { useState } from 'react'
+import useSocket from 'hooks/useSocket'
 import MessageReactionsModal from 'components/modal-message-reactions'
+import { updateMessageAsync } from 'api/message.api'
+import { timeToSeconds } from 'utils/time'
+import { useAppDispatch, useAppSelector } from 'hooks'
+import { roomSelector, updateLatestMessage } from 'redux/room.store'
+import { apiClient } from 'api/apiClient'
 
 type MessageProps = MessageType & {
   recipient: {
@@ -31,12 +37,84 @@ const Message: React.FC<MessageProps> = ({
   userLoginId,
 }) => {
   const [showModal, setShowModal] = useState<boolean>(false)
+  const { sendMessage } = useSocket()
+  const latestMessage = useAppSelector(
+    roomSelector.selectLatestMessageOfSelectdRoom,
+  )
+  const dispatch = useAppDispatch()
 
   const isCurrentUser = userLoginId === ownerId
   const fallbackImg = 'https://placehold.co/600x400.png'
 
   const onClose = () => {
     setShowModal(false)
+  }
+
+  const handleReactMessage = async (emoji: string) => {
+    if (!emoji) return
+
+    if (!userLoginId) return
+
+    await updateMessageAsync({
+      type: 'react',
+      data: {
+        messageId: _id,
+        ownerId: userLoginId,
+        emoji,
+      },
+    })
+
+    sendMessage({
+      destination: 'chat:sendReactIcon',
+      data: {
+        icon: emoji,
+        roomId,
+        messageId: _id,
+        ownerId: userLoginId,
+      },
+    })
+  }
+
+  const handleRecallMessage = async (cb: () => void) => {
+    if (!_id) return
+
+    // message identify is the latest or not
+    const isLatestMessage =
+      timeToSeconds(createdAt) === timeToSeconds(latestMessage.createdAt)
+
+    const msg = await updateMessageAsync({
+      type: 'recall',
+      data: {
+        messageId: _id,
+      },
+    })
+
+    if (isLatestMessage && msg) {
+      const latestMessage = {
+        text: 'Message was recall',
+        createdAt: msg.data.updatedAt,
+        ownerId: msg.data.ownerId,
+      }
+
+      await apiClient.patch(`/room/update/latestMessage/${roomId}`, {
+        latestMessage,
+      })
+
+      dispatch(updateLatestMessage({ roomId, latestMessage }))
+    }
+
+    // send to socket server
+    sendMessage({
+      destination: 'chat:recallMessage',
+      data: {
+        roomId,
+        messageId: _id,
+        recipientId: recipient?._id,
+        isNotifyRecipient: isLatestMessage,
+        modifyTime: msg?.data.updatedAt,
+      },
+    })
+    cb()
   }
 
   const renderTextMessage = () => (
@@ -65,13 +143,13 @@ const Message: React.FC<MessageProps> = ({
     return (
       <div className="flex items-center mb-1 gap-1">
         {!isDeleted &&
-          reactsMessageStack(react).map((item, index) => (
+          groupReactMessageByEmoji(react).map((item, index) => (
             <span
               onClick={handleShowListReactInfo}
               key={index}
               className="px-2 py-1 text-[12px] rounded-md bg-grey-100 dark:bg-grey-900 cursor-pointer"
             >
-              {item.emoji} {item.ownerIds.length}
+              {item.emoji} {item.amount}
             </span>
           ))}
       </div>
@@ -101,18 +179,9 @@ const Message: React.FC<MessageProps> = ({
         )}
         {!isDeleted && (
           <>
-            <ReactionPicker
-              roomId={roomId}
-              messageId={_id}
-              createdAt={createdAt}
-              userLoginId={userLoginId}
-              recipientId={recipient?._id}
-            />
+            <ReactionPicker onReact={handleReactMessage} />
             <ContextualMenu
-              roomId={roomId}
-              messageId={_id}
-              createdAt={createdAt}
-              recipientId={recipient?._id}
+              onRecall={handleRecallMessage}
               isCurrentUser={isCurrentUser}
             />
           </>
@@ -126,7 +195,7 @@ const Message: React.FC<MessageProps> = ({
       </div>
       {showModal && (
         <MessageReactionsModal
-          reacts={reactsMessageStack(react)}
+          reacts={react}
           isOpen={showModal}
           onClose={onClose}
           recipient={recipient}

@@ -5,7 +5,7 @@ type Props = {
   type?: string
   className?: string
   textBold?: boolean
-  onClick?: () => void
+  onClick?: (...args) => void
 }
 const Button: React.FC<Props> = ({
   type,

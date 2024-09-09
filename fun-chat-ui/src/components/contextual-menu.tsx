@@ -1,74 +1,21 @@
 import { Popover, PopoverPanel, PopoverButton } from '@headlessui/react'
 import { ThreeDotVerticalIcon, TrashIcon, ReplyIcon } from './icons'
 import { useState } from 'react'
-import { timeToSeconds } from 'utils/time'
 import Button from 'components/common/button'
 
 import AppModal from 'components/common/app-modal'
 
 import classNames from 'classnames'
-import { useAppSelector, useAppDispatch } from 'hooks'
-import { roomSelector, updateLatestMessage } from 'redux/room.store'
-import useSocket from 'hooks/useSocket'
-import { apiClient } from 'api/apiClient'
 
 type Props = {
-  roomId?: string
-  createdAt: string
-  messageId?: string
+  onRecall: (cb: () => void) => void
   isCurrentUser: boolean
-  recipientId: string | null
 }
-const ContextualMenu: React.FC<Props> = ({
-  roomId,
-  messageId,
-  createdAt,
-  recipientId,
-  isCurrentUser,
-}) => {
+const ContextualMenu: React.FC<Props> = ({ onRecall, isCurrentUser }) => {
   const [showModal, setShowModal] = useState<boolean>(false)
-  const { sendMessage } = useSocket()
-
-  const latestMessage = useAppSelector(
-    roomSelector.selectLatestMessageOfSelectdRoom,
-  )
-  const dispatch = useAppDispatch()
 
   const onClose = () => {
     setShowModal(false)
-  }
-  const handleRecallMessage = async () => {
-    if (!messageId) return
-    // identify is the latest message or not
-    const isNotifyRecipient =
-      timeToSeconds(createdAt) === timeToSeconds(latestMessage.createdAt)
-
-    const msg = await apiClient.patch(`/message/recall/${messageId}`)
-    // update latest message if user recall latest message
-    if (isNotifyRecipient) {
-      const latestMessage = {
-        text: 'Message was recall',
-        createdAt: msg.data.updatedAt,
-      }
-      await apiClient.patch(`/room/update/latestMessage/${roomId}`, {
-        latestMessage,
-      })
-      // sync latest messsage current user room
-      dispatch(updateLatestMessage({ roomId, latestMessage }))
-    }
-
-    // send to socket server
-    sendMessage({
-      destination: 'chat:recallMessage',
-      data: {
-        roomId,
-        messageId,
-        recipientId,
-        isNotifyRecipient,
-        modifyTime: msg?.data.updatedAt,
-      },
-    })
-    onClose()
   }
 
   const classes =
@@ -121,7 +68,7 @@ const ContextualMenu: React.FC<Props> = ({
         </p>
         <div className="flex items-center justify-end py-2">
           <Button title="Cancel" textBold onClick={onClose} />
-          <Button title="DELETE" textBold onClick={handleRecallMessage} />
+          <Button title="DELETE" textBold onClick={onRecall} />
         </div>
       </AppModal>
     </>

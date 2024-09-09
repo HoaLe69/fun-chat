@@ -11,7 +11,7 @@ import { roomSelector } from 'redux/room.store'
 
 import useSocket from 'hooks/useSocket'
 import { apiClient } from 'api/apiClient'
-import { groupMessages } from 'utils/message'
+import { groupMessagesByTime } from 'utils/message'
 
 const MessageContainer: React.FC = () => {
   const [messages, setMessages] = useState<MessageType[]>([])
@@ -116,7 +116,7 @@ const MessageContainer: React.FC = () => {
             <>
               {messages?.length > 0 ? (
                 <>
-                  {groupMessages(messages).map(
+                  {groupMessagesByTime(messages).map(
                     (message: MessageType, index: number) => {
                       if (message.timeLine) {
                         return renderTimeLine(message.timeLine)
