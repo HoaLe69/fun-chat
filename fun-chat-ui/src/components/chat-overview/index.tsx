@@ -6,17 +6,20 @@ import type { MessageType } from 'lib/app.type'
 import { userSelector } from 'redux/user.store'
 import { useState, useEffect, useRef } from 'react'
 
-import { useAppSelector } from 'hooks'
-import { roomSelector } from 'redux/room.store'
+import { useAppDispatch, useAppSelector } from 'hooks'
+import { quitSelectedRoom, roomSelector } from 'redux/room.store'
 
 import useSocket from 'hooks/useSocket'
 import { apiClient } from 'api/apiClient'
 import { groupMessagesByTime } from 'utils/message'
+import { ArrowLeftIcon } from 'components/icons'
 
 const MessageContainer: React.FC = () => {
   const [messages, setMessages] = useState<MessageType[]>([])
-  const refContainer = useRef<HTMLDivElement>(null)
+  const dispatch = useAppDispatch()
   const { socket } = useSocket()
+  const refContainer = useRef<HTMLDivElement>(null)
+  const currentPos = useRef<number>(0)
 
   const roomSelectedId = useAppSelector(roomSelector.selectRoomId)
   const recipient = useAppSelector(roomSelector.selectRoomRecipient)
@@ -70,12 +73,27 @@ const MessageContainer: React.FC = () => {
     }
   }, [roomSelectedId])
 
-  useEffect(() => {
-    const containerEl = refContainer.current
-    if (containerEl) {
-      containerEl.scrollTop = containerEl.scrollHeight
-    }
-  }, [messages])
+  // useEffect(() => {
+  //   const containerEl = refContainer.current
+  //   const handleScroll = (event: Event) => {
+  //     currentPos.current = event.target.scrollTop
+  //   }
+  //   if (containerEl) {
+  //     containerEl.addEventListener('scroll', handleScroll)
+  //   }
+  //   return () => {
+  //     containerEl?.removeEventListener('scroll', handleScroll)
+  //   }
+  // }, [refContainer])
+  //
+  // useEffect(() => {
+  //   console.log('currentPosition', currentPos.current)
+  //   const containerEl = refContainer.current
+  //   if (containerEl) {
+  //     containerEl.scrollTop = currentPos.current
+  //   }
+  // }, [messages])
+  //
 
   const renderTimeLine = (timeLine: string) => (
     <div key={timeLine} className="flex items-center justify-center gap-2">
@@ -93,10 +111,18 @@ const MessageContainer: React.FC = () => {
     )
   }
   return (
-    <div className="flex-1 h-screen bg-grey-50 dark:bg-grey-950 overflow-x-hidden">
+    <div className="flex-1 h-screen bg-grey-50 dark:bg-grey-950 overflow-x-hidden absolute md:relative inset-0">
       <div className="flex flex-col h-full">
         <div className="h-[68px] bg-grey-50 dark:bg-grey-900 border-b-2 border-grey-300 dark:border-grey-700">
           <div className="flex items-center h-full p-2 gap-4">
+            <button
+              onClick={() => {
+                dispatch(quitSelectedRoom())
+              }}
+              className="text-sm md:hidden"
+            >
+              <ArrowLeftIcon />
+            </button>
             <UserAvatar
               alt={recipient?.display_name || ''}
               src={recipient?.picture || ''}

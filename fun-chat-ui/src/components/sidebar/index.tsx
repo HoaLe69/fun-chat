@@ -22,7 +22,7 @@ const Sidebar = (): JSX.Element => {
   }
 
   return (
-    <aside className="flex flex-col max-w-aside w-full bg-grey-50 dark:bg-grey-900 h-screen border-r-2 border-grey-300 dark:border-grey-700">
+    <aside className="flex flex-col w-full md:max-w-aside bg-grey-50 dark:bg-grey-900 h-screen border-r-2 border-grey-300 dark:border-grey-700">
       <header className="px-4 py-3 w-full">
         <div className="flex">
           {openSearch ? (

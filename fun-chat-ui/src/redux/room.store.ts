@@ -31,6 +31,10 @@ const roomSlice = createSlice({
   name: 'room',
   initialState,
   reducers: {
+    quitSelectedRoom: state => {
+      state.selectedRoom.id = null
+      state.selectedRoom.recipient = null
+    },
     selectedRoom: (state, action) => {
       const { roomId, recipient, latestMessage } = action.payload
       state.selectedRoom.id = roomId
@@ -114,6 +118,7 @@ export const roomSelector = {
 export const {
   selectedRoom,
   selectedRoomId,
+  quitSelectedRoom,
   updateLatestMessage,
   updateStatusOfLatestMessage,
   addRoomChat,
