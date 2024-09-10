@@ -5,12 +5,12 @@ export const createRoomAsync = async ({
   room,
 }: {
   room: {
-    members: Array<string>
+    members: Array<string | null | undefined>
     status: string
     latestMessage: {
       text: string
       createdAt: string
-      ownerId: string
+      ownerId: string | null
     }
   }
 }) => {

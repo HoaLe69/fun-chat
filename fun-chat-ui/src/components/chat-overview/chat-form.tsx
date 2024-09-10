@@ -50,7 +50,7 @@ const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
         status: 'spam',
         latestMessage: {
           text: textMessage,
-          createdAt: Date.now(),
+          createdAt: Date.now().toString(),
           ownerId: userLoginId,
         },
       }
