@@ -31,7 +31,8 @@ app.use(cookies())
 // apply middleware
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    //    origin: "http://localhost:5173",
+    origin: "https://fun-chat-red.vercel.app",
     credentials: true,
   }),
 )
