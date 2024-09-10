@@ -19,7 +19,7 @@ const MessageContainer: React.FC = () => {
   const dispatch = useAppDispatch()
   const { socket } = useSocket()
   const refContainer = useRef<HTMLDivElement>(null)
-  const currentPos = useRef<number>(0)
+  // const currentPos = useRef<number>(0)
 
   const roomSelectedId = useAppSelector(roomSelector.selectRoomId)
   const recipient = useAppSelector(roomSelector.selectRoomRecipient)

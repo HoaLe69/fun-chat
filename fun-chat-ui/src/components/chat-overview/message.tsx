@@ -75,7 +75,7 @@ const Message: React.FC<MessageProps> = ({
     })
   }
 
-  const handleRecallMessage = async (cb: () => void) => {
+  const handleRecallMessage = async () => {
     if (!_id) return
 
     // message identify is the latest or not
@@ -114,7 +114,6 @@ const Message: React.FC<MessageProps> = ({
         modifyTime: msg?.data.updatedAt,
       },
     })
-    cb()
   }
 
   const renderTextMessage = () => (

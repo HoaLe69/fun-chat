@@ -8,7 +8,7 @@ import AppModal from 'components/common/app-modal'
 import classNames from 'classnames'
 
 type Props = {
-  onRecall: (cb: () => void) => void
+  onRecall: () => void
   isCurrentUser: boolean
 }
 const ContextualMenu: React.FC<Props> = ({ onRecall, isCurrentUser }) => {
