@@ -9,9 +9,9 @@ const cookies = require("cookie-parser")
 const http = require("http")
 const socketIo = require("socket.io")
 const path = require("path")
-const handleSocket = require("./src/utils/socket.js")
+const handleSocketEvent = require("@events/socket")
 const db = require("@config/db.js")
-const { createRandomUser } = require("./src/utils/faker.js")
+const { createRandomUser } = require("@utils/faker.js")
 
 // connect database
 db.connect()
@@ -25,14 +25,14 @@ const io = socketIo(server, {
 })
 const router = require("@routes")
 //basic socket io
-handleSocket(io)
+handleSocketEvent(io)
 app.use(cookies())
 
 // apply middleware
 app.use(
   cors({
     //    origin: "http://localhost:5173",
-    origin: "https://fun-chat-red.vercel.app",
+    origin: "http://localhost:5173",
     credentials: true,
   }),
 )

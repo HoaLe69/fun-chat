@@ -5,11 +5,11 @@ dotenv.config()
 const database = {
   host: process.env.HOST,
   name: process.env.DB_NAME,
-  mongourl: process.env.MONGODB_URL,
+  mongourl: process.env.MONGODB_URL, // for production
 }
 const connect = async () => {
   try {
-    await mongoose.connect(database.mongourl)
+    await mongoose.connect(`${database.host}/${database.name}`)
     console.log("connected database")
   } catch (e) {
     console.error("Failed to connect database")

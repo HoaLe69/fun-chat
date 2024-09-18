@@ -1,11 +1,11 @@
 const jwt = require("jsonwebtoken")
 
-const verify_user = (req, res, next) => {
+const verifyToken = (req, res, next) => {
   try {
     const token = req.cookies?.token
     if (!token) return res.status(401).send("You're not authenticated")
     jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
-      if (err) return res.status(401).send("Invalid token")
+      if (err) return res.status(403).send("Invalid token")
       req.user = decoded
       next()
     })
@@ -14,4 +14,4 @@ const verify_user = (req, res, next) => {
   }
 }
 
-module.exports = verify_user
+module.exports = verifyToken

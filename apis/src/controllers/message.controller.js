@@ -1,5 +1,5 @@
-const Message = require("@schema/message.schema.js")
-const Room = require("@schema/room.schema.js")
+const Message = require("@schema/message.schema")
+const Room = require("@schema/room.schema")
 
 const messageController = {
   create: async (req, res) => {

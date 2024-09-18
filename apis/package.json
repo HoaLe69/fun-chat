@@ -40,6 +40,9 @@
     "@config": "src/config",
     "@controller": "src/controllers",
     "@routes": "src/routes",
-    "@schema": "src/schema"
+    "@middleware": "src/middleware",
+    "@schema": "src/schema",
+    "@utils": "src/utils",
+    "@events": "src/events"
   }
 }
