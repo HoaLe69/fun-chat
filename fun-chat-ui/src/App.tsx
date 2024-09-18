@@ -1,14 +1,12 @@
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import { Routes, Route, BrowserRouter } from 'react-router-dom'
 import { GOOGLE_CLIEN_ID } from 'const'
-import { ProtectedRoute, lazyWithRetry } from 'utils/routeUtil'
+import ProtectedRoute from 'modules/auth/components/ProtectRoute'
 import { Provider } from 'react-redux'
-import { store } from 'redux/store'
+import { store } from 'modules/core/store'
 import { Suspense } from 'react'
-import LoadingIndicator from 'components/loading'
-
-const Login = lazyWithRetry(() => import('./pages/login'))
-const Main = lazyWithRetry(() => import('./pages/main'))
+import { LoadingSplashScreen } from 'modules/core/components/loadings'
+import { LoginPage, ChatPage } from 'pages'
 
 function App() {
   //  TODO: move logic code to another file
@@ -26,14 +24,14 @@ function App() {
     <GoogleOAuthProvider clientId={GOOGLE_CLIEN_ID}>
       <Provider store={store}>
         <BrowserRouter>
-          <Suspense fallback={<LoadingIndicator />}>
+          <Suspense fallback={<LoadingSplashScreen />}>
             <Routes>
-              <Route path="/login" element={<Login />} />
+              <Route path="/login" element={<LoginPage />} />
               <Route
                 path="/"
                 element={
                   <ProtectedRoute>
-                    <Main />
+                    <ChatPage />
                   </ProtectedRoute>
                 }
               />

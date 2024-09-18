@@ -30,4 +30,3 @@
     @apply w-[46px] h-[46px] rounded-2xl hover:bg-blue-100 dark:hover:bg-blue-900 not-first:not-last:mx-2 flex flex items-center justify-center cursor-pointer;
   }
 }
-
