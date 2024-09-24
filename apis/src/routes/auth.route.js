@@ -6,6 +6,6 @@ const authController = require("@controller/auth.controller")
 router.post("/login", authController.login)
 router.get("/logOut", authController.logOut)
 
-router.get("/refreshToken", authController.refreshToken)
+router.post("/refreshToken", authController.refreshToken)
 
 module.exports = router

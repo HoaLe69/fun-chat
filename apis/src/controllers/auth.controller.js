@@ -1,5 +1,7 @@
 const User = require("@schema/user.schema")
+const RefreshToken = require("@schema/refreshToken.schema")
 const tokenUtils = require("@utils/token")
+const authUtils = require("@utils/auth")
 const { convertNameToSearchTerm } = require("@utils/convert-search-term")
 
 const verify_google_token = async (token, res) => {
@@ -52,21 +54,25 @@ const authController = {
         picture: db_user.picture,
         display_name: db_user.display_name,
       }
-
+      // generate new token
       const accessToken = tokenUtils.generateAccessToken(payload)
       const refreshToken = tokenUtils.generateRefreshToken(payload)
 
-      res.cookie("token", accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: process.env.MAX_AGE,
+      // save the refresh Token in the database with an expiry
+      await new RefreshToken({
+        userId: payload.id,
+        token: refreshToken,
+        expiresAt: tokenUtils.calculateExpireDate(20160),
+      }).save()
+
+      // send tokens to user via cookie
+      authUtils.cookieResponse({ res, key: "token", value: accessToken })
+      authUtils.cookieResponse({
+        res,
+        key: "refreshToken",
+        value: refreshToken,
       })
 
-      res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: process.env.MAX_AGE,
-      })
       return res.status(200).json({ user: payload })
     } catch (e) {
       next(e)
@@ -74,43 +80,69 @@ const authController = {
   },
   async logOut(req, res) {
     try {
-      res.clearCookie("accessToken")
+      res.clearCookie("token")
       res.clearCookie("refreshToken")
       return res.status(200).json({ message: "Successfully logged out" })
     } catch (error) {
       console.error(error)
     }
   },
-  refreshToken(req, res) {
+  async refreshToken(req, res) {
     try {
-      const refreshToken = req.cookies.refreshToken
+      const oldRefreshToken = req.cookies.refreshToken
 
-      if (!refreshToken) return res.status(400).send("Invalid request")
+      if (!oldRefreshToken) return res.status(403).send("Invalid request")
 
-      const user = tokenUtils.verifyToken(refreshToken)
+      const user = tokenUtils.verifyToken(oldRefreshToken)
 
-      if (!user) return res.status(400).send("Invalid Token")
+      // refresh token has expired or secret key not correct
+      if (user === null) return res.status(301).send("Login session is expire")
 
-      if (user) {
-        delete user.iat
-        delete user.exp
-        const accessToken = tokenUtils.generateAccessToken(user)
-        const refreshToken = tokenUtils.generateRefreshToken(user)
+      // Fetch the stored refresh token from DB
+      const storedRefreshToken = await RefreshToken.findOne({
+        token: oldRefreshToken,
+        userId: user?.id,
+      })
 
-        res.cookie("token", accessToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          maxAge: process.env.MAX_AGE,
-        })
+      if (!storedRefreshToken)
+        return res.status(403).send("Invalid or expired refresh token")
 
-        res.cookie("refreshToken", refreshToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          maxAge: process.env.MAX_AGE,
-        })
-        return res.status(201).send("OK")
+      // check if the token is still  valid or already used
+      if (!storedRefreshToken.isValid() || storedRefreshToken.used) {
+        // token is invalid or reused, delete all refresh tokens for the user and force logout
+        await RefreshToken.deleteMany({ userId: user.id })
+        return res
+          .status(403)
+          .send("Invalid or reused refresh token. Please re-authenticate")
       }
-      return res.status(200).json({ status: "ok" })
+
+      // Mark the old refresh token as used
+      storedRefreshToken.used = true
+      await storedRefreshToken.save()
+
+      delete user.iat
+      delete user.exp
+
+      // Proceed to issue new tokens
+      const accessToken = tokenUtils.generateAccessToken(user)
+      const refreshToken = tokenUtils.generateRefreshToken(user)
+
+      // save new refresh token in the database
+      await new RefreshToken({
+        token: refreshToken,
+        userId: user.id,
+        expiresAt: tokenUtils.calculateExpireDate(20160),
+      }).save()
+
+      //send these token to user via cookie
+      authUtils.cookieResponse({ res, key: "token", value: accessToken })
+      authUtils.cookieResponse({
+        res,
+        key: "refreshToken",
+        value: refreshToken,
+      })
+
+      return res.status(201).send("OK")
     } catch (error) {
       console.error(error)
     }
