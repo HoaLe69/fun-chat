@@ -1,5 +1,6 @@
 const User = require("@schema/user.schema")
 const RefreshToken = require("@schema/refreshToken.schema")
+const SocialAccount = require("@schema/socialAccount.schema")
 const tokenUtils = require("@utils/token")
 const authUtils = require("@utils/auth")
 const { convertNameToSearchTerm } = require("@utils/convert-search-term")
@@ -76,6 +77,57 @@ const authController = {
       return res.status(200).json({ user: payload })
     } catch (e) {
       next(e)
+    }
+  },
+  async loginWithFacebook(req, res, next) {
+    try {
+      console.log(
+        "-----------------------LOGIN WITH META--------------------------------",
+      )
+      const code = req.body.code
+      const token = await authUtils.getTokenFromFacebook(code)
+
+      const userInfo = await authUtils.getUserProfileFromFacebook(
+        token.access_token,
+      )
+
+      if (!userInfo) return res.status(400).send("Invalid request")
+
+      // check user already have an account
+      const storedUser = await SocialAccount.findOne({
+        socialId: userInfo.id,
+        platform: "facebook",
+      }).populate("user")
+
+      if (storedUser) {
+        console.log("---------Stored User-----------\n", storedUser.user)
+        console.log("--------------> User have already an account")
+        payload = storedUser.user
+      } else {
+        console.log("--------------> Create new user account")
+        // create a new user
+        const savedUser = await new User({
+          email: userInfo.email,
+          picture: userInfo.picture.data.url,
+          display_name: userInfo.name,
+          normalized_name: convertNameToSearchTerm(userInfo.name),
+        }).save()
+
+        // save new social account
+        await new SocialAccount({
+          user: savedUser._id,
+          socialId: userInfo.id,
+          platform: "facebook",
+        }).save()
+
+        payload = savedUser
+      }
+
+      console.log("------------> userInfo", payload)
+      req.user = payload
+      next()
+    } catch (error) {
+      console.log(error)
     }
   },
   async logOut(req, res) {
