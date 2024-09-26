@@ -15,6 +15,11 @@ router.post(
   authController.loginWithGoogle,
   responseAndSaveToken,
 )
+router.post(
+  "/login/discord",
+  authController.loginWithDiscord,
+  responseAndSaveToken,
+)
 router.get("/logOut", authController.logOut)
 
 router.post("/refreshToken", authController.refreshToken)

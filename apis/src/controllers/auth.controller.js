@@ -79,6 +79,65 @@ const authController = {
       next(e)
     }
   },
+  async loginWithDiscord(req, res, next) {
+    try {
+      console.log(
+        "-----------------------LOGIN WITH DISCORD--------------------------------",
+      )
+      await new Promise(resolve => setTimeout(resolve, 3000))
+      const code = req.body.code
+      const tokens = await authUtils.getAccessTokenFromDiscord(code)
+      console.log(tokens)
+
+      const userInfo = await authUtils.getUserProfileFromDiscord(
+        tokens.access_token,
+      )
+
+      if (!userInfo || !code) return res.status(400).send("Invalid request")
+
+      let payload
+
+      // check user already have an account
+      const storedUser = await SocialAccount.findOne({
+        socialId: userInfo.id,
+        platform: "discord",
+      }).populate("user")
+
+      if (storedUser) {
+        console.log("---------Stored User-----------\n", storedUser.user)
+        console.log("----------------> User have already an account")
+        payload = storedUser.user
+      } else {
+        console.log("------------------Create new User")
+        const savedUser = await new User({
+          email: userInfo.email,
+          display_name: userInfo.global_name,
+          picture: authUtils.getFullPathAvatarDiscord(
+            userInfo.id,
+            userInfo.avatar,
+          ),
+          normalized_name: convertNameToSearchTerm(userInfo.global_name),
+        }).save()
+
+        console.log("Create new social account of user")
+        await new SocialAccount({
+          socialId: userInfo.id,
+          platform: "discord",
+          user: savedUser._id,
+        }).save()
+
+        payload = savedUser
+      }
+
+      console.log("---------------------> userInfo", payload)
+
+      req.user = payload
+
+      next()
+    } catch (error) {
+      console.log(error)
+    }
+  },
   async loginWithGoogle(req, res, next) {
     try {
       console.log(
