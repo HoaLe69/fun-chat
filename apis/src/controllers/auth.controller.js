@@ -79,6 +79,56 @@ const authController = {
       next(e)
     }
   },
+  async loginWithGoogle(req, res, next) {
+    try {
+      console.log(
+        "-----------------------LOGIN WITH GOOGLE--------------------------------",
+      )
+      const code = req.body.code
+      if (!code) return res.status(400).send("Invalid request")
+
+      const userInfo = await authUtils.getUserProfileFromGoogle(code)
+
+      if (!userInfo) return res.status(400).send("Invalid request")
+      let payload
+
+      //      check user already have an account
+      const storedUser = await SocialAccount.findOne({
+        socialId: userInfo.id,
+        platform: "google",
+      }).populate("user")
+
+      if (storedUser) {
+        console.log("---------Stored User-----------\n", storedUser.user)
+        console.log("----------------> User have already an account")
+        payload = storedUser.user
+      } else {
+        console.log("----------------Create new user-----------------")
+        const savedUser = await new User({
+          email: userInfo.email,
+          display_name: userInfo.name,
+          picture: userInfo.picture,
+          normalized_name: convertNameToSearchTerm(userInfo.name),
+        }).save()
+        console.log("create new social account of user")
+        await new SocialAccount({
+          socialId: userInfo.id,
+          platform: "google",
+          user: savedUser._id,
+        }).save()
+
+        payload = savedUser
+      }
+
+      console.log("------------------> userInfo", payload)
+      req.user = payload
+      next()
+
+      console.log(userInfo)
+    } catch (error) {
+      console.log(error)
+    }
+  },
   async loginWithFacebook(req, res, next) {
     try {
       console.log(

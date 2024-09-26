@@ -9,7 +9,7 @@ const cookieResponse = ({ res, key, value }) => {
 }
 
 const getTokenFromFacebook = async code => {
-  const redirect_uri = "http://localhost:5173/login"
+  const redirect_uri = "http://localhost:5173/login/redirect/facebook"
   const keys = {
     client_id: process.env.FB_CLIENT_ID,
     client_secret: process.env.FB_CLIENT_SECRET,
@@ -32,8 +32,24 @@ const getUserProfileFromFacebook = async accessToken => {
   return userInfo
 }
 
+const getUserProfileFromGoogle = async accessToken => {
+  const res = await fetch(
+    "https://www.googleapis.com/oauth2/v1/userinfo?alt=json",
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  )
+
+  const userInfo = await res.json()
+
+  return userInfo
+}
+
 module.exports = {
   cookieResponse,
   getTokenFromFacebook,
   getUserProfileFromFacebook,
+  getUserProfileFromGoogle,
 }
