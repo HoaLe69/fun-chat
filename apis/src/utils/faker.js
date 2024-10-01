@@ -1,5 +1,5 @@
 const { faker } = require("@faker-js/faker")
-const User = require("@schema/user.schema.js")
+const User = require("@models/User")
 const { convertNameToSearchTerm } = require("./convert-search-term")
 
 //remove on production

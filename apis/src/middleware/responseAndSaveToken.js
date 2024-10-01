@@ -1,5 +1,5 @@
 const tokenUtils = require("@utils/token")
-const RefreshToken = require("@schema/refreshToken.schema")
+const RefreshToken = require("@models/RefreshToken")
 
 const totalSecondsOfTwoWeek = 20160
 

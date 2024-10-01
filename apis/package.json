@@ -43,7 +43,7 @@
     "@controller": "src/controllers",
     "@routes": "src/routes",
     "@middleware": "src/middleware",
-    "@schema": "src/schema",
+    "@models": "src/models",
     "@utils": "src/utils",
     "@events": "src/events",
     "@errors": "src/errors"

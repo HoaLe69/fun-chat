@@ -1,4 +1,4 @@
-const Room = require("@schema/room.schema")
+const Room = require("@models/Room")
 
 const roomController = {
   // create new room
