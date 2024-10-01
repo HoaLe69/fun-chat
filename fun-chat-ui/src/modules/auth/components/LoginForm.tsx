@@ -1,61 +1,91 @@
-import { useState } from 'react'
-import s from './login.module.css'
+import React, { ChangeEvent, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { PersonIcon, LockIcon } from 'modules/core/components/icons'
 import { authServices } from 'modules/auth/services/authServices'
+import { Input } from 'modules/core/components/form'
+import ReactLoading from 'react-loading'
+import classNames from 'classnames'
 
-const LoginForm = () => {
-  const [email, setEmail] = useState<string>('')
-  const [password, setPassword] = useState<string>('')
+const LoginForm: React.FC = () => {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  })
+  const [error, setError] = useState<Record<string, string | undefined>>({})
+
+  const [isProcessing, setIsProcessing] = useState<boolean>(false)
   const navigate = useNavigate()
 
-  const handleLoginEmail = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const login = async () => {
+    const { email, password } = formData
+    setIsProcessing(true)
     try {
-      if (!email || !password) return
-      await authServices.login({ type: 'email', email, password })
+      await authServices.login({ email, password })
+      setIsProcessing(false)
       navigate('/')
-    } catch (error) {
-      console.error(error)
+    } catch (error: any) {
+      const message = error?.response.data.message || 'Something went wrong.'
+      console.log({ error })
+      setError(pre => ({ ...pre, apiErrorMessage: message }))
+      setIsProcessing(false)
     }
   }
 
+  const handleLoginWithEmail = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!isEnableToSubmitForm) return
+    login()
+  }
+
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData(pre => ({ ...pre, [name]: value }))
+  }
+
+  const isEnableToSubmitForm = useMemo(() => {
+    return formData.email !== '' && formData.password !== ''
+  }, [formData])
+
   return (
-    <form className="text-center" onSubmit={handleLoginEmail}>
-      <h1 className="text-3xl font-bold">
-        <strong className="text-blue-500">FUN</strong>
-        CHAT
-      </h1>
-      <p className="text-grey-800 mb-6">Connect people around the world</p>
-      <div className={s.form_input_group}>
-        <span className="text-[#1c1c1c]">
-          <PersonIcon />
-        </span>
-        <input
-          name="email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
+    <div className="flex items-center justify-center">
+      <form className="max-w-80 flex-1 " onSubmit={handleLoginWithEmail}>
+        <Input
+          type="email"
           placeholder="Enter your email"
-          className={s.input}
+          name="email"
+          label="Email"
+          value={formData.email}
+          onChange={e => handleInputChange(e)}
         />
-      </div>
-      <div className={s.form_input_group}>
-        <span>
-          <LockIcon />
-        </span>
-        <input
+        <Input
           type="password"
-          name="password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
           placeholder="Enter your password"
-          className={s.input}
+          name="password"
+          label="Password"
+          value={formData.password}
+          onChange={e => handleInputChange(e)}
         />
-      </div>
-      <button className="px-7 py-4 rounded-2xl bg-gradient-to-r  from-[#9181f4] to-[#5038ed] text-grey-50 font-bold">
-        Login now
-      </button>
-    </form>
+        <div className="flex items-center my-2">
+          {error.apiErrorMessage && (
+            <p className="text-left text-red-500 text-sm font-semibold">
+              {error.apiErrorMessage}
+            </p>
+          )}
+        </div>
+        <button
+          disabled={!isEnableToSubmitForm}
+          className={classNames(
+            'py-3 px-2 h-12  bg-blue-500 text-grey-50 font-bold w-full rounded-full my-4 flex justify-center items-center',
+            { 'opacity-75': !isEnableToSubmitForm },
+          )}
+        >
+          {isProcessing ? (
+            <ReactLoading type="spinningBubbles" width="20px" height="20px" />
+          ) : (
+            'Sign in now'
+          )}
+        </button>
+      </form>
+    </div>
   )
 }
 
