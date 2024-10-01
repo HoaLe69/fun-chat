@@ -1,4 +1,5 @@
 require("dotenv").config()
+const bcrypt = require("bcrypt")
 
 const cookieResponse = ({ res, key, value }) => {
   return res.cookie(key, value, {
@@ -97,7 +98,35 @@ const getFullPathAvatarDiscord = (userId, avatarHash) => {
   return `https://cdn.discordapp.com/avatars/${userId}/${avatarHash}.${extension}`
 }
 
+const generateOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000)
+}
+
+const hashingPassword = async password => {
+  const saltRounds = 10
+  try {
+    const salt = await bcrypt.genSalt(saltRounds)
+    const hashedPassword = await bcrypt.hash(password, salt)
+    return hashedPassword
+  } catch (error) {
+    console.log(error)
+    return null
+  }
+}
+
+const compareHashedPassword = async (password, hashedPassword) => {
+  try {
+    const isMatchPassword = await bcrypt.compare(password, hashedPassword)
+    return isMatchPassword
+  } catch (error) {
+    console.log(error)
+    return false
+  }
+}
 module.exports = {
+  generateOTP,
+  hashingPassword,
+  compareHashedPassword,
   cookieResponse,
   getTokenFromFacebook,
   getUserProfileFromFacebook,

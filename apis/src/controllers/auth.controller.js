@@ -3,80 +3,105 @@ const RefreshToken = require("@schema/refreshToken.schema")
 const SocialAccount = require("@schema/socialAccount.schema")
 const tokenUtils = require("@utils/token")
 const authUtils = require("@utils/auth")
+const emailUtils = require("@utils/email")
 const { convertNameToSearchTerm } = require("@utils/convert-search-term")
 
-const verify_google_token = async (token, res) => {
-  const url = `https://oauth2.googleapis.com/tokeninfo?id_token=${token}`
-  const response = await fetch(url, { method: "GET" })
-  if (response.status === 400) {
-    return res.status(400).send("Token invalid , let try again")
-  }
-  return response.json()
-}
-
 const authController = {
-  async login(req, res, next) {
+  async checkEmailIsExist(req, res) {
     try {
-      const type = req.body.type
-      let db_user
-      if (type === "email") {
-        //extract data from request
-        const { email, password } = req.body
-        db_user = await User.findOne({ email })
-        // user not found
-        if (!db_user) return res.status(400).send("Email not registered")
-        // TODO: encrypt password
-        if (db_user.password !== password)
-          return res.status(400).send("Password incorrect")
-      } else {
-        const id_token = req.body.id_token
-        if (!id_token)
-          return res.status(400).send("Token is not attached in request")
-        // extract data from token gg
-        const tokeninfo = await verify_google_token(id_token, res)
-        if (!tokeninfo) return res.status(400).send("Failed to verify email")
+      const { email } = req.body
+      if (!email) return res.status(400).send("Invalid request")
 
-        const user_infor = {
-          email: tokeninfo["email"],
-          picture: tokeninfo["picture"],
-          display_name: tokeninfo["name"],
-          normalized_name: convertNameToSearchTerm(tokeninfo["name"]),
-        }
-
-        db_user = await User.findOne({ email: user_infor.email })
-        if (!db_user) {
-          db_user = await new User({ ...user_infor }).save()
-        }
-      }
-
-      const payload = {
-        id: db_user._id,
-        email: db_user.email,
-        picture: db_user.picture,
-        display_name: db_user.display_name,
-      }
-      // generate new token
-      const accessToken = tokenUtils.generateAccessToken(payload)
-      const refreshToken = tokenUtils.generateRefreshToken(payload)
-
-      // save the refresh Token in the database with an expiry
-      await new RefreshToken({
-        userId: payload.id,
-        token: refreshToken,
-        expiresAt: tokenUtils.calculateExpireDate(20160),
-      }).save()
-
-      // send tokens to user via cookie
-      authUtils.cookieResponse({ res, key: "token", value: accessToken })
-      authUtils.cookieResponse({
-        res,
-        key: "refreshToken",
-        value: refreshToken,
+      const isUsedEmail = await User.findOne({
+        email,
+        password: { $ne: null },
       })
 
-      return res.status(200).json({ user: payload })
-    } catch (e) {
-      next(e)
+      if (isUsedEmail)
+        return res.status(400).json({ message: "Email have been used" })
+
+      return res.status(200).send("Ok")
+    } catch (error) {
+      console.log(error)
+    }
+  },
+  async sendAnOTP(req, res) {
+    try {
+      const { email } = req.body
+      console.log({ email })
+      if (!email) return res.status(400).send("Email is required")
+      const otp = authUtils.generateOTP()
+
+      const token = tokenUtils.generateShortLivedToken({ email, otp }, 60)
+
+      emailUtils.sendEmailToUser(email, otp)
+      return res.status(200).json({ token })
+    } catch (error) {
+      console.log()
+    }
+  },
+  async registerWithEmail(req, res, next) {
+    try {
+      const { email, password, display_name, token, otp } = req.body
+
+      const tokenInfo = tokenUtils.verifyToken(token)
+
+      if (tokenInfo == null)
+        return res.status(400).json({ message: "OTP was wrong or expiried" })
+
+      //TODO: case otp start with 0
+      if (tokenInfo.otp !== parseInt(otp))
+        return res.status(400).json({ message: "Wrong OTP" })
+
+      const hashedPassword = await authUtils.hashingPassword(password)
+
+      const savedUser = await new User({
+        email,
+        password: hashedPassword,
+        display_name,
+        picture: "https://picsum.photos/seed/picsum/200/300",
+        isVerified: true,
+      }).save()
+
+      req.user = savedUser
+      next()
+    } catch (error) {
+      console.log(error)
+    }
+  },
+  async loginWithEmail(req, res, next) {
+    try {
+      const { email, password } = req.body
+      if (!email || !password) return res.status(400).send("Invalid request")
+
+      const storedUser = await User.findOne({
+        email,
+        password: { $ne: null },
+      })
+
+      if (!storedUser)
+        return res.status(404).json({ message: "User not found" })
+
+      // checking password is vaild or not using bcrypt
+      const isValidPassword = await authUtils.compareHashedPassword(
+        password,
+        storedUser.password,
+      )
+
+      if (!storedUser.isVerified)
+        return res
+          .status(400)
+          .json({ message: "Email is not active.", isVerified: false })
+
+      if (isValidPassword) {
+        req.user = storedUser
+        // send token to user
+        next()
+      } else {
+        return res.status(400).json({ message: "Wrong password." })
+      }
+    } catch (error) {
+      console.log(error)
     }
   },
   async loginWithDiscord(req, res, next) {
@@ -262,7 +287,7 @@ const authController = {
       // Fetch the stored refresh token from DB
       const storedRefreshToken = await RefreshToken.findOne({
         token: oldRefreshToken,
-        userId: user?.id,
+        userId: user?._id,
       })
 
       if (!storedRefreshToken)
