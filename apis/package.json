@@ -45,6 +45,7 @@
     "@middleware": "src/middleware",
     "@schema": "src/schema",
     "@utils": "src/utils",
-    "@events": "src/events"
+    "@events": "src/events",
+    "@errors": "src/errors"
   }
 }
