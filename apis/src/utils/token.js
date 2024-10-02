@@ -1,8 +1,9 @@
 const jwt = require("jsonwebtoken")
 require("dotenv").config()
+const { APIError } = require("@errors")
 
-const accessTokenExpiresIn = "30m"
-const refreshTokenExpirsIn = "14d"
+const accessTokenExpiresIn = process.env.ACCESS_TOKEN_EXPIRIESIN
+const refreshTokenExpiresIn = process.env.ACCESS_TOKEN_EXPIRIESIN
 
 const generateAccessToken = user => {
   return jwt.sign({ ...user }, process.env.SECRET_KEY, {
@@ -10,21 +11,26 @@ const generateAccessToken = user => {
   })
 }
 
+const generateShortLivedToken = (user, expiresIn) => {
+  return jwt.sign({ ...user }, process.env.SECRET_KEY, {
+    expiresIn,
+  })
+}
+
 const generateRefreshToken = user => {
   return jwt.sign({ ...user }, process.env.SECRET_KEY, {
-    expiresIn: refreshTokenExpirsIn,
+    expiresIn: refreshTokenExpiresIn,
   })
 }
 
 const verifyToken = token => {
   try {
     return jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
-      if (err) throw new Error("Token invalid")
+      if (err) throw new APIError("Token invalid", 400)
       return decoded
     })
   } catch (error) {
-    console.error(error)
-    return null
+    throw new APIError("Token invalid", 400)
   }
 }
 
@@ -35,20 +41,10 @@ const calculateExpireDate = durationInMinutes => {
   return new Date(now.getTime() + durationInMinutes * 60 * 1000) // Convert minutes to miliseconds
 }
 
-// const currentTime = input => {
-//   const inputTime = new Date(input)
-//   const date = inputTime.getDate()
-//   const month = inputTime.getMonth() + 1
-//   const year = inputTime.getFullYear()
-//   const hours = inputTime.getHours()
-//   const minutes = inputTime.getMinutes()
-//   const second = inputTime.getSeconds()
-//   return `${date}:${month}:${year} - ${hours}:${minutes}:${second}`
-// }
-
 module.exports = {
-  generateAccessToken,
-  generateRefreshToken,
-  calculateExpireDate,
   verifyToken,
+  generateAccessToken,
+  calculateExpireDate,
+  generateRefreshToken,
+  generateShortLivedToken,
 }

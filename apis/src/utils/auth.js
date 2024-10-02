@@ -9,7 +9,7 @@ const cookieResponse = ({ res, key, value }) => {
   })
 }
 
-const getTokenFromFacebook = async code => {
+const getAccessTokenFromFacebook = async code => {
   const redirect_uri = "http://localhost:5173/login/redirect/facebook"
   const keys = {
     client_id: process.env.FB_CLIENT_ID,
@@ -21,7 +21,7 @@ const getTokenFromFacebook = async code => {
   const response = await fetch(url)
 
   const tokens = await response.json()
-  return tokens
+  return tokens.access_token
 }
 
 const getUserProfileFromFacebook = async accessToken => {
@@ -75,7 +75,7 @@ const getAccessTokenFromDiscord = async code => {
     body: data,
   })
   const tokens = await response.json()
-  return tokens
+  return tokens.access_token
 }
 
 const getUserProfileFromDiscord = async accessToken => {
@@ -98,6 +98,7 @@ const getFullPathAvatarDiscord = (userId, avatarHash) => {
   return `https://cdn.discordapp.com/avatars/${userId}/${avatarHash}.${extension}`
 }
 
+//TODO: using secure way to generate OTP
 const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000)
 }
@@ -128,7 +129,7 @@ module.exports = {
   hashingPassword,
   compareHashedPassword,
   cookieResponse,
-  getTokenFromFacebook,
+  getAccessTokenFromFacebook,
   getUserProfileFromFacebook,
   getUserProfileFromGoogle,
   getAccessTokenFromDiscord,

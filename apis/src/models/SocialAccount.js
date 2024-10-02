@@ -18,4 +18,17 @@ const socialAccountSchema = new Schema({
   },
 })
 
+socialAccountSchema.statics = {
+  /**
+   * find by social id
+   * @param {string} socialId
+   * @param {string} platform
+   * @returns {Promise <user, APIError>}
+   */
+  async findByIdAndPlatform(socialId, platform) {
+    const docs = await this.findOne({ socialId, platform }).populate("user")
+    return docs.user
+  },
+}
+
 module.exports = mongoose.model("SocialAccount", socialAccountSchema)

@@ -1,13 +1,9 @@
 const tokenUtils = require("@utils/token")
 const RefreshToken = require("@models/RefreshToken")
-
-const totalSecondsOfTwoWeek = 20160
+require("dotenv").config()
 
 const responseAndSaveToken = async (req, res) => {
   const payload = req.user
-
-  console.log("---------Let begin send token to user", payload)
-
   // Proceed to issue new tokens
   const accessToken = tokenUtils.generateAccessToken({
     _id: payload._id,
@@ -22,7 +18,9 @@ const responseAndSaveToken = async (req, res) => {
   await new RefreshToken({
     token: refreshToken,
     userId: payload._id,
-    expiresAt: tokenUtils.calculateExpireDate(totalSecondsOfTwoWeek),
+    expiresAt: tokenUtils.calculateExpireDate(
+      process.env.REFRESH_TOKEN_EXPIRIESIN_MINUTES,
+    ),
   }).save()
 
   // send these token to user via cookie
@@ -36,7 +34,6 @@ const responseAndSaveToken = async (req, res) => {
     secure: process.env.NODE_ENV === "production",
     maxAge: process.env.MAX_AGE,
   })
-  console.log("-----------> Tada, It work!!!!!!!!!!!!")
 
   return res.status(200).send("ok")
 }

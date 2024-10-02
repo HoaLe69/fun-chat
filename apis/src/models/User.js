@@ -1,8 +1,9 @@
 const mongoose = require("mongoose")
 const { convertNameToSearchTerm } = require("@utils/convert-search-term")
 const { Schema } = mongoose
+const { APIError } = require("@errors/index")
 
-const userScheme = new Schema(
+const userSchema = new Schema(
   {
     email: {
       type: String,
@@ -40,11 +41,31 @@ const userScheme = new Schema(
 )
 
 // Pre-save hook to normalize display name
-userScheme.pre("save", function (next) {
+userSchema.pre("save", function (next) {
   if (this.display_name) {
     this.normalized_name = convertNameToSearchTerm(this.display_name)
   }
   next()
 })
 
-module.exports = mongoose.model("User", userScheme)
+userSchema.statics = {
+  /**
+   * create a Single new User
+   * @param {object} newUser
+   * @returns {Promise <user, APIError>}
+   * */
+  async createUser(newUser) {
+    const user = await newUser.save()
+    return user
+  },
+  /**
+   * create a Single new User @param {string} email
+   * @returns {Promise <user, APIError>}
+   * */
+  async findUserByEmailAndNotNullPassword(email) {
+    const user = this.findOne({ email, password: { $ne: null } })
+    return user
+  },
+}
+
+module.exports = mongoose.model("User", userSchema)

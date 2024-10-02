@@ -8,8 +8,6 @@
 ├── /controllers # Contains controller logic for routes
 │ └── auth.controller.js
 │
-├── /schema # Contains database models
-│ └── user.schema.js
 ├── /models # database interaction
 │ └── user.js
 │
@@ -25,7 +23,7 @@
 ├── /middlewares # Contains middleware (e.g., auth)
 │ └── requireAuth.js
 │
-├── /errorHandling # error handling whole app(e.g., )
+├── /errors # errors handling instance(e.g., `APIError`)
 │ └── index.js
 │
 ├── index.js # Express app setup
@@ -36,4 +34,4 @@
 
 - Three layer approach
 
-client ---> routes ----> (layer 1) controllers -------> (layer 1) services (business logic) -------> (layer 3) models (access resource to database)
+client ---> routes ----> (layer 1) controllers -------> (layer 2) services (business logic) -------> (layer 3) models (access resource from database)
