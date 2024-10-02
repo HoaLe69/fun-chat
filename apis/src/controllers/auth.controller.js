@@ -1,267 +1,101 @@
-const User = require("@models/User")
-const RefreshToken = require("@models/RefreshToken")
-const SocialAccount = require("@models/SocialAccount")
-const tokenUtils = require("@utils/token")
 const authUtils = require("@utils/auth")
-const emailUtils = require("@utils/email")
-const { convertNameToSearchTerm } = require("@utils/convert-search-term")
+const authServices = require("@services/authServices")
+const { validationResult } = require("express-validator")
+const { APIError } = require("@errors")
 
 const authController = {
-  async checkEmailIsExist(req, res) {
+  async checkEmailIsExist(req, res, next) {
     try {
       const { email } = req.body
-      if (!email) return res.status(400).send("Invalid request")
-
-      const isUsedEmail = await User.findOne({
-        email,
-        password: { $ne: null },
-      })
-
-      if (isUsedEmail)
-        return res.status(400).json({ message: "Email have been used" })
-
-      return res.status(200).send("Ok")
+      await authServices.checkEmail(email)
+      res.status(204).send("ok")
     } catch (error) {
-      console.log(error)
+      next(error)
     }
   },
-  async sendAnOTP(req, res) {
+  async sendAnOTP(req, res, next) {
     try {
       const { email } = req.body
-      console.log({ email })
-      if (!email) return res.status(400).send("Email is required")
-      const otp = authUtils.generateOTP()
-
-      const token = tokenUtils.generateShortLivedToken({ email, otp }, 60)
-
-      emailUtils.sendEmailToUser(email, otp)
-      return res.status(200).json({ token })
+      const token = await authServices.sendOTP(email)
+      res.status(200).json({ token })
     } catch (error) {
-      console.log()
+      next(error)
     }
   },
   async registerWithEmail(req, res, next) {
     try {
-      const { email, password, display_name, token, otp } = req.body
+      const errors = validationResult(req)
 
-      const tokenInfo = tokenUtils.verifyToken(token)
+      if (!errors.isEmpty()) throw new APIError(errors.array()[0].msg, 400)
 
-      if (tokenInfo == null)
-        return res.status(400).json({ message: "OTP was wrong or expiried" })
-
-      //TODO: case otp start with 0
-      if (tokenInfo.otp !== parseInt(otp))
-        return res.status(400).json({ message: "Wrong OTP" })
-
-      const hashedPassword = await authUtils.hashingPassword(password)
-
-      const savedUser = await new User({
-        email,
-        password: hashedPassword,
-        display_name,
-        picture: "https://picsum.photos/seed/picsum/200/300",
-        isVerified: true,
-      }).save()
-
+      const savedUser = await authServices.register(req.body)
       req.user = savedUser
       next()
     } catch (error) {
-      console.log(error)
+      next(error)
     }
   },
   async loginWithEmail(req, res, next) {
     try {
-      const { email, password } = req.body
-      if (!email || !password) return res.status(400).send("Invalid request")
+      const errors = validationResult(req)
+      if (!errors.isEmpty()) throw new APIError(errors.array()[0].msg, 400)
 
-      const storedUser = await User.findOne({
-        email,
-        password: { $ne: null },
-      })
+      const storedUser = await authServices.login(req.body)
 
-      if (!storedUser)
-        return res.status(404).json({ message: "User not found" })
-
-      // checking password is vaild or not using bcrypt
-      const isValidPassword = await authUtils.compareHashedPassword(
-        password,
-        storedUser.password,
-      )
-
-      if (!storedUser.isVerified)
-        return res
-          .status(400)
-          .json({ message: "Email is not active.", isVerified: false })
-
-      if (isValidPassword) {
-        req.user = storedUser
-        // send token to user
-        next()
-      } else {
-        return res.status(400).json({ message: "Wrong password." })
-      }
+      req.user = storedUser
+      next()
     } catch (error) {
-      console.log(error)
+      next(error)
     }
   },
   async loginWithDiscord(req, res, next) {
     try {
-      console.log(
-        "-----------------------LOGIN WITH DISCORD--------------------------------",
-      )
-      await new Promise(resolve => setTimeout(resolve, 3000))
       const code = req.body.code
-      const tokens = await authUtils.getAccessTokenFromDiscord(code)
-      console.log(tokens)
+      console.log({ code })
 
-      const userInfo = await authUtils.getUserProfileFromDiscord(
-        tokens.access_token,
-      )
+      const user = await authServices.loginWithProvider({
+        code,
+        provider: "discord",
+        getTokenFn: authUtils.getAccessTokenFromDiscord,
+        getUserProfifeFn: authUtils.getUserProfileFromDiscord,
+      })
 
-      if (!userInfo || !code) return res.status(400).send("Invalid request")
-
-      let payload
-
-      // check user already have an account
-      const storedUser = await SocialAccount.findOne({
-        socialId: userInfo.id,
-        platform: "discord",
-      }).populate("user")
-
-      if (storedUser) {
-        console.log("---------Stored User-----------\n", storedUser.user)
-        console.log("----------------> User have already an account")
-        payload = storedUser.user
-      } else {
-        console.log("------------------Create new User")
-        const savedUser = await new User({
-          email: userInfo.email,
-          display_name: userInfo.global_name,
-          picture: authUtils.getFullPathAvatarDiscord(
-            userInfo.id,
-            userInfo.avatar,
-          ),
-          normalized_name: convertNameToSearchTerm(userInfo.global_name),
-        }).save()
-
-        console.log("Create new social account of user")
-        await new SocialAccount({
-          socialId: userInfo.id,
-          platform: "discord",
-          user: savedUser._id,
-        }).save()
-
-        payload = savedUser
-      }
-
-      console.log("---------------------> userInfo", payload)
-
-      req.user = payload
-
+      req.user = user
       next()
     } catch (error) {
-      console.log(error)
+      next(error)
     }
   },
   async loginWithGoogle(req, res, next) {
     try {
-      console.log(
-        "-----------------------LOGIN WITH GOOGLE--------------------------------",
-      )
       const code = req.body.code
-      if (!code) return res.status(400).send("Invalid request")
 
-      const userInfo = await authUtils.getUserProfileFromGoogle(code)
+      const user = await authServices.loginWithProvider({
+        code,
+        provider: "google",
+        getUserProfifeFn: authUtils.getUserProfileFromGoogle,
+      })
 
-      if (!userInfo) return res.status(400).send("Invalid request")
-      let payload
-
-      //      check user already have an account
-      const storedUser = await SocialAccount.findOne({
-        socialId: userInfo.id,
-        platform: "google",
-      }).populate("user")
-
-      if (storedUser) {
-        console.log("---------Stored User-----------\n", storedUser.user)
-        console.log("----------------> User have already an account")
-        payload = storedUser.user
-      } else {
-        console.log("----------------Create new user-----------------")
-        const savedUser = await new User({
-          email: userInfo.email,
-          display_name: userInfo.name,
-          picture: userInfo.picture,
-          normalized_name: convertNameToSearchTerm(userInfo.name),
-        }).save()
-        console.log("create new social account of user")
-        await new SocialAccount({
-          socialId: userInfo.id,
-          platform: "google",
-          user: savedUser._id,
-        }).save()
-
-        payload = savedUser
-      }
-
-      console.log("------------------> userInfo", payload)
-      req.user = payload
+      req.user = user
       next()
-
-      console.log(userInfo)
     } catch (error) {
-      console.log(error)
+      next(error)
     }
   },
   async loginWithFacebook(req, res, next) {
     try {
-      console.log(
-        "-----------------------LOGIN WITH META--------------------------------",
-      )
       const code = req.body.code
-      const token = await authUtils.getTokenFromFacebook(code)
+      const user = await authServices.loginWithProvider({
+        code,
+        provider: "facebook",
+        getTokenFn: authUtils.getAccessTokenFromFacebook,
+        getUserProfifeFn: authUtils.getUserProfileFromFacebook,
+      })
 
-      const userInfo = await authUtils.getUserProfileFromFacebook(
-        token.access_token,
-      )
-
-      if (!userInfo) return res.status(400).send("Invalid request")
-
-      // check user already have an account
-      const storedUser = await SocialAccount.findOne({
-        socialId: userInfo.id,
-        platform: "facebook",
-      }).populate("user")
-
-      if (storedUser) {
-        console.log("---------Stored User-----------\n", storedUser.user)
-        console.log("--------------> User have already an account")
-        payload = storedUser.user
-      } else {
-        console.log("--------------> Create new user account")
-        // create a new user
-        const savedUser = await new User({
-          email: userInfo.email,
-          picture: userInfo.picture.data.url,
-          display_name: userInfo.name,
-          normalized_name: convertNameToSearchTerm(userInfo.name),
-        }).save()
-
-        // save new social account
-        await new SocialAccount({
-          user: savedUser._id,
-          socialId: userInfo.id,
-          platform: "facebook",
-        }).save()
-
-        payload = savedUser
-      }
-
-      console.log("------------> userInfo", payload)
-      req.user = payload
+      req.user = user
       next()
     } catch (error) {
-      console.log(error)
+      next(error)
     }
   },
   async logOut(req, res) {
@@ -273,64 +107,14 @@ const authController = {
       console.error(error)
     }
   },
-  async refreshToken(req, res) {
+  async refreshUserSession(req, res, next) {
     try {
       const oldRefreshToken = req.cookies.refreshToken
-
-      if (!oldRefreshToken) return res.status(403).send("Invalid request")
-
-      const user = tokenUtils.verifyToken(oldRefreshToken)
-
-      // refresh token has expired or secret key not correct
-      if (user === null) return res.status(301).send("Login session is expire")
-
-      // Fetch the stored refresh token from DB
-      const storedRefreshToken = await RefreshToken.findOne({
-        token: oldRefreshToken,
-        userId: user?._id,
-      })
-
-      if (!storedRefreshToken)
-        return res.status(403).send("Invalid or expired refresh token")
-
-      // check if the token is still  valid or already used
-      if (!storedRefreshToken.isValid() || storedRefreshToken.used) {
-        // token is invalid or reused, delete all refresh tokens for the user and force logout
-        await RefreshToken.deleteMany({ userId: user.id })
-        return res
-          .status(403)
-          .send("Invalid or reused refresh token. Please re-authenticate")
-      }
-
-      // Mark the old refresh token as used
-      storedRefreshToken.used = true
-      await storedRefreshToken.save()
-
-      delete user.iat
-      delete user.exp
-
-      // Proceed to issue new tokens
-      const accessToken = tokenUtils.generateAccessToken(user)
-      const refreshToken = tokenUtils.generateRefreshToken(user)
-
-      // save new refresh token in the database
-      await new RefreshToken({
-        token: refreshToken,
-        userId: user.id,
-        expiresAt: tokenUtils.calculateExpireDate(20160),
-      }).save()
-
-      //send these token to user via cookie
-      authUtils.cookieResponse({ res, key: "token", value: accessToken })
-      authUtils.cookieResponse({
-        res,
-        key: "refreshToken",
-        value: refreshToken,
-      })
-
-      return res.status(201).send("OK")
+      const user = await authServices.refreshToken(oldRefreshToken)
+      req.user = user
+      next()
     } catch (error) {
-      console.error(error)
+      next(error)
     }
   },
 }

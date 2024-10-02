@@ -3,15 +3,22 @@ const router = express.Router()
 
 const authController = require("@controller/auth.controller")
 const responseAndSaveToken = require("@middleware/responseAndSaveToken")
+const authValidator = require("@middleware/validator/authValidator")
 
 router.post("/check/email", authController.checkEmailIsExist)
+router.post("/register/otp", authController.sendAnOTP)
 router.post(
   "/register/email",
+  authValidator.registerValidation,
   authController.registerWithEmail,
   responseAndSaveToken,
 )
-router.post("/register/otp", authController.sendAnOTP)
-router.post("/login/email", authController.loginWithEmail, responseAndSaveToken)
+router.post(
+  "/login/email",
+  authValidator.loginValidation,
+  authController.loginWithEmail,
+  responseAndSaveToken,
+)
 router.post(
   "/login/facebook",
   authController.loginWithFacebook,
@@ -29,6 +36,10 @@ router.post(
 )
 router.get("/logOut", authController.logOut)
 
-router.post("/refreshToken", authController.refreshToken)
+router.post(
+  "/refreshToken",
+  authController.refreshUserSession,
+  responseAndSaveToken,
+)
 
 module.exports = router
