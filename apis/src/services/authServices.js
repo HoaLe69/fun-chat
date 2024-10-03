@@ -9,7 +9,7 @@ const emailUtils = require("@utils/email")
 const refreshToken = async oldRefreshToken => {
   if (!oldRefreshToken) throw new APIError("You're are not authenticated", 401)
 
-  const user = tokenUtils.verifyToken(oldRefreshToken)
+  const user = tokenUtils.verifyRefreshToken(oldRefreshToken)
 
   const storedRefreshToken = await RefreshToken.findByUserIdAndToken(
     user?._id,
@@ -50,7 +50,8 @@ const sendOTP = async email => {
 
   const otp = authUtils.generateOTP()
 
-  const token = tokenUtils.generateShortLivedToken({ email, otp }, 60)
+  //TODO: dynamic variable for expiry time
+  const token = tokenUtils.generateShortLivedAccessToken({ email, otp }, 60)
   emailUtils.sendEmailToUser(email, otp)
 
   return token
@@ -58,7 +59,7 @@ const sendOTP = async email => {
 
 const register = async authenticationInfo => {
   const { email, password, display_name, token, otp } = authenticationInfo
-  const claims = tokenUtils.verifyToken(token)
+  const claims = tokenUtils.verifyAccessToken(token)
 
   if (claims.otp !== parseInt(otp)) throw new APIError(400, "Wrong OTP")
 

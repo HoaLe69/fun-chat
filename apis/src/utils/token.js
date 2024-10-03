@@ -6,26 +6,32 @@ const accessTokenExpiresIn = process.env.ACCESS_TOKEN_EXPIRIESIN
 const refreshTokenExpiresIn = process.env.ACCESS_TOKEN_EXPIRIESIN
 
 const generateAccessToken = user => {
-  return jwt.sign({ ...user }, process.env.SECRET_KEY, {
+  return jwt.sign({ ...user }, process.env.ACCESS_TOKEN_SECRET_KEY, {
     expiresIn: accessTokenExpiresIn,
   })
 }
 
-const generateShortLivedToken = (user, expiresIn) => {
-  return jwt.sign({ ...user }, process.env.SECRET_KEY, {
+const generateShortLivedAccessToken = (user, expiresIn) => {
+  return jwt.sign({ ...user }, process.env.ACCESS_TOKEN_SECRET_KEY, {
     expiresIn,
   })
 }
 
 const generateRefreshToken = user => {
-  return jwt.sign({ ...user }, process.env.SECRET_KEY, {
+  return jwt.sign({ ...user }, process.env.REFRESH_TOKEN_SECRET_KEY, {
     expiresIn: refreshTokenExpiresIn,
   })
 }
 
-const verifyToken = token => {
+const verifyAccessToken = token => {
+  verifyToken(token, process.env.ACCESS_TOKEN_SECRET_KEY)
+}
+const verifyRefreshToken = token => {
+  verifyToken(token, process.env.REFRESH_TOKEN_SECRET_KEY)
+}
+const verifyToken = (token, secretKey) => {
   try {
-    return jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+    return jwt.verify(token, secretKey, (err, decoded) => {
       if (err) throw new APIError("Token invalid", 400)
       return decoded
     })
@@ -42,9 +48,10 @@ const calculateExpireDate = durationInMinutes => {
 }
 
 module.exports = {
-  verifyToken,
+  verifyAccessToken,
+  verifyRefreshToken,
   generateAccessToken,
   calculateExpireDate,
   generateRefreshToken,
-  generateShortLivedToken,
+  generateShortLivedAccessToken,
 }
