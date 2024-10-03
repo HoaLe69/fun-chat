@@ -10,10 +10,6 @@ const refreshTokenSchema = new Schema({
     type: String,
     required: true,
   },
-  used: {
-    type: Boolean,
-    default: false,
-  },
   expiresAt: {
     type: Date,
     required: true,
@@ -27,6 +23,10 @@ refreshTokenSchema.methods.isValid = function () {
 refreshTokenSchema.statics = {
   async findByUserIdAndToken(userId, token) {
     const refreshToken = this.findOne({ userId, token })
+    return refreshToken
+  },
+  async findOneAndDeleteByUserIdAndToken(userId, token) {
+    const refreshToken = this.findOneAndDelete({ userId, token })
     return refreshToken
   },
   async deleteManyByUserId(userId) {

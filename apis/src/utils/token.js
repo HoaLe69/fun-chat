@@ -24,10 +24,10 @@ const generateRefreshToken = user => {
 }
 
 const verifyAccessToken = token => {
-  verifyToken(token, process.env.ACCESS_TOKEN_SECRET_KEY)
+  return verifyToken(token, process.env.ACCESS_TOKEN_SECRET_KEY)
 }
 const verifyRefreshToken = token => {
-  verifyToken(token, process.env.REFRESH_TOKEN_SECRET_KEY)
+  return verifyToken(token, process.env.REFRESH_TOKEN_SECRET_KEY)
 }
 const verifyToken = (token, secretKey) => {
   try {

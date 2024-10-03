@@ -11,25 +11,20 @@ const refreshToken = async oldRefreshToken => {
 
   const user = tokenUtils.verifyRefreshToken(oldRefreshToken)
 
-  const storedRefreshToken = await RefreshToken.findByUserIdAndToken(
-    user?._id,
-    oldRefreshToken,
-  )
-
-  if (!storedRefreshToken) throw new APIError("Invalid token", 401)
-
-  if (!storedRefreshToken.isValid() || storedRefreshToken.used) {
-    // token is invalid or reused, delete all refresh tokens or for the user and force user log out
-    await RefreshToken.deleteManyByUserId(user?._id)
-    throw new APIError(
-      "Invalid or reused refresh token. Please re-authenticate",
-      401,
+  const deletedRefreshToken =
+    await RefreshToken.findOneAndDeleteByUserIdAndToken(
+      user?._id,
+      oldRefreshToken,
     )
+
+  if (!deletedRefreshToken) {
+    await RefreshToken.deleteManyByUserId(user?.id)
+    throw new APIError("You don't have permission", 403)
   }
 
-  // mark the old refresh token as used
-  storedRefreshToken.used = true
-  await storedRefreshToken.save()
+  if (!deletedRefreshToken.isValid()) {
+    throw new APIError("You need to re-authenticated", 401)
+  }
 
   return user
 }
@@ -149,6 +144,7 @@ const loginWithProvider = async ({
 module.exports = {
   checkEmail,
   sendOTP,
+  logOut,
   register,
   login,
   refreshToken,
