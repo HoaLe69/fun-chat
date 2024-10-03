@@ -12,6 +12,7 @@ const path = require("path")
 const handleSocketEvent = require("@events/socket")
 const db = require("@config/db.js")
 const { createRandomUser } = require("@utils/faker.js")
+const errorHandling = require("@middleware/errorHandling")
 
 // connect database
 db.connect()
@@ -44,12 +45,6 @@ app.use(bodyParser.json()) // parse application/json
 // use the PORT environment variable, or default to 8080
 const PORT = process.env.PORT || 8080
 
-//handle error whole app
-app.use((err, req, res, next) => {
-  console.log(err.stack)
-  res.status(500).send("something broke!")
-})
-
 app.post("/seed-data-user", async (req, res) => {
   for (let i = 0; i < 20; i++) {
     await createRandomUser()
@@ -61,6 +56,9 @@ app.use(express.static(path.join(__dirname, "public")))
 
 //app routing
 app.use("/api/v1", router)
+
+//handle error whole app
+app.use(errorHandling)
 
 server.listen(PORT, () => {
   console.log(`Sever is running on port ${PORT}`)

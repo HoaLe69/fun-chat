@@ -1,11 +1,11 @@
-const User = require("@schema/user.schema")
+const User = require("@models/User")
 const mongoose = require("mongoose")
 const { convertNameToSearchTerm } = require("@utils/convert-search-term")
 
 const userController = {
   verifyUser: async (req, res) => {
     const userFromToken = req.user
-    const user_db = await User.findOne({ email: userFromToken.email })
+    const user_db = await User.findOne({ _id: userFromToken._id })
     return res.status(200).json(user_db)
   },
 

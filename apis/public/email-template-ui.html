@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DevChatter OTP Verification</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        padding-bottom: 20px;
+      }
+      .highlight_logo {
+        color: #005fff;
+      }
+      .otp_wrapper {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .otp {
+        letter-spacing: 4px;
+        font-size: 24px;
+        font-weight: bold;
+        color: #333333;
+        background-color: #e0e0e0;
+        padding: 10px;
+        border-radius: 4px;
+        display: inline-block;
+        margin: 20px 0;
+      }
+      .footer {
+        text-align: center;
+        font-size: 12px;
+        color: #888888;
+        padding-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1><strong class="highlight_logo">Dev</strong>Chatter</h1>
+      </div>
+      <p>
+        We received a request to access your DevChatter account. Use the
+        following One-Time Password (OTP) to complete your login:
+      </p>
+      <div class="otp_wrapper">
+        <div class="otp">{{OTP}}</div>
+      </div>
+      <p>
+        This OTP is valid for the next 2 minutes. If you did not request this,
+        please ignore this email.
+      </p>
+      <div class="footer">
+        <p>Thank you for using DevChatter!</p>
+      </div>
+    </div>
+  </body>
+</html>

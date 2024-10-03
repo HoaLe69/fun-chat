@@ -16,6 +16,9 @@ import TrashIcon from './assets/trash.svg?react'
 import LockIcon from './assets/lock.svg?react'
 import ArrowLeftIcon from './assets/arrow-left.svg?react'
 import MessageIcon from './assets/message.svg?react'
+import FacebookIcon from './assets/facebook-icon.svg?react'
+import GoogleIcon from './assets/google-icon.svg?react'
+import DiscordIcon from './assets/discord-icon.svg?react'
 
 export {
   MenuBurgerIcon,
@@ -36,6 +39,9 @@ export {
   LockIcon,
   ArrowLeftIcon,
   MessageIcon,
+  FacebookIcon,
+  GoogleIcon,
+  DiscordIcon,
 }
 
 export const LaughSmallIcon = () => {

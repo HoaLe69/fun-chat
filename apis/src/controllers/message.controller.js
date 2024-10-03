@@ -1,5 +1,5 @@
-const Message = require("@schema/message.schema")
-const Room = require("@schema/room.schema")
+const Message = require("@models/Message")
+const Room = require("@models/Room")
 
 const messageController = {
   create: async (req, res) => {

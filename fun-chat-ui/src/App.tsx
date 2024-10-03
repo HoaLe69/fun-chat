@@ -6,7 +6,7 @@ import { Provider } from 'react-redux'
 import { store } from 'modules/core/store'
 import { Suspense } from 'react'
 import { LoadingSplashScreen } from 'modules/core/components/loadings'
-import { LoginPage, ChatPage } from 'pages'
+import { LoginPage, ChatPage, LoginLoungePage } from 'pages'
 
 function App() {
   //  TODO: move logic code to another file
@@ -26,6 +26,10 @@ function App() {
         <BrowserRouter>
           <Suspense fallback={<LoadingSplashScreen />}>
             <Routes>
+              <Route
+                path="/login/redirect/:method"
+                element={<LoginLoungePage />}
+              />
               <Route path="/login" element={<LoginPage />} />
               <Route
                 path="/"

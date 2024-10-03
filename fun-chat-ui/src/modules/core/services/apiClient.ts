@@ -1,26 +1,37 @@
 import axios from 'axios'
+import { authServices } from 'modules/auth/services/authServices'
 import { VITE_API_URL } from 'const'
 
+//create an axios instance
 export const apiClient = axios.create({
   baseURL: VITE_API_URL,
-  withCredentials: true,
+  withCredentials: true, // Ensure cookies are sent with requests
 })
+
+let refreshTokenPromise: Promise<void | null> | null = null
 
 apiClient.interceptors.response.use(
   res => res,
   async error => {
     const originalRequest = error.config
+    const responseStatus = error.response.status
 
-    // if error is 403 and not already retried
-    if (error.response.status === 403 && !originalRequest._retry) {
-      originalRequest._retry = true // mark request as already retried
-
-      // send refresh token request (stored in a cookie , automatically attached)
+    // check if the error status is 401 (Unauthorized)
+    if (responseStatus === 401 && !originalRequest._retry) {
+      originalRequest._retry = true
+      // if a refresh tken request is already in progress , wait for it to resolve
+      if (!refreshTokenPromise)
+        refreshTokenPromise = authServices.refreshToken()
       try {
-        await apiClient.get('/auth/refreshToken')
+        // Await the refresh token promise
+        await refreshTokenPromise
+        refreshTokenPromise = null
+
         return apiClient(originalRequest)
       } catch (error) {
-        console.log('Token refresh failed , logging out')
+        // if refresh token is expires , force log out the user
+        window.alert('Your session has expired. You must to log in again.')
+        window.location.replace('/login')
         return Promise.reject(error)
       }
     }
