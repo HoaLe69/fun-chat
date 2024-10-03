@@ -98,13 +98,13 @@ const authController = {
       next(error)
     }
   },
-  async logOut(req, res) {
+  async logOut(req, res, next) {
     try {
-      res.clearCookie("token")
-      res.clearCookie("refreshToken")
-      return res.status(200).json({ message: "Successfully logged out" })
+      const user = req.user
+      const refreshToken = req.cookies.refreshToken
+      await authServices.logOut(refreshToken, user, res)
     } catch (error) {
-      console.error(error)
+      next(error)
     }
   },
   async refreshUserSession(req, res, next) {

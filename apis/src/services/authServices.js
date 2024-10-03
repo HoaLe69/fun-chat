@@ -51,7 +51,19 @@ const sendOTP = async email => {
 
   return token
 }
+const logOut = async (refreshToken, user, res) => {
+  if (!refreshToken) return res.sendStatus(204)
 
+  await RefreshToken.findOneAndDeleteByUserIdAndToken(user?._id, refreshToken)
+
+  res.clearCookie("token", { httpOnly: true, sameSite: "None", secure: true })
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    sameSite: "None",
+    secure: true,
+  })
+  return res.sendStatus(204)
+}
 const register = async authenticationInfo => {
   const { email, password, display_name, token, otp } = authenticationInfo
   const claims = tokenUtils.verifyAccessToken(token)

@@ -4,6 +4,7 @@ const router = express.Router()
 const authController = require("@controller/auth.controller")
 const responseAndSaveToken = require("@middleware/responseAndSaveToken")
 const authValidator = require("@middleware/validator/authValidator")
+const requireAuth = require("@middleware/requireAuth")
 
 router.post("/check/email", authController.checkEmailIsExist)
 router.post("/register/otp", authController.sendAnOTP)
@@ -34,7 +35,7 @@ router.post(
   authController.loginWithDiscord,
   responseAndSaveToken,
 )
-router.get("/logOut", authController.logOut)
+router.post("/logOut", requireAuth, authController.logOut)
 
 router.post(
   "/refreshToken",
