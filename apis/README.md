@@ -1,5 +1,5 @@
 ### Server Folder structure
-
+```
 /src
 │
 ├── /config # Contains app configuration files
@@ -29,9 +29,11 @@
 ├── index.js # Express app setup
 ├── package.json
 └── README.md
+```
 
 ### Architecture
 
 - Three layer approach
-
+```
 client ---> routes ----> (layer 1) controllers -------> (layer 2) services (business logic) -------> (layer 3) models (access resource from database)
+```
