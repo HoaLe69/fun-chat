@@ -66,6 +66,7 @@ const RegisterForm = () => {
       if (isValidEmail) return
       await authServices.checkEmailAbleToUse(value)
       setIsValidEmail(true)
+      setErrors(pre => ({ ...pre, [name]: '' }))
     } catch (error: any) {
       setIsValidEmail(false)
       const message = error?.response.data.message

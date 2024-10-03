@@ -3,7 +3,7 @@ export const {
   VITE_FACEBOOK_CLIENT_ID,
   VITE_META_REDIRECT_URI,
   VITE_DISCORD_CLIENT_ID,
-  VITE_DISCORD_REDIRECT_URI,
+  VITE_DISCORD_REDIRECT_URI = 'http%3A%2F%2Flocalhost%3A5173%2Flogin%2Fredirect%2Fdiscord&scope=identify+email',
   VITE_API_URL,
 } = import.meta.env
 

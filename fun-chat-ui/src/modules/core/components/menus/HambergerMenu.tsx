@@ -34,7 +34,7 @@ const HambergerMenu = (): JSX.Element => {
       name: 'Sign Out',
       icon: <PersonIcon />,
       onClick: async () => {
-        await apiClient.get('/auth/logOut')
+        await apiClient.post('/auth/logOut')
         dispatch(logOut())
       },
     },
