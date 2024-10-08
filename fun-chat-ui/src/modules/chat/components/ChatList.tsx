@@ -1,14 +1,14 @@
 import type { IConversation } from 'modules/chat/types'
 import ChatListItem from './ChatListItem'
 
-import SearchResult from 'modules/search'
 import HambergerMenu from 'modules/core/components/menus/HambergerMenu'
 
 import { useAppSelector } from 'modules/core/hooks'
 import { useState } from 'react'
 import { authSelector } from 'modules/auth/states/authSlice'
 
-import { SearchIcon } from 'modules/core/components/icons'
+import { SearchIcon, ArrowLeftIcon } from 'modules/core/components/icons'
+import SearchUser from './SearchUser'
 import rooms from 'modules/chat/mock/room.json'
 
 const ChatList: React.FC = () => {
@@ -28,9 +28,16 @@ const ChatList: React.FC = () => {
     setSearchValue(e.target.value)
   }
   return (
-    <aside className="w-1/4 px-2 bg-grey-50 dark:bg-grey-900 overflow-y-auto border-r-2 border-grey-300 dark:border-grey-700">
+    <aside className="w-1/4 flex flex-col px-2 bg-grey-50 dark:bg-grey-900 overflow-y-auto border-r-2 border-grey-300 dark:border-grey-700">
       <header className="flex w-full py-3 items-center gap-2">
-        <HambergerMenu />
+        {openSearch ?
+          <button
+            onClick={handleCloseSearchAndClearInput}
+            className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-grey-200 dark:hover:bg-grey-800"
+          >
+            <ArrowLeftIcon />
+          </button>
+        : <HambergerMenu />}
         <div className="relative group flex-1">
           <span className="absolute left-3 top-1/2 -translate-y-1/2  text-gray-500 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400">
             <SearchIcon />
@@ -49,11 +56,8 @@ const ChatList: React.FC = () => {
       </header>
       <div className="flex-1 overflow-y-auto relative">
         {openSearch ?
-          <div className="search absolute inset-0">
-            <SearchResult
-              searchTerm={searchValue}
-              handleCloseSearchAndClearInput={handleCloseSearchAndClearInput}
-            />
+          <div className="absolute inset-0">
+            <SearchUser searchTerm={searchValue} />
           </div>
         : <div className="h-full">
             <ul className="overflow-x-hidden w-full transition-all">

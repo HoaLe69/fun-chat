@@ -24,22 +24,13 @@ const userController = {
     }
   },
 
-  search: async (req, res) => {
+  search: async (req, res, next) => {
     try {
-      const display_name = req.query?.q
-      const id = req.query?.userId
-      console.log({ id })
-      let users = await User.find({
-        normalized_name: {
-          $regex: new RegExp(convertNameToSearchTerm(display_name, "i")),
-        },
-      })
-      if (users.length > 0) {
-        return res.status(200).json(users.filter(user => user._id != id))
-      }
+      const email = req.query?.q
+      const users = await User.findUsersByEmail(email)
       return res.status(200).json(users)
     } catch (err) {
-      console.log(err)
+      next(err)
     }
   },
 }
