@@ -1,149 +1,26 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef } from 'react'
 import classNames from 'classnames'
 import {
   SendIcon,
   LaughIcon,
   PlusCircleIcon,
 } from 'modules/core/components/icons'
-import { useSocket } from 'modules/core/hooks'
-import { roomServices } from 'modules/chat/services/roomServices'
-import { messageServices } from '../services/messageServices'
-import { authSelector } from 'modules/auth/states/authSlice'
-import {
-  addRoomChat,
-  selectedRoomId,
-  updateLatestMessage,
-} from 'modules/chat/states/roomSlice'
-import { useAppDispatch, useAppSelector, useDebounce } from 'modules/core/hooks'
-import { STATUS_CODES } from 'const'
 
 import EmojiPicker from './EmojiPicker'
 
-type Props = {
-  roomId: string | null
-  userLoginId: string | null
-  recipientId?: string | null
-}
-
-const ChatForm: React.FC<Props> = ({ roomId, userLoginId, recipientId }) => {
-  const dispatch = useAppDispatch()
-  const { sendMessage } = useSocket()
+const ChatForm: React.FC = () => {
   const [textMessage, setTextMessage] = useState<string>('')
   const [isOpenEmojiPicker, setIsOpenEmojiPicker] = useState<boolean>(false)
   const refInput = useRef<HTMLInputElement>(null)
-  const userLogin = useAppSelector(authSelector.selectUser)
-
-  const debounceTextMessage = useDebounce(textMessage, 300)
-
-  const addNewMessage = async (roomId: string, createdAt?: string) => {
-    const message = {
-      ownerId: userLogin?._id,
-      text: textMessage,
-      roomId,
-      createdAt,
-    }
-    const msg = await messageServices.createMessage(message)
-    return msg
-  }
-
-  const startWithNewChat = async () => {
-    try {
-      const room = {
-        members: [userLoginId, recipientId],
-        status: 'spam',
-        latestMessage: {
-          text: textMessage,
-          createdAt: Date.now().toString(),
-          ownerId: userLoginId,
-        },
-      }
-      const response = await roomServices.createRoom({ room })
-      if (response?.status === STATUS_CODES.CREATED) {
-        await addNewMessage(
-          response?.data._id,
-          response?.data.latestMessage.createdAt,
-        )
-        dispatch(selectedRoomId(response.data._id))
-        dispatch(addRoomChat(response?.data))
-        sendMessage({
-          destination: 'room:createRoomChat',
-          data: { roomInfo: response?.data, recipientId },
-        })
-      }
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  const startWithExistChat = async () => {
-    try {
-      if (!roomId) return
-      const msg = await addNewMessage(roomId)
-      sendMessage({
-        destination: 'chat:sendMessage',
-        data: {
-          ...msg,
-          recipientId,
-        },
-      })
-      dispatch(
-        updateLatestMessage({
-          roomId: msg.roomId,
-          latestMessage: {
-            text: msg.text,
-            createdAt: msg.createdAt,
-            ownerId: msg.ownerId,
-          },
-        }),
-      )
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  const resetForm = () => {
-    setTextMessage('')
-  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (!textMessage) return
-    if (!roomId) {
-      await startWithNewChat()
-    } else {
-      startWithExistChat()
-    }
-    resetForm()
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target
     setTextMessage(value)
   }
-
-  useEffect(() => {
-    setTextMessage('')
-  }, [roomId])
-
-  useEffect(() => {
-    const timerID = setTimeout(() => {
-      console.log('user stop typing')
-      sendMessage({
-        destination: 'chat:typingStop',
-        data: {
-          roomId,
-          userId: userLoginId,
-        },
-      })
-    }, 1000)
-    if (!debounceTextMessage) return
-    sendMessage({
-      destination: 'chat:typingStart',
-      data: { roomId, userId: userLoginId },
-    })
-
-    return () => clearTimeout(timerID)
-  }, [debounceTextMessage])
 
   const appendEmojiToText = (emoji: string) => {
     setTextMessage(pre => pre + emoji)

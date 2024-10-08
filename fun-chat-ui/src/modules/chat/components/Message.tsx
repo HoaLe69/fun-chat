@@ -1,209 +1,135 @@
 import classNames from 'classnames'
-import moment from 'moment'
-
-import type { MessageType } from 'lib/app.type'
+import type { IMessage } from 'modules/chat/types'
 import { UserAvatar } from 'modules/core/components'
-
-import ReactionPicker from './ReactionPicker'
 import ContextualMenu from './ContextualMenu'
-import { groupReactMessageByEmoji } from '../utils/message'
+import ReactionPicker from './ReactionPicker'
 import { useState } from 'react'
-import MessageReactionsModal from './MessageReactionModal'
-import { messageServices } from 'modules/chat/services/messageServices'
-import { timeToSeconds } from '../utils/dateTimeFormat'
-import { useAppDispatch, useAppSelector, useSocket } from 'modules/core/hooks'
-import {
-  roomSelector,
-  updateLatestMessage,
-} from 'modules/chat/states/roomSlice'
-import { apiClient } from 'modules/core/services'
 
-type MessageProps = MessageType & {
+type Props = IMessage & {
   recipient: {
-    _id: string | null
-    picture: string | null
-    displayName: string | null
+    _id?: string
+    picture?: string
+    displayName?: string
   }
-  userLoginId: string | null
+  userLoginId: string | undefined
 }
 
-const Message: React.FC<MessageProps> = ({
-  _id,
-  text,
-  react,
-  roomId,
-  ownerId,
-  isDeleted,
-  recipient,
-  createdAt,
-  userLoginId,
-}) => {
-  const [showModal, setShowModal] = useState<boolean>(false)
-  const { sendMessage } = useSocket()
-  const latestMessage = useAppSelector(
-    roomSelector.selectLatestMessageOfSelectdRoom,
-  )
-  const dispatch = useAppDispatch()
+const Message: React.FC<Props> = props => {
+  const { userLoginId, text, ownerId: senderMessageId } = props
+  const [contextualMenuOpen, setContextualMenuOpen] = useState<boolean>(false)
+  const viewedAs = userLoginId === senderMessageId ? 'sender' : 'recipient'
 
-  const isCurrentUser = userLoginId === ownerId
-  const fallbackImg = 'https://placehold.co/600x400.png'
-
-  const onClose = () => {
-    setShowModal(false)
-  }
-
-  const handleReactMessage = async (emoji: string) => {
-    if (!emoji) return
-
-    if (!userLoginId) return
-
-    await messageServices.updateMessage({
-      type: 'react',
-      data: {
-        messageId: _id,
-        ownerId: userLoginId,
-        emoji,
-      },
-    })
-
-    sendMessage({
-      destination: 'chat:sendReactIcon',
-      data: {
-        icon: emoji,
-        roomId,
-        messageId: _id,
-        ownerId: userLoginId,
-      },
-    })
-  }
-
-  const handleRecallMessage = async () => {
-    if (!_id) return
-
-    // message identify is the latest or not
-    const isLatestMessage =
-      timeToSeconds(createdAt) === timeToSeconds(latestMessage.createdAt)
-
-    const msg = await messageServices.updateMessage({
-      type: 'recall',
-      data: {
-        messageId: _id,
-      },
-    })
-
-    if (isLatestMessage && msg) {
-      const latestMessage = {
-        text: 'Message was recall',
-        createdAt: msg.data.updatedAt,
-        ownerId: msg.data.ownerId,
-      }
-
-      await apiClient.patch(`/room/update/latestMessage/${roomId}`, {
-        latestMessage,
-      })
-
-      dispatch(updateLatestMessage({ roomId, latestMessage }))
-    }
-
-    // send to socket server
-    sendMessage({
-      destination: 'chat:recallMessage',
-      data: {
-        roomId,
-        messageId: _id,
-        recipientId: recipient?._id,
-        isNotifyRecipient: isLatestMessage,
-        modifyTime: msg?.data.updatedAt,
-      },
-    })
-  }
-
-  const renderTextMessage = () => (
-    <div
-      className={classNames(
-        'px-4 py-2 rounded-t-[18px]',
-        isCurrentUser
-          ? 'bg-blue-100 dark:bg-blue-900 rounded-bl-[18px] rounded-br-sm'
-          : 'bg-grey-200 dark:bg-grey-800 rounded-br-[18px] rounded-bl-sm',
-      )}
-    >
-      <p className="text-sm">
-        {isDeleted ? (
-          <i className="text-grey-600">Message wall recall</i>
-        ) : (
-          text
-        )}
-      </p>
-    </div>
-  )
-
-  const renderReactInMessage = () => {
-    const handleShowListReactInfo = () => {
-      setShowModal(true)
-    }
-    return (
-      <div className="flex items-center mb-1 gap-1">
-        {!isDeleted &&
-          groupReactMessageByEmoji(react).map((item, index) => (
-            <span
-              onClick={handleShowListReactInfo}
-              key={index}
-              className="px-2 py-1 text-[12px] rounded-md bg-grey-100 dark:bg-grey-900 cursor-pointer"
+  return (
+    <Wrapper>
+      <MessageOuter>
+        <MessageAvatar>
+          {viewedAs === 'recipient' && (
+            <UserAvatar
+              src={props.recipient.picture || ''}
+              alt={props.recipient.displayName || ''}
+            />
+          )}
+        </MessageAvatar>
+        <MessageInner viewedAs={viewedAs}>
+          <MessageBubble viewedAs={viewedAs}>{text}</MessageBubble>
+          <MessageActions viewedAs={viewedAs}>
+            <div
+              className={classNames(
+                'items-center hidden group-hover:flex gap-1',
+                {
+                  '!flex': contextualMenuOpen,
+                },
+              )}
             >
-              {item.emoji} {item.amount}
-            </span>
-          ))}
-      </div>
-    )
-  }
+              <ReactionPicker setContextualMenuOpen={setContextualMenuOpen} />
+              <ContextualMenu setContextualMenuOpen={setContextualMenuOpen} />
+            </div>
+          </MessageActions>
+          <MessageSpacer />
+        </MessageInner>
+        <MessageStatus>
+          <span className="rounded-full bg-gray-300 w-4 h-4 block" />
+        </MessageStatus>
+      </MessageOuter>
+    </Wrapper>
+  )
+}
+
+const Wrapper = ({ children }: { children: React.ReactNode }) => (
+  <div className="group my-2">{children}</div>
+)
+
+const MessageOuter = ({ children }: { children: React.ReactNode }) => (
+  <div className="flex">{children}</div>
+)
+
+const MessageInner = ({
+  children,
+  viewedAs,
+}: {
+  children: React.ReactNode
+  viewedAs: string
+}) => {
+  const direction = viewedAs === 'sender' && 'flex-row-reverse'
+  return <div className={classNames('flex-1 flex', direction)}>{children}</div>
+}
+
+const MessageBubble = ({
+  children,
+  viewedAs,
+}: {
+  children: React.ReactNode
+  viewedAs: string
+}) => {
+  const roundedCorner =
+    viewedAs === 'sender' ?
+      'rounded-bl-xl rounded-br-sm'
+    : 'rounded-br-xl rounded-bl-sm'
+
+  const themeMessageBubble =
+    viewedAs === 'sender' ?
+      'bg-blue-100  dark:bg-blue-900'
+    : 'bg-grey-200 dark:bg-grey-800'
 
   return (
     <div
-      className={classNames('flex py-2 flex-col pl-10 items-start group', {
-        'items-end': isCurrentUser,
-      })}
-    >
-      {renderReactInMessage()}
-      <div
-        className={classNames('relative flex-1 flex items-center gap-2', {
-          'flex-row-reverse': isCurrentUser,
-        })}
-      >
-        {renderTextMessage()}
-        {!isCurrentUser && (
-          <div className="mr-2 absolute top-full -translate-y-full right-full">
-            <UserAvatar
-              src={recipient.picture ?? fallbackImg}
-              alt={recipient.displayName ?? ''}
-            />
-          </div>
-        )}
-        {!isDeleted && (
-          <>
-            <ReactionPicker onReact={handleReactMessage} />
-            <ContextualMenu
-              onRecall={handleRecallMessage}
-              isCurrentUser={isCurrentUser}
-            />
-          </>
-        )}
-        <div className="flex-[1]" />
-      </div>
-      <div>
-        <span className="text-[12px] text-grey-500">
-          {moment(createdAt).format('LT')}
-        </span>
-      </div>
-      {showModal && (
-        <MessageReactionsModal
-          reacts={react}
-          isOpen={showModal}
-          onClose={onClose}
-          recipient={recipient}
-        />
+      className={classNames(
+        'max-w-[calc(100%-5rem)] p-2 break-words  rounded-t-xl',
+        roundedCorner,
+        themeMessageBubble,
       )}
+    >
+      {children}
     </div>
   )
 }
+
+const MessageAvatar = ({ children }: { children: React.ReactNode }) => (
+  <div className="pl-[6px] pr-4">{children}</div>
+)
+const MessageActions = ({
+  children,
+  viewedAs,
+}: {
+  children: React.ReactNode
+  viewedAs: string
+}) => {
+  const paddingDirections = viewedAs === 'sender' ? 'pr-2' : 'pl-2'
+  return (
+    <div
+      className={classNames(
+        'flex w-20 flex-shrink-0  flex-col items-center justify-center',
+        paddingDirections,
+      )}
+    >
+      {children}
+    </div>
+  )
+}
+const MessageSpacer = () => <div className="flex-1 min-w-28" />
+
+const MessageStatus = ({ children }: { children: React.ReactNode }) => (
+  <div className="w-5 flex flex-col items-center justify-end">{children}</div>
+)
 
 export default Message
