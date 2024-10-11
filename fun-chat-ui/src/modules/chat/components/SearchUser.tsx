@@ -1,22 +1,28 @@
 import { UserAvatar } from 'modules/core/components'
-import { useState, useEffect } from 'react'
-import { useDebounce } from 'modules/core/hooks'
+import { useState, useEffect, useCallback } from 'react'
+import { useAppDispatch, useAppSelector, useDebounce } from 'modules/core/hooks'
 import ReactLoading from 'react-loading'
 
 import type { IUser } from '../types'
 import { userServices } from 'modules/user/services'
+import { authSelector } from 'modules/auth/states/authSlice'
+import { roomServices } from '../services'
+import { selectRoom } from '../states/roomSlice'
 
 interface Props {
   searchTerm: string
 }
 
 const SearchUser: React.FC<Props> = ({ searchTerm }) => {
+  const dispatch = useAppDispatch()
   const [users, setUsers] = useState<IUser[]>([])
   const [status, setStatus] = useState({
     isFetching: false,
     error: false,
   })
   const debounceSearchTerm = useDebounce(searchTerm, 400)
+
+  const userLogin = useAppSelector(authSelector.selectUser)
 
   useEffect(() => {
     if (!debounceSearchTerm) return
@@ -46,6 +52,33 @@ const SearchUser: React.FC<Props> = ({ searchTerm }) => {
     </div>
   )
 
+  const handleSelectUser = useCallback(
+    async (userSelected: IUser) => {
+      if (!userLogin?._id || !userSelected?._id) return
+      console.log({ current: userLogin?._id, partner: userSelected?._id })
+
+      const members = [userLogin?._id, userSelected?._id]
+      try {
+        const room = await roomServices.checkRoomExist(members)
+        // temporary rom
+        dispatch(
+          selectRoom({
+            _id: room?._id,
+            new: room?.new,
+            recipientInfo: {
+              _id: userSelected?._id,
+              name: userSelected?.display_name,
+              picture: userSelected?.picture,
+            },
+          }),
+        )
+      } catch (error) {
+        console.error(error)
+      }
+    },
+    [userLogin?._id],
+  )
+
   if (status.isFetching) return <LoadingState />
   if (!status.isFetching && status.error) return <ErrorSearch />
 
@@ -60,8 +93,9 @@ const SearchUser: React.FC<Props> = ({ searchTerm }) => {
     <div>
       {users.map((user: IUser) => (
         <div
+          onClick={() => handleSelectUser(user)}
           key={user?._id}
-          className="hover:bg-grey-200 dark:hover-bg-grey-800 cursor-pointer rounded-lg"
+          className="hover:bg-grey-200 dark:hover:bg-grey-800 cursor-pointer rounded-lg"
         >
           <div className="flex items-center px-2 py-3">
             <UserAvatar

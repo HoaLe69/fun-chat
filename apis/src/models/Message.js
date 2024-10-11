@@ -36,3 +36,10 @@ const messageSchema = new Schema(
 )
 
 module.exports = mongoose.model("Message", messageSchema)
+
+messageSchema.statics = {
+  async createNewMessage(newMessage) {
+    const message = await newMessage.save()
+    return message
+  },
+}

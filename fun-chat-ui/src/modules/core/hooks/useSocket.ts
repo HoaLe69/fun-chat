@@ -4,13 +4,17 @@ export const socket = io('http://localhost:8082', {
   transports: ['websocket'],
 })
 
-type SendMessageProps = {
-  destination: string
-  data?: any
-}
 export const useSocket = () => {
-  const sendMessage = ({ destination, data }: SendMessageProps) => {
-    socket.emit(destination, { ...data })
+  const emitEvent = (event: string, data: any) => {
+    socket.emit(event, data)
   }
-  return { socket, sendMessage }
+
+  const subscribeEvent = (event: string, eventHandler: any) => {
+    socket.on(event, eventHandler)
+  }
+
+  const unSubcribeEvent = (event: string) => {
+    socket.off(event)
+  }
+  return { emitEvent, subscribeEvent, unSubcribeEvent }
 }

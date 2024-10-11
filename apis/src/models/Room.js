@@ -30,3 +30,14 @@ const roomSchema = new Schema(
 )
 
 module.exports = mongoose.model("Room", roomSchema)
+
+roomSchema.statics = {
+  async createNewRoom(newRoom) {
+    const room = await newRoom.save()
+    return room
+  },
+  async findRoomById(roomId) {
+    const room = await this.findOne({ _id: roomId })
+    return room
+  },
+}

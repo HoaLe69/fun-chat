@@ -6,9 +6,10 @@ import { useEffect, useState } from 'react'
 import moment from 'moment'
 
 import { minimalTime } from '../utils/dateTimeFormat'
-import users from 'modules/chat/mock/user.json'
+//import users from 'modules/chat/mock/user.json'
 import { useAppDispatch } from 'modules/core/hooks'
 import { selectRoom } from '../states/roomSlice'
+import { userServices } from 'modules/user/services'
 
 type Props = IConversation & {
   userLoginId: string | undefined
@@ -23,8 +24,12 @@ const ChatListItem: React.FC<Props> = props => {
 
   useEffect(() => {
     const getRecipientInfo = async () => {
-      const res = users.find(user => user._id === recipientId)
-      if (res) setRecipient(res)
+      try {
+        const user = await userServices.getUserById(recipientId)
+        setRecipient(user)
+      } catch (error) {
+        console.error(error)
+      }
     }
     getRecipientInfo()
   }, [recipientId])
@@ -39,7 +44,7 @@ const ChatListItem: React.FC<Props> = props => {
   const handleSelectedRoom = (_id: string) => {
     const roomInfo = {
       _id,
-      info: {
+      recipientInfo: {
         _id: recipient?._id,
         name: recipient?.display_name,
         picture: recipient?.picture,

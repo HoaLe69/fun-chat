@@ -1,21 +1,45 @@
 import type { IConversation } from 'modules/chat/types'
 import ChatListItem from './ChatListItem'
+import { useAppDispatch, useSocket } from 'modules/core/hooks'
 
 import HambergerMenu from 'modules/core/components/menus/HambergerMenu'
 
 import { useAppSelector } from 'modules/core/hooks'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { authSelector } from 'modules/auth/states/authSlice'
 
 import { SearchIcon, ArrowLeftIcon } from 'modules/core/components/icons'
 import SearchUser from './SearchUser'
-import rooms from 'modules/chat/mock/room.json'
+import {
+  addRoom,
+  markCurrentRoomCreated,
+  selectListRoom,
+} from '../states/roomSlice'
+import { fetchListRoomAsync } from '../states/roomActions'
 
 const ChatList: React.FC = () => {
   const [openSearch, setOpenSearch] = useState<boolean>(false)
+
   const [searchValue, setSearchValue] = useState<string>('')
-  const [roomList, setRoomList] = useState(rooms)
-  const user = useAppSelector(authSelector.selectUser)
+  const rooms = useAppSelector(selectListRoom)
+  const dispatch = useAppDispatch()
+
+  const userLogin = useAppSelector(authSelector.selectUser)
+  const { subscribeEvent, unSubcribeEvent } = useSocket()
+
+  useEffect(() => {
+    if (userLogin?._id) dispatch(fetchListRoomAsync({ userId: userLogin?._id }))
+  }, [userLogin?._id])
+
+  useEffect(() => {
+    subscribeEvent('room:newChat', (res: any) => {
+      dispatch(addRoom({ ...res.room }))
+      if (res.success) dispatch(markCurrentRoomCreated())
+    })
+    return () => {
+      unSubcribeEvent('room:newChat')
+    }
+  }, [])
 
   const handleStartingSearch = () => {
     setOpenSearch(true)
@@ -61,10 +85,10 @@ const ChatList: React.FC = () => {
           </div>
         : <div className="h-full">
             <ul className="overflow-x-hidden w-full transition-all">
-              {roomList.map((room: IConversation) => {
+              {rooms?.map((room: IConversation) => {
                 return (
                   <ChatListItem
-                    userLoginId={user?._id}
+                    userLoginId={userLogin?._id}
                     key={room._id}
                     {...room}
                   />

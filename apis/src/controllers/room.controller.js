@@ -44,11 +44,15 @@ const roomController = {
   },
   checkRoomExist: async (req, res) => {
     try {
-      const { senderId, recipientId } = req.query
+      const { first, second } = req.query
+      console.log({ first, second })
       const room = await Room.findOne({
-        members: { $all: [senderId, recipientId] },
+        members: { $all: [first, second] },
       })
-      if (!room) return res.status(204).send("Not found")
+      if (!room) {
+        const tempRoom = new Room({ members: [first, second] })
+        return res.status(200).json({ ...tempRoom._doc, new: true })
+      }
       return res.status(200).json(room)
     } catch (error) {
       console.log(error)
