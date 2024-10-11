@@ -27,6 +27,7 @@ socialAccountSchema.statics = {
    */
   async findByIdAndPlatform(socialId, platform) {
     const docs = await this.findOne({ socialId, platform }).populate("user")
+    if (!docs) return null
     return docs.user
   },
 }

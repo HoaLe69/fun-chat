@@ -92,7 +92,7 @@ const register = async authenticationInfo => {
  */
 const login = async ({ email, password }) => {
   const storedUser = await User.findUserByEmailAndNotNullPassword(email)
-
+  //TODO: handle case user not found
   if (!storedUser.isVerified) throw new APIError("Email is not active", 400)
 
   const isMatchPassword = await authUtils.compareHashedPassword(
@@ -137,8 +137,11 @@ const loginWithProvider = async ({
   /*create new user*/
   const newUser = await new User({
     email: userInfo.email,
-    display_name: userInfo.name,
-    picture: userInfo.picture,
+    display_name: userInfo.name || userInfo?.global_name,
+    picture:
+      provider === "discord"
+        ? authUtils.getFullPathAvatarDiscord(userInfo.id, userInfo.avatar)
+        : userInfo.picture,
   })
 
   const savedUser = await newUser.save()
@@ -146,7 +149,7 @@ const loginWithProvider = async ({
   /*create new SocialAccount*/
   await new SocialAccount({
     socialId: userInfo.id,
-    platform: "google",
+    platform: provider,
     user: savedUser._id,
   }).save()
 
