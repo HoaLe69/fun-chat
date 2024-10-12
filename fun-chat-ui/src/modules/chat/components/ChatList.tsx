@@ -14,6 +14,7 @@ import {
   addRoom,
   markCurrentRoomCreated,
   selectListRoom,
+  updateRoomLatestMessage,
 } from '../states/roomSlice'
 import { fetchListRoomAsync } from '../states/roomActions'
 
@@ -36,8 +37,13 @@ const ChatList: React.FC = () => {
       dispatch(addRoom({ ...res.room }))
       if (res.success) dispatch(markCurrentRoomCreated())
     })
+    subscribeEvent('room:syncNewMessage', (res: any) => {
+      console.log({ res })
+      dispatch(updateRoomLatestMessage(res.latestMessage))
+    })
     return () => {
       unSubcribeEvent('room:newChat')
+      unSubcribeEvent('room:syncNewMessage')
     }
   }, [])
 

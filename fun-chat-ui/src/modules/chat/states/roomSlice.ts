@@ -17,6 +17,18 @@ const roomSlice = createSlice({
     addRoom(state, action) {
       state.rooms = [...state.rooms, action.payload]
     },
+    updateRoomLatestMessage(state, action) {
+      const msg = action.payload
+      const rooms = state.rooms
+      state.rooms = rooms.map(room => {
+        if (room._id === msg.roomId)
+          return {
+            ...room,
+            latestMessage: msg,
+          }
+        return room
+      })
+    },
   },
   extraReducers(builder) {
     builder.addCase(fetchListRoomAsync.fulfilled, (state, action) => {
@@ -27,7 +39,12 @@ const roomSlice = createSlice({
 
 export const roomSelector = {}
 
-export const { selectRoom, addRoom, markCurrentRoomCreated } = roomSlice.actions
+export const {
+  selectRoom,
+  addRoom,
+  markCurrentRoomCreated,
+  updateRoomLatestMessage,
+} = roomSlice.actions
 
 export default roomSlice.reducer
 

@@ -7,7 +7,7 @@ type MessageRequest = {
 }
 
 export const messageServices = {
-  async getListMessageByRoomId(roomId: string) {
+  async getHistoryMessage(roomId: string) {
     const res = await apiClient.get(`message/list/${roomId}`)
     return res.data
   },

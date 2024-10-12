@@ -15,7 +15,13 @@ const roomController = {
     try {
       const rooms = await Room.find({
         members: req.params.userId,
-      }).sort({ "latestMessage.createdAt": -1 })
+      })
+        .populate(
+          "latestMessage",
+          "text ownerId isDelete react createdAt updatedAt",
+        )
+        .sort({ "latestMessage.createdAt": -1 })
+      console.log(rooms)
       return res.status(200).json(rooms)
     } catch (err) {
       console.log(err)

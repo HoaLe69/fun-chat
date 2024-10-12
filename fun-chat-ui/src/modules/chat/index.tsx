@@ -1,2 +1,2 @@
-export { default as MessageContainer } from './components/MessageContainer'
+export { default as ChatArea } from './components/ChatArea'
 export { default as ChatList } from './components/ChatList'

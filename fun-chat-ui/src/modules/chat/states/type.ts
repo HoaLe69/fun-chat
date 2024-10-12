@@ -1,4 +1,4 @@
-import { IConversation } from '../types'
+import { IConversation, IMessage } from '../types'
 export type IRoomStore = {
   rooms: IConversation[]
   selectedRoom?: {
@@ -9,5 +9,12 @@ export type IRoomStore = {
       name: string
       picture: string
     }
+  }
+}
+
+export type IMessageStore = {
+  historyMsgs: {
+    status: 'idle' | 'loading' | 'successful' | 'failure'
+    msgs: IMessage[]
   }
 }

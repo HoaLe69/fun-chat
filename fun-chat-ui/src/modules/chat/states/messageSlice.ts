@@ -1,35 +1,43 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from 'modules/core/store'
-import { fetchListMessageAsync } from './messageActions'
+import { fetchHistoryMessageAsync } from './messageActions'
+import { IMessageStore } from './type'
 
-const initialState = {
-  list: {
-    loading: false,
+const initialState: IMessageStore = {
+  historyMsgs: {
+    status: 'idle',
     msgs: [],
   },
 }
-
 const messageSlice = createSlice({
   name: 'message',
   initialState,
-  reducers: {},
+  reducers: {
+    addMessage(state, action) {
+      const historyMsgs = state.historyMsgs.msgs
+      state.historyMsgs.msgs = [...historyMsgs, action.payload]
+    },
+  },
   extraReducers(builder) {
     builder
-      .addCase(fetchListMessageAsync.pending, state => {
-        state.list.loading = true
+      .addCase(fetchHistoryMessageAsync.pending, state => {
+        state.historyMsgs.status = 'loading'
       })
-      .addCase(fetchListMessageAsync.fulfilled, (state, action) => {
-        state.list.loading = false
-        state.list.msgs = action.payload
+      .addCase(fetchHistoryMessageAsync.fulfilled, (state, action) => {
+        state.historyMsgs.status = 'successful'
+        state.historyMsgs.msgs = action.payload
       })
-      .addCase(fetchListMessageAsync.rejected, state => {
-        state.list.loading = false
+      .addCase(fetchHistoryMessageAsync.rejected, state => {
+        state.historyMsgs.status = 'failure'
       })
   },
 })
 export const messageSelector = {
-  selectListMessageStatus: (state: RootState) => state.message.list.loading,
-  selectListMessage: (state: RootState) => state.message.list.msgs,
+  selectHistoryMsgs: (state: RootState) => state.message.historyMsgs.msgs,
+  selectStatusHistoryMsgs: (state: RootState) =>
+    state.message.historyMsgs.status,
 }
+
+export const { addMessage } = messageSlice.actions
 
 export default messageSlice.reducer
