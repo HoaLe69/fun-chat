@@ -3,7 +3,8 @@ import { UserAvatar, EmptyState } from 'modules/core/components'
 import ChatForm from './ChatForm'
 import type { IMessage } from 'modules/chat/types'
 import { authSelector } from 'modules/auth/states/authSlice'
-import { useRef, useEffect } from 'react'
+import { useRef, useState, useEffect, useCallback } from 'react'
+import { ArrowDownIcon } from 'modules/core/components/icons'
 
 import { useAppDispatch, useAppSelector, useSocket } from 'modules/core/hooks'
 
@@ -12,15 +13,17 @@ import { selectCurrentRoomId, selectCurrentRoomInfo } from '../states/roomSlice'
 //mock
 import { addMessage, messageSelector } from '../states/messageSlice'
 import { fetchHistoryMessageAsync } from '../states/messageActions'
+import classNames from 'classnames'
 
 const Wrapper = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex-1 flex flex-col bg-grey-50 dark:bg-grey-950">
+  <div className="relative flex-1 flex flex-col bg-grey-50 dark:bg-grey-950">
     {children}
   </div>
 )
 
 const ChatArea: React.FC = () => {
   const { emitEvent, subscribeEvent, unSubcribeEvent } = useSocket()
+  const [showJumpToButton, setShowJumpToButton] = useState<boolean>(false)
   const dispatch = useAppDispatch()
   const historyMsgs = useAppSelector(messageSelector.selectHistoryMsgs)
   const userLogin = useAppSelector(authSelector.selectUser)
@@ -31,9 +34,24 @@ const ChatArea: React.FC = () => {
 
   useEffect(() => {
     const containerMsgEl = refContainer.current
-    if (containerMsgEl) {
-      containerMsgEl.scrollTop = containerMsgEl.scrollHeight
+    const scrollHandler = () => {
+      //@ts-ignore
+      const { scrollHeight, scrollTop, clientHeight } = containerMsgEl
+      // current position of scrollbar at bottom
+      if (!(scrollHeight - scrollTop - clientHeight)) {
+        setShowJumpToButton(false)
+        return
+      }
+      setShowJumpToButton(true)
     }
+    //init scrollbar position
+    if (containerMsgEl) {
+      if (!showJumpToButton) {
+        containerMsgEl.scrollTop = containerMsgEl.scrollHeight
+      }
+      containerMsgEl?.addEventListener('scroll', scrollHandler)
+    }
+    return () => containerMsgEl?.removeEventListener('scroll', scrollHandler)
   }, [historyMsgs])
 
   useEffect(() => {
@@ -41,6 +59,10 @@ const ChatArea: React.FC = () => {
       emitEvent('join', roomSelectedId)
       subscribeEvent('chat:receiveMessage', (msg: any) => {
         dispatch(addMessage(msg))
+        // force scrollbar move to bottom on sender machine
+        setTimeout(() => {
+          if (msg.ownerId === userLogin?._id) handleJumpToBottom()
+        }, 0)
       })
       console.log(`user join ${roomSelectedId} `)
     }
@@ -55,6 +77,15 @@ const ChatArea: React.FC = () => {
     if (roomSelectedId !== undefined)
       dispatch(fetchHistoryMessageAsync(roomSelectedId))
   }, [roomSelectedId])
+
+  /*Event handler*/
+  const handleJumpToBottom = useCallback(() => {
+    const containerMsgEl = refContainer.current
+
+    if (containerMsgEl) {
+      containerMsgEl.scrollTop = containerMsgEl.scrollHeight
+    }
+  }, [refContainer])
 
   if (!roomSelectedId)
     return (
@@ -107,6 +138,17 @@ const ChatArea: React.FC = () => {
           }
         </>
       </div>
+      <button
+        onClick={handleJumpToBottom}
+        className={classNames(
+          'animate-bounce absolute dark:bg-grey-900 bg-grey-50 bottom-20 left-1/2 -translate-x-1/2 w-10 h-10 items-center justify-center rounded-full shadow-[0px_2px_4px_rgba(0,0,0,0.25)] dark:shadow-[0px_2px_4px_rgba(0,0,0,0.5)] hover:brightness-75',
+          showJumpToButton ? 'flex' : 'hidden',
+        )}
+      >
+        <span className="text-blue-500 dark:text-blue-400">
+          <ArrowDownIcon />
+        </span>
+      </button>
       {/*Input Area */}
       <ChatForm />
     </Wrapper>

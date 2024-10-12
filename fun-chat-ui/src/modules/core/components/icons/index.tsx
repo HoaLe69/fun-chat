@@ -19,6 +19,7 @@ import MessageIcon from './assets/message.svg?react'
 import FacebookIcon from './assets/facebook-icon.svg?react'
 import GoogleIcon from './assets/google-icon.svg?react'
 import DiscordIcon from './assets/discord-icon.svg?react'
+import ArrowDownIcon from './assets/arrow-down.svg?react'
 
 export {
   MenuBurgerIcon,
@@ -42,6 +43,7 @@ export {
   FacebookIcon,
   GoogleIcon,
   DiscordIcon,
+  ArrowDownIcon,
 }
 
 export const LaughSmallIcon = () => {
