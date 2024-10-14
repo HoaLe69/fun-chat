@@ -7,9 +7,10 @@ import moment from 'moment'
 
 import { minimalTime } from '../utils/dateTimeFormat'
 //import users from 'modules/chat/mock/user.json'
-import { useAppDispatch } from 'modules/core/hooks'
+import { useAppDispatch, useAppSelector } from 'modules/core/hooks'
 import { selectRoom } from '../states/roomSlice'
 import { userServices } from 'modules/user/services'
+import { userSelector } from 'modules/user/states/userSlice'
 
 type Props = IConversation & {
   userLoginId: string | undefined
@@ -19,6 +20,7 @@ const ChatListItem: React.FC<Props> = props => {
   const dispatch = useAppDispatch()
   const { _id, members, userLoginId, latestMessage } = props
   const [recipient, setRecipient] = useState<IUser>()
+  const usersOnline = useAppSelector(userSelector.selectListCurrentUserOnline)
 
   const recipientId = members.find(m => m !== userLoginId)
 
@@ -59,13 +61,16 @@ const ChatListItem: React.FC<Props> = props => {
       className="hover:bg-grey-200 dark:hover:bg-grey-800 cursor-pointer rounded-md px-2 py-3"
     >
       <div className="flex items-center">
-        <div>
+        <div className="relative">
           {recipient && (
             <UserAvatar
               alt={recipient?.display_name}
               src={recipient?.picture}
               size="lg"
             />
+          )}
+          {usersOnline[recipient?._id || ''] && (
+            <div className="absolute w-3 h-3 rounded-full bg-green-500 bottom-0 right-1"></div>
           )}
         </div>
         <div className="pl-2 flex-1 min-w-0">

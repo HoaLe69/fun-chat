@@ -1,18 +1,29 @@
 import { ChatArea, ChatList } from 'modules/chat'
-import { useSocket, useAppSelector } from 'modules/core/hooks'
+import { useSocket, useAppSelector, useAppDispatch } from 'modules/core/hooks'
 import { authSelector } from 'modules/auth/states/authSlice'
+import { getUsersOnline } from 'modules/user/states/userSlice'
 import { useEffect } from 'react'
 
 const ChatPage = (): JSX.Element => {
   const userLogin = useAppSelector(authSelector.selectUser)
-  const { emitEvent } = useSocket()
+  const dispatch = useAppDispatch()
+
+  const { emitEvent, subscribeEvent, unSubcribeEvent } = useSocket()
 
   useEffect(() => {
     if (userLogin?._id) {
-      emitEvent('join', userLogin?._id)
+      emitEvent('online', userLogin?._id)
+      subscribeEvent('user-online', (msg: any) => {
+        dispatch(getUsersOnline(msg))
+      })
+      subscribeEvent('user-offline', (msg: any) => {
+        dispatch(getUsersOnline(msg))
+      })
     }
     return () => {
-      emitEvent('leave', userLogin?._id)
+      unSubcribeEvent('user-online')
+      unSubcribeEvent('user-offline')
+      emitEvent('offline', userLogin?._id)
     }
   }, [userLogin])
 

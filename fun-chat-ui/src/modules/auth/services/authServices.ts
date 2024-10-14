@@ -49,4 +49,8 @@ export const authServices = {
 
     return res.data
   },
+  async logOut() {
+    const res = await apiClient.post('/auth/logOut')
+    return res
+  },
 }

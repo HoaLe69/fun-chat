@@ -7,14 +7,15 @@ import {
   MoonIcon,
   PersonIcon,
 } from 'modules/core/components/icons'
-import { useAppDispatch, useAppSelector } from 'modules/core/hooks'
+import { useAppDispatch, useAppSelector, useSocket } from 'modules/core/hooks'
 import { logOut, authSelector } from 'modules/auth/states/authSlice'
-import { apiClient } from 'modules/core/services'
+import { authServices } from 'modules/auth/services/authServices'
 import { Menu, ThemeToggleButton } from 'modules/core/components'
 import classNames from 'classnames'
 
 const HambergerMenu = (): JSX.Element => {
   const _user = useAppSelector(authSelector.selectUser)
+  const { emitEvent } = useSocket()
   const dispatch = useAppDispatch()
   const menus = [
     { tag: '@mention', name: 'Mentions', icon: <MentionIcon /> },
@@ -31,8 +32,13 @@ const HambergerMenu = (): JSX.Element => {
       name: 'Sign Out',
       icon: <PersonIcon />,
       onClick: async () => {
-        await apiClient.post('/auth/logOut')
-        dispatch(logOut())
+        try {
+          await authServices.logOut()
+          emitEvent('user-offline', _user?._id)
+          dispatch(logOut())
+        } catch (error) {
+          console.log(error)
+        }
       },
     },
   ]

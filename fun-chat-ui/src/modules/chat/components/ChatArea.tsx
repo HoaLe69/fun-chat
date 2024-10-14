@@ -14,6 +14,7 @@ import { selectCurrentRoomId, selectCurrentRoomInfo } from '../states/roomSlice'
 import { addMessage, messageSelector } from '../states/messageSlice'
 import { fetchHistoryMessageAsync } from '../states/messageActions'
 import classNames from 'classnames'
+import { userSelector } from 'modules/user/states/userSlice'
 
 const Wrapper = ({ children }: { children: React.ReactNode }) => (
   <div className="relative flex-1 flex flex-col bg-grey-50 dark:bg-grey-950">
@@ -29,6 +30,7 @@ const ChatArea: React.FC = () => {
   const userLogin = useAppSelector(authSelector.selectUser)
   const roomSelectedId = useAppSelector(selectCurrentRoomId)
   const roomSelectedInfo = useAppSelector(selectCurrentRoomInfo)
+  const usersOnline = useAppSelector(userSelector.selectListCurrentUserOnline)
 
   const refContainer = useRef<HTMLDivElement>(null)
 
@@ -93,6 +95,7 @@ const ChatArea: React.FC = () => {
         <div>No Room Selected</div>
       </Wrapper>
     )
+  console.log({ usersOnline })
   return (
     <Wrapper>
       {/*Header*/}
@@ -105,7 +108,18 @@ const ChatArea: React.FC = () => {
         />
         <div className="flex flex-col justify-start">
           <p className="font-bold leading-5">{roomSelectedInfo?.name}</p>
-          <span className="text-grey-500 text-sm">Online for 10 mins</span>
+          <span
+            className={classNames(
+              'text-sm ',
+              usersOnline[roomSelectedInfo?._id || '']?.status === 'online' ?
+                'text-green-500'
+              : 'text-grey-500',
+            )}
+          >
+            {usersOnline[roomSelectedInfo?._id || '']?.status === 'online' ?
+              'Online'
+            : 'Offline'}
+          </span>
         </div>
       </div>
 

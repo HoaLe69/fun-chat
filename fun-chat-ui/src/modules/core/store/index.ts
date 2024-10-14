@@ -2,10 +2,12 @@ import { configureStore } from '@reduxjs/toolkit'
 import authReducer from 'modules/auth/states/authSlice'
 import messageReducer from 'modules/chat/states/messageSlice'
 import roomReducer from 'modules/chat/states/roomSlice'
+import userReducer from 'modules/user/states/userSlice'
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
+    user: userReducer,
     message: messageReducer,
     room: roomReducer,
   },
