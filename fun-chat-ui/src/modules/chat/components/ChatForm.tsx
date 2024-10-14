@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, memo } from 'react'
+import React, { useState, useRef, useCallback, memo, useEffect } from 'react'
 import classNames from 'classnames'
 import {
   SendIcon,
@@ -7,7 +7,7 @@ import {
 } from 'modules/core/components/icons'
 
 import EmojiPicker from './EmojiPicker'
-import { useAppSelector, useSocket } from 'modules/core/hooks'
+import { useAppSelector, useSocket, useDebounce } from 'modules/core/hooks'
 import {
   selectCurrentRoomId,
   selectCurrentRoomInfo,
@@ -19,11 +19,13 @@ const ChatForm: React.FC = () => {
   const [textMessage, setTextMessage] = useState<string>('')
   const [isOpenEmojiPicker, setIsOpenEmojiPicker] = useState<boolean>(false)
   const refInput = useRef<HTMLInputElement>(null)
+  const refTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { emitEvent } = useSocket()
 
   const roomSelectedId = useAppSelector(selectCurrentRoomId)
   const roomSelectedInfo = useAppSelector(selectCurrentRoomInfo)
   const roomSelectedStatus = useAppSelector(selectStatusCurrentRoom)
+  const debounceValue = useDebounce(textMessage, 200)
 
   const userLogin = useAppSelector(authSelector.selectUser)
 
@@ -72,10 +74,30 @@ const ChatForm: React.FC = () => {
       console.log(error)
     }
   }
+  useEffect(() => {
+    if (!debounceValue) return
+    // emit event here
+    emitEvent('chat:typing', {
+      roomId: roomSelectedId,
+      isTyping: true,
+      userId: userLogin?._id,
+    })
+  }, [debounceValue])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target
     setTextMessage(value)
+
+    //detect user stop typing after two second
+    if (typeof refTimer.current === 'number') clearTimeout(refTimer.current)
+    refTimer.current = setTimeout(() => {
+      //emit event here
+      emitEvent('chat:typing', {
+        roomId: roomSelectedId,
+        isTyping: false,
+        userId: userLogin?._id,
+      })
+    }, 1000)
   }
 
   const appendEmojiToText = useCallback((emoji: string) => {

@@ -4,6 +4,7 @@ import ChatForm from './ChatForm'
 import type { IMessage } from 'modules/chat/types'
 import { authSelector } from 'modules/auth/states/authSlice'
 import { useRef, useState, useEffect, useCallback } from 'react'
+import ReactLoading from 'react-loading'
 import { ArrowDownIcon } from 'modules/core/components/icons'
 
 import { useAppDispatch, useAppSelector, useSocket } from 'modules/core/hooks'
@@ -25,6 +26,10 @@ const Wrapper = ({ children }: { children: React.ReactNode }) => (
 const ChatArea: React.FC = () => {
   const { emitEvent, subscribeEvent, unSubcribeEvent } = useSocket()
   const [showJumpToButton, setShowJumpToButton] = useState<boolean>(false)
+  const [typingIndicator, setTypingIndicator] = useState({
+    isTyping: false,
+    userId: '',
+  })
   const dispatch = useAppDispatch()
   const historyMsgs = useAppSelector(messageSelector.selectHistoryMsgs)
   const userLogin = useAppSelector(authSelector.selectUser)
@@ -54,12 +59,20 @@ const ChatArea: React.FC = () => {
       containerMsgEl?.addEventListener('scroll', scrollHandler)
     }
     return () => containerMsgEl?.removeEventListener('scroll', scrollHandler)
-  }, [historyMsgs])
+  }, [historyMsgs, typingIndicator.isTyping])
 
   useEffect(() => {
     if (roomSelectedId) {
       emitEvent('join', roomSelectedId)
+      subscribeEvent('chat:userTypingStatus', (msg: any) => {
+        setTypingIndicator(pre => ({ ...pre, ...msg }))
+      })
       subscribeEvent('chat:receiveMessage', (msg: any) => {
+        // hide the tying indicator components when new message came.
+        setTypingIndicator({
+          userId: '',
+          isTyping: false,
+        })
         dispatch(addMessage(msg))
         // force scrollbar move to bottom on sender machine
         setTimeout(() => {
@@ -71,6 +84,7 @@ const ChatArea: React.FC = () => {
     return () => {
       emitEvent('leave', roomSelectedId)
       unSubcribeEvent('chat:receiveMessage')
+      unSubcribeEvent('chat:userTypingStatus')
       console.log(`user leave ${roomSelectedId} `)
     }
   }, [roomSelectedId])
@@ -95,7 +109,7 @@ const ChatArea: React.FC = () => {
         <div>No Room Selected</div>
       </Wrapper>
     )
-  console.log({ usersOnline })
+  //  console.log({ usersOnline })
   return (
     <Wrapper>
       {/*Header*/}
@@ -150,6 +164,20 @@ const ChatArea: React.FC = () => {
               <EmptyState content="No chats here yet" />
             </div>
           }
+          {typingIndicator?.isTyping &&
+            typingIndicator?.userId !== userLogin?._id && (
+              <div className="flex my-2">
+                <div className="pl-[6px] pr-4">
+                  <UserAvatar
+                    src={roomSelectedInfo?.picture || ''}
+                    alt={roomSelectedInfo?.name || ''}
+                  />
+                </div>
+                <div className="max-w-max flex items-center justify-center bg-grey-200 dark:bg-grey-800 p-2 rounded-t-xl rounded-br-xl rounded-bl-sm">
+                  <ReactLoading type="bubbles" width="25px" height="25px" />
+                </div>
+              </div>
+            )}
         </>
       </div>
       <button

@@ -73,6 +73,11 @@ const chatEvent = (socket, io) => {
       console.log("error", error)
     }
   })
+
+  socket.on("chat:typing", data => {
+    const { isTyping, roomId, userId } = data
+    io.to(roomId).emit("chat:userTypingStatus", { isTyping, userId })
+  })
 }
 
 module.exports = chatEvent
