@@ -20,6 +20,8 @@ import FacebookIcon from './assets/facebook-icon.svg?react'
 import GoogleIcon from './assets/google-icon.svg?react'
 import DiscordIcon from './assets/discord-icon.svg?react'
 import ArrowDownIcon from './assets/arrow-down.svg?react'
+import CheckCircle from './assets/check-circle.svg?react'
+import CheckCircleFill from './assets/check-circle-fill.svg?react'
 
 export {
   MenuBurgerIcon,
@@ -44,6 +46,8 @@ export {
   GoogleIcon,
   DiscordIcon,
   ArrowDownIcon,
+  CheckCircle,
+  CheckCircleFill,
 }
 
 export const LaughSmallIcon = () => {

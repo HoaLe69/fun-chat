@@ -23,4 +23,8 @@ export type IMessage = {
   isDeleted: boolean
   react: Array<{ ownerId: string; emoji: string }>
   createdAt: string
+  status?: {
+    readBy: Array<string>
+    type: string
+  }
 }

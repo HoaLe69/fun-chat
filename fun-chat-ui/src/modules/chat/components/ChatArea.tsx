@@ -9,10 +9,17 @@ import { ArrowDownIcon } from 'modules/core/components/icons'
 
 import { useAppDispatch, useAppSelector, useSocket } from 'modules/core/hooks'
 
-import { selectCurrentRoomId, selectCurrentRoomInfo } from '../states/roomSlice'
+import {
+  selectCurrentRoomId,
+  selectCurrentRoomInfo,
+  updateRoomLatestMessage,
+} from '../states/roomSlice'
 
-//mock
-import { addMessage, messageSelector } from '../states/messageSlice'
+import {
+  addMessage,
+  messageSelector,
+  updateStatusLastMessage,
+} from '../states/messageSlice'
 import { fetchHistoryMessageAsync } from '../states/messageActions'
 import classNames from 'classnames'
 import { userSelector } from 'modules/user/states/userSlice'
@@ -62,12 +69,58 @@ const ChatArea: React.FC = () => {
   }, [historyMsgs, typingIndicator.isTyping])
 
   useEffect(() => {
+    const containerMsgEl = refContainer.current
+    if (containerMsgEl) {
+      let lastMessage = containerMsgEl.querySelector('.last-message')
+      if (!lastMessage) return
+      console.log({ newMessage: lastMessage.getAttribute('data-msg-id') })
+      //      @ts-ignore
+      const observerCallback = (entries, observer) => {
+        if (!lastMessage) return
+        //@ts-ignore
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const roomId = lastMessage?.getAttribute('data-room-id')
+            emitEvent('chat:statusMessage', {
+              recipient: roomSelectedInfo?._id,
+              roomId,
+              msg: {
+                _id: lastMessage?.getAttribute('data-msg-id'),
+              },
+              status: {
+                type: 'seen',
+                readBy: [
+                  {
+                    userId: userLogin?._id,
+                    readAt: new Date(),
+                  },
+                ],
+              },
+            })
+            lastMessage?.classList.remove('last-message')
+            lastMessage = null
+          }
+        })
+      }
+      const observer = new IntersectionObserver(observerCallback, {
+        root: containerMsgEl,
+        rootMargin: '0px',
+        threshold: 1.0,
+      })
+      observer.observe(lastMessage)
+    }
+  }, [historyMsgs])
+
+  useEffect(() => {
     if (roomSelectedId) {
       emitEvent('join', roomSelectedId)
       subscribeEvent('chat:userTypingStatus', (msg: any) => {
         setTypingIndicator(pre => ({ ...pre, ...msg }))
       })
-      subscribeEvent('chat:receiveMessage', (msg: any) => {
+      console.log(`user join ${roomSelectedId} `)
+    }
+    subscribeEvent('chat:receiveMessage', (msg: any) => {
+      if (roomSelectedId) {
         // hide the tying indicator components when new message came.
         setTypingIndicator({
           userId: '',
@@ -75,16 +128,32 @@ const ChatArea: React.FC = () => {
         })
         dispatch(addMessage(msg))
         // force scrollbar move to bottom on sender machine
-        setTimeout(() => {
-          if (msg.ownerId === userLogin?._id) handleJumpToBottom()
-        }, 0)
-      })
-      console.log(`user join ${roomSelectedId} `)
-    }
+        if (msg.ownerId === userLogin?._id) {
+          setTimeout(() => {
+            handleJumpToBottom()
+          }, 0)
+        }
+        subscribeEvent('chat:updateStatusMessage', (msg: any) => {
+          dispatch(updateStatusLastMessage(msg))
+        })
+      }
+      //handler receive message on recipient machine
+      if (msg?.ownerId !== userLogin?._id) {
+        emitEvent('chat:statusMessage', {
+          msg,
+          status: {
+            type: 'delivered',
+            readBy: [],
+          },
+        })
+      }
+      dispatch(updateRoomLatestMessage(msg))
+    })
     return () => {
       emitEvent('leave', roomSelectedId)
       unSubcribeEvent('chat:receiveMessage')
       unSubcribeEvent('chat:userTypingStatus')
+      unSubcribeEvent('chat:updateStatusMessage')
       console.log(`user leave ${roomSelectedId} `)
     }
   }, [roomSelectedId])
@@ -145,9 +214,10 @@ const ChatArea: React.FC = () => {
         <>
           {historyMsgs?.length > 0 ?
             <>
-              {historyMsgs.map((message: IMessage) => {
+              {historyMsgs.map((message: IMessage, index: number) => {
                 return (
                   <Message
+                    isLast={index === historyMsgs.length - 1}
                     key={message._id}
                     userLoginId={userLogin?._id}
                     recipient={{

@@ -40,6 +40,42 @@ const chatEvent = (socket, io) => {
     }
   })
 
+  socket.on("chat:statusMessage", async data => {
+    const { msg, status, roomId, recipient } = data
+    switch (status.type) {
+      case "delivered":
+        await Message.findOneAndUpdate(
+          {
+            _id: msg._id,
+          },
+          {
+            status,
+          },
+        )
+        io.to(msg.ownerId).emit("chat:updateStatusMessage", {
+          _id: msg._id,
+          status,
+        })
+        break
+      case "seen":
+        console.log("seen message")
+        const updatedMsg = await Message.updateMany(
+          {
+            roomId,
+            $or: [{ "status.type": "delivered" }, { "status.type": "sent" }],
+          },
+          {
+            status,
+          },
+        )
+        console.log({ updatedMsg })
+        io.to(recipient).emit("chat:updateStatusMessage", {
+          _id: msg?._id,
+          status,
+        })
+        break
+    }
+  })
   socket.on("chat:sendMessage", async data => {
     try {
       const { msg, recipientId } = data
@@ -49,26 +85,25 @@ const chatEvent = (socket, io) => {
 
       await Room.findOneAndUpdate(
         {
-          _id: savedMessage.roomId,
+          _id: msg.roomId,
         },
         {
           $set: {
             latestMessage: savedMessage._id,
           },
         },
-        { new: true },
       )
       //send to this room
-      io.to(msg.roomId).emit("chat:receiveMessage", savedMessage)
-
+      socket.emit("chat:receiveMessage", savedMessage)
+      io.to(recipientId).emit("chat:receiveMessage", savedMessage)
       /**sync newest message for conversation *
        * sync with current user
        * sync with recipient
        * */
-      socket.emit("room:syncNewMessage", { latestMessage: savedMessage })
-      io.to(recipientId).emit("room:syncNewMessage", {
-        latestMessage: savedMessage,
-      })
+      // socket.emit("room:syncNewMessage", { latestMessage: savedMessage })
+      // io.to(recipientId).emit("room:syncNewMessage", {
+      //   latestMessage: savedMessage,
+      // })
     } catch (error) {
       console.log("error", error)
     }

@@ -3,9 +3,11 @@ import type { IMessage } from 'modules/chat/types'
 import { UserAvatar } from 'modules/core/components'
 import ContextualMenu from './ContextualMenu'
 import ReactionPicker from './ReactionPicker'
+import { CheckCircle, CheckCircleFill } from 'modules/core/components/icons'
 import { useState } from 'react'
 
 type Props = IMessage & {
+  isLast?: boolean
   recipient: {
     _id?: string
     picture?: string
@@ -15,18 +17,38 @@ type Props = IMessage & {
 }
 
 const Message: React.FC<Props> = props => {
-  const { userLoginId, text, ownerId: senderMessageId } = props
+  const {
+    _id,
+    roomId,
+    isLast,
+    userLoginId,
+    text,
+    ownerId: senderMessageId,
+    status,
+    recipient,
+  } = props
   const [contextualMenuOpen, setContextualMenuOpen] = useState<boolean>(false)
   const viewedAs = userLoginId === senderMessageId ? 'sender' : 'recipient'
 
   return (
-    <Wrapper>
+    <div
+      data-room-id={roomId}
+      data-msg-id={_id}
+      className={classNames(
+        'group my-2',
+        // { 'new-message': status?.type !== 'seen' && viewedAs === 'recipient' },
+        {
+          'last-message':
+            isLast && viewedAs === 'recipient' && status?.type !== 'seen',
+        },
+      )}
+    >
       <MessageOuter>
         <MessageAvatar>
           {viewedAs === 'recipient' && (
             <UserAvatar
-              src={props.recipient.picture || ''}
-              alt={props.recipient.displayName || ''}
+              src={recipient.picture || ''}
+              alt={recipient.displayName || ''}
             />
           )}
         </MessageAvatar>
@@ -47,17 +69,23 @@ const Message: React.FC<Props> = props => {
           </MessageActions>
           <MessageSpacer />
         </MessageInner>
-        <MessageStatus>
-          <span className="rounded-full bg-gray-300 w-4 h-4 block" />
-        </MessageStatus>
+        <MessageStatus
+          seenIcon={recipient?.picture}
+          viewedAs={viewedAs}
+          status={status}
+        ></MessageStatus>
       </MessageOuter>
-    </Wrapper>
+    </div>
   )
 }
 
-const Wrapper = ({ children }: { children: React.ReactNode }) => (
-  <div className="group my-2">{children}</div>
-)
+const Wrapper = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode
+  className?: string
+}) => <div className={classNames('group my-2', className)}>{children}</div>
 
 const MessageOuter = ({ children }: { children: React.ReactNode }) => (
   <div className="flex">{children}</div>
@@ -128,8 +156,38 @@ const MessageActions = ({
 }
 const MessageSpacer = () => <div className="flex-1 min-w-28" />
 
-const MessageStatus = ({ children }: { children: React.ReactNode }) => (
-  <div className="w-5 flex flex-col items-center justify-end">{children}</div>
-)
+const MessageStatus = ({
+  status,
+  viewedAs,
+  seenIcon,
+}: {
+  status?: {
+    readBy: Array<string>
+    type: string
+  }
+  viewedAs: string
+  seenIcon?: string
+}) => {
+  const StatusIconComp = () => {
+    switch (status?.type) {
+      case 'sent':
+        return <CheckCircle />
+      case 'delivered':
+        return <CheckCircleFill />
+      case 'seen':
+        //TODO: render the user avatar here
+        return <img className="rounded-full" src={seenIcon} alt="seen icon" />
+    }
+  }
+  return (
+    <div className="w-5 flex flex-col items-center justify-end ml-1">
+      {viewedAs === 'sender' && (
+        <span className="rounded-full  w-4 h-4 block text-sm text-grey-500 font-semibold">
+          <StatusIconComp />
+        </span>
+      )}
+    </div>
+  )
+}
 
 export default Message

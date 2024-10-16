@@ -17,6 +17,14 @@ const messageSlice = createSlice({
       const historyMsgs = state.historyMsgs.msgs
       state.historyMsgs.msgs = [...historyMsgs, action.payload]
     },
+    updateStatusLastMessage(state, action) {
+      const { _id, status } = action.payload
+      const historyMsgs = state.historyMsgs.msgs
+      state.historyMsgs.msgs = [...historyMsgs].map(msg => {
+        if (msg?._id === _id) return { ...msg, status }
+        return msg
+      })
+    },
   },
   extraReducers(builder) {
     builder
@@ -38,6 +46,6 @@ export const messageSelector = {
     state.message.historyMsgs.status,
 }
 
-export const { addMessage } = messageSlice.actions
+export const { addMessage, updateStatusLastMessage } = messageSlice.actions
 
 export default messageSlice.reducer
