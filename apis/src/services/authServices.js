@@ -123,7 +123,7 @@ const loginWithProvider = async ({
   const accessToken = provider === "google" ? code : await getTokenFn(code)
 
   const userInfo = await getUserProfifeFn(accessToken)
-  console.log({ userInfo })
+  console.log({ picture: userInfo.picture })
 
   if (!userInfo?.id) throw new APIError("Login session was expired", 400)
 
@@ -138,10 +138,7 @@ const loginWithProvider = async ({
   const newUser = await new User({
     email: userInfo.email,
     display_name: userInfo.name || userInfo?.global_name,
-    picture:
-      provider === "discord"
-        ? authUtils.getFullPathAvatarDiscord(userInfo.id, userInfo.avatar)
-        : userInfo.picture,
+    picture: authUtils.getUserAvatarUrlByProvider(provider, userInfo),
   })
 
   const savedUser = await newUser.save()

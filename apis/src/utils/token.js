@@ -3,7 +3,7 @@ require("dotenv").config()
 const { APIError } = require("@errors")
 
 const accessTokenExpiresIn = process.env.ACCESS_TOKEN_EXPIRIESIN
-const refreshTokenExpiresIn = process.env.ACCESS_TOKEN_EXPIRIESIN
+const refreshTokenExpiresIn = process.env.REFRESH_TOKEN_EXPIRIESIN
 
 const generateAccessToken = user => {
   return jwt.sign({ ...user }, process.env.ACCESS_TOKEN_SECRET_KEY, {
