@@ -3,7 +3,7 @@ import { UserAvatar, EmptyState } from 'modules/core/components'
 import ChatForm from './ChatForm'
 import type { IMessage } from 'modules/chat/types'
 import { authSelector } from 'modules/auth/states/authSlice'
-import { useRef, useState, useEffect, useCallback } from 'react'
+import { useRef, useState, useEffect, useCallback, useMemo } from 'react'
 import ReactLoading from 'react-loading'
 import { ArrowDownIcon } from 'modules/core/components/icons'
 
@@ -18,7 +18,8 @@ import {
 import {
   addMessage,
   messageSelector,
-  updateStatusLastMessage,
+  updateStatusMessage,
+  updateStatusMessages,
 } from '../states/messageSlice'
 import { fetchHistoryMessageAsync } from '../states/messageActions'
 import classNames from 'classnames'
@@ -80,13 +81,15 @@ const ChatArea: React.FC = () => {
         //@ts-ignore
         entries.forEach(entry => {
           if (entry.isIntersecting) {
-            const roomId = lastMessage?.getAttribute('data-room-id')
+            const unSeenMsgEls = containerMsgEl.querySelectorAll('.new-message')
+            //un seen message id list
+            const msgs = Array.from(unSeenMsgEls).map(msgEl =>
+              msgEl.getAttribute('data-msg-id'),
+            )
             emitEvent('chat:statusMessage', {
+              msgs,
               recipient: roomSelectedInfo?._id,
-              roomId,
-              msg: {
-                _id: lastMessage?.getAttribute('data-msg-id'),
-              },
+              roomId: roomSelectedId,
               status: {
                 type: 'seen',
                 readBy: [
@@ -118,6 +121,14 @@ const ChatArea: React.FC = () => {
         setTypingIndicator(pre => ({ ...pre, ...msg }))
       })
       console.log(`user join ${roomSelectedId} `)
+      // update single msg
+      subscribeEvent('chat:updateStatusMessage', (msg: any) => {
+        dispatch(updateStatusMessage(msg))
+      })
+      // update status multiple messages
+      subscribeEvent('chat:updateStatusMessages', (msg: any) => {
+        dispatch(updateStatusMessages(msg))
+      })
     }
     subscribeEvent('chat:receiveMessage', (msg: any) => {
       if (roomSelectedId) {
@@ -127,20 +138,20 @@ const ChatArea: React.FC = () => {
           isTyping: false,
         })
         dispatch(addMessage(msg))
-        // force scrollbar move to bottom on sender machine
+        // force scrollbar move to bottom on local machine
         if (msg.ownerId === userLogin?._id) {
           setTimeout(() => {
             handleJumpToBottom()
           }, 0)
         }
-        subscribeEvent('chat:updateStatusMessage', (msg: any) => {
-          dispatch(updateStatusLastMessage(msg))
-        })
       }
       //handler receive message on recipient machine
       if (msg?.ownerId !== userLogin?._id) {
         emitEvent('chat:statusMessage', {
-          msg,
+          msg: {
+            _id: msg?._id,
+            ownerId: msg?.ownerId,
+          },
           status: {
             type: 'delivered',
             readBy: [],
@@ -154,6 +165,7 @@ const ChatArea: React.FC = () => {
       unSubcribeEvent('chat:receiveMessage')
       unSubcribeEvent('chat:userTypingStatus')
       unSubcribeEvent('chat:updateStatusMessage')
+      unSubcribeEvent('chat:updateStatusMessages')
       console.log(`user leave ${roomSelectedId} `)
     }
   }, [roomSelectedId])
@@ -172,13 +184,23 @@ const ChatArea: React.FC = () => {
     }
   }, [refContainer])
 
+  const groupStatusMessageByCurrentUserId = useMemo(() => {
+    let status = {}
+    for (const msg of historyMsgs) {
+      if (msg && msg.ownerId === userLogin?._id) {
+        //@ts-ignore
+        status[msg.status?.type] = msg._id
+      }
+    }
+    return status
+  }, [historyMsgs])
+
   if (!roomSelectedId)
     return (
       <Wrapper>
         <div>No Room Selected</div>
       </Wrapper>
     )
-  //  console.log({ usersOnline })
   return (
     <Wrapper>
       {/*Header*/}
@@ -215,16 +237,57 @@ const ChatArea: React.FC = () => {
           {historyMsgs?.length > 0 ?
             <>
               {historyMsgs.map((message: IMessage, index: number) => {
+                const previous = historyMsgs[index - 1]
+                const next = historyMsgs[index + 1]
+                const current = message
+                let showAvatar = false
+                let type = 'single'
+                let position = null
+
+                if (
+                  current.ownerId !== previous?.ownerId &&
+                  current.ownerId !== next?.ownerId
+                ) {
+                  showAvatar = true
+                  type = 'single'
+                } else {
+                  if (
+                    current.ownerId !== previous?.ownerId &&
+                    current.ownerId === next?.ownerId
+                  ) {
+                    showAvatar = false
+                    type = 'group'
+                    position = 'first'
+                  } else if (
+                    current.ownerId === previous?.ownerId &&
+                    current.ownerId === next?.ownerId
+                  ) {
+                    showAvatar = false
+                    type = 'group'
+                    position = 'middle'
+                  } else if (
+                    current.ownerId === previous?.ownerId &&
+                    current.ownerId !== next?.ownerId
+                  ) {
+                    showAvatar = true
+                    type = 'group'
+                    position = 'last'
+                  }
+                }
+                const showStatusMsg =
+                  //@ts-ignore
+                  groupStatusMessageByCurrentUserId[current.status?.type] ===
+                  current?._id
+
                 return (
                   <Message
-                    isLast={index === historyMsgs.length - 1}
+                    type={type}
                     key={message._id}
+                    showAvatar={showAvatar}
+                    showStatusMsg={showStatusMsg}
+                    position={position}
                     userLoginId={userLogin?._id}
-                    recipient={{
-                      _id: roomSelectedInfo?._id,
-                      picture: roomSelectedInfo?.picture,
-                      displayName: roomSelectedInfo?.name,
-                    }}
+                    isLast={index === historyMsgs.length - 1}
                     {...message}
                   />
                 )
@@ -243,7 +306,7 @@ const ChatArea: React.FC = () => {
                     alt={roomSelectedInfo?.name || ''}
                   />
                 </div>
-                <div className="max-w-max flex items-center justify-center bg-grey-200 dark:bg-grey-800 p-2 rounded-t-xl rounded-br-xl rounded-bl-sm">
+                <div className="max-w-max flex items-center justify-center bg-grey-200 dark:bg-grey-800 p-2 rounded-3xl">
                   <ReactLoading type="bubbles" width="25px" height="25px" />
                 </div>
               </div>

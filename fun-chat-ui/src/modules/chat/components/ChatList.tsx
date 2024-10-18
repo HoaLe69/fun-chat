@@ -14,9 +14,9 @@ import {
   addRoom,
   markCurrentRoomCreated,
   selectListRoom,
-  updateRoomLatestMessage,
 } from '../states/roomSlice'
 import { fetchListRoomAsync } from '../states/roomActions'
+import { addMessage } from '../states/messageSlice'
 
 const ChatList: React.FC = () => {
   const [openSearch, setOpenSearch] = useState<boolean>(false)
@@ -26,7 +26,7 @@ const ChatList: React.FC = () => {
   const dispatch = useAppDispatch()
 
   const userLogin = useAppSelector(authSelector.selectUser)
-  const { subscribeEvent, unSubcribeEvent } = useSocket()
+  const { emitEvent, subscribeEvent, unSubcribeEvent } = useSocket()
 
   useEffect(() => {
     if (userLogin?._id) dispatch(fetchListRoomAsync({ userId: userLogin?._id }))
@@ -34,18 +34,24 @@ const ChatList: React.FC = () => {
 
   useEffect(() => {
     subscribeEvent('room:newChat', (res: any) => {
+      if (res.creator === userLogin?._id) {
+        dispatch(markCurrentRoomCreated())
+        dispatch(addMessage(res.room.latestMessage))
+      } else {
+        emitEvent('chat:statusMessage', {
+          msg: res.room.latestMessage,
+          status: {
+            type: 'delivered',
+            readBy: [],
+          },
+        })
+      }
       dispatch(addRoom({ ...res.room }))
-      if (res.success) dispatch(markCurrentRoomCreated())
-    })
-    subscribeEvent('room:syncNewMessage', (res: any) => {
-      console.log({ res })
-      dispatch(updateRoomLatestMessage(res.latestMessage))
     })
     return () => {
       unSubcribeEvent('room:newChat')
-      unSubcribeEvent('room:syncNewMessage')
     }
-  }, [])
+  }, [userLogin])
 
   const handleStartingSearch = () => {
     setOpenSearch(true)

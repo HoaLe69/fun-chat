@@ -11,29 +11,24 @@ const chatEvent = (socket, io) => {
         members: [roomInfo?.sender, roomInfo?.recipient],
       })
       const newMessage = await Message({ ...message, roomId: roomInfo._id })
-
-      const { roomId, ...latestMessage } = newMessage
-
-      newMessage.roomId = roomId
-
       //update last message of this room
       newRoom.latestMessage = newMessage?._id
-
       // save change
-      const savedRoom = await newRoom.save()
+      await newRoom.save()
       await newMessage.save()
 
-      const _savedRoom = {
-        ...savedRoom._doc,
-        latestMessage: latestMessage._doc,
+      const responseRoom = {
+        ...newRoom._doc,
+        latestMessage: { ...newMessage._doc },
       }
-
       // send to recipient
-      io.to(roomInfo.recipient).emit("room:newChat", { room: _savedRoom })
-      // send to userLogin
-      io.to(roomInfo._id).emit("room:newChat", {
-        room: _savedRoom,
-        success: true,
+      io.to(roomInfo.recipient).emit("room:newChat", {
+        room: responseRoom,
+      })
+      // send to userLoginnewRoom._doc
+      socket.emit("room:newChat", {
+        room: responseRoom,
+        creator: roomInfo.sender,
       })
     } catch (error) {
       console.log(error)
@@ -41,7 +36,14 @@ const chatEvent = (socket, io) => {
   })
 
   socket.on("chat:statusMessage", async data => {
-    const { msg, status, roomId, recipient } = data
+    /**
+     * msg for case update single message
+     * status is object  detail of status message {userId , readAt}
+     * roomId is id current select room
+     * recipient is id of receiver
+     * msgs is an array includes all of id message which is not seen.
+     * */
+    const { msg, msgs, status, roomId, recipient } = data
     switch (status.type) {
       case "delivered":
         await Message.findOneAndUpdate(
@@ -58,7 +60,6 @@ const chatEvent = (socket, io) => {
         })
         break
       case "seen":
-        console.log("seen message")
         const updatedMsg = await Message.updateMany(
           {
             roomId,
@@ -69,8 +70,8 @@ const chatEvent = (socket, io) => {
           },
         )
         console.log({ updatedMsg })
-        io.to(recipient).emit("chat:updateStatusMessage", {
-          _id: msg?._id,
+        io.to(recipient).emit("chat:updateStatusMessages", {
+          msgs,
           status,
         })
         break
@@ -96,14 +97,6 @@ const chatEvent = (socket, io) => {
       //send to this room
       socket.emit("chat:receiveMessage", savedMessage)
       io.to(recipientId).emit("chat:receiveMessage", savedMessage)
-      /**sync newest message for conversation *
-       * sync with current user
-       * sync with recipient
-       * */
-      // socket.emit("room:syncNewMessage", { latestMessage: savedMessage })
-      // io.to(recipientId).emit("room:syncNewMessage", {
-      //   latestMessage: savedMessage,
-      // })
     } catch (error) {
       console.log("error", error)
     }
