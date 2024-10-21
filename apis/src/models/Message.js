@@ -31,6 +31,32 @@ const messageSchema = new Schema(
       type: [reactIconSchema],
       default: [],
     },
+    replyBy: {
+      type: [String],
+      default: [],
+    },
+    replyTo: { type: mongoose.Schema.Types.ObjectId, default: null },
+    status: {
+      readBy: {
+        type: [
+          {
+            userId: {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: "User",
+              required: true,
+            },
+            readAt: { type: Date },
+          },
+        ],
+        default: [],
+        _id: false, //Disable auto-generation _id in subdocuments
+      },
+      type: {
+        type: String,
+        enum: ["sent", "delivered", "seen"],
+        default: "sent",
+      },
+    },
   },
   { timestamps: true },
 )
@@ -38,7 +64,7 @@ const messageSchema = new Schema(
 module.exports = mongoose.model("Message", messageSchema)
 
 messageSchema.statics = {
-  async createNewMessage(newMessage) {
+  async createMessage(newMessage) {
     const message = await newMessage.save()
     return message
   },

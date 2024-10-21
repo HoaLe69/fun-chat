@@ -6,23 +6,27 @@ export type IUser = {
 }
 export type IConversation = {
   _id: string
-  latestMessage: {
-    text: string
-    createdAt: string
-    ownerId: string
-  }
+  latestMessage: IMessage
   members: Array<string>
   status?: string
 }
 
+export enum StatusOfReplyMessage {
+  REMOVE,
+  ACTIVE,
+}
+
 export type IMessage = {
-  _id: number
+  _id: string
   text: string
   roomId: string
   ownerId: string
   isDeleted: boolean
   react: Array<{ ownerId: string; emoji: string }>
   createdAt: string
+  replyTo: string | null
+  replyBy: Array
+  statusOfReplyMessage: StatusOfReplyMessage
   status?: {
     readBy: Array<string>
     type: string

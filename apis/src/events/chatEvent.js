@@ -81,6 +81,16 @@ const chatEvent = (socket, io) => {
     try {
       const { msg, recipientId } = data
       const newMessage = new Message({ ...msg })
+      if (msg.replyTo) {
+        await Message.findOneAndUpdate(
+          { _id: msg.replyTo },
+          {
+            $push: {
+              replyBy: newMessage._id,
+            },
+          },
+        )
+      }
 
       const savedMessage = await newMessage.save()
 
@@ -105,6 +115,65 @@ const chatEvent = (socket, io) => {
   socket.on("chat:typing", data => {
     const { isTyping, roomId, userId } = data
     io.to(roomId).emit("chat:userTypingStatus", { isTyping, userId })
+  })
+
+  socket.on("chat:messageActions", async msg => {
+    try {
+      /*
+       * recipient id
+       * type of actions : delete , reaction
+       * _id message
+       * roomId
+       * update information
+       *  --- reaction msg : { ownerId , emoji }
+       *  --- remove msg : {isDeleted : true}
+       * */
+      const type = msg.type
+      const msgId = msg.msgId
+      const body = msg.body
+      const recipient = msg.recipient
+      // response adress
+      const roomId = msg.roomId
+
+      const storedMsg = await Message.findOne({ _id: msgId })
+
+      switch (type) {
+        case "reaction":
+          const reacted = storedMsg.react.find(r => r.ownerId === body.ownerId)
+          if (!reacted) {
+            storedMsg.react = [...storedMsg.react, body]
+          } else {
+            const storedReact = storedMsg.react.filter(
+              r => r.ownerId !== body.ownerId,
+            )
+            if (reacted.emoji === body.emoji) {
+              storedMsg.react = storedReact
+            } else {
+              storedMsg.react = [...storedReact, body]
+            }
+          }
+          await storedMsg.save()
+          break
+        case "deletion":
+          storedMsg.isDeleted = body.isDeleted
+          await storedMsg.save()
+          break
+        default:
+        //ignore
+      }
+      if (recipient) {
+        io.to(recipient).emit("chat:receiveMessageActions", {
+          type,
+          info: storedMsg,
+        })
+      }
+      io.to(roomId).emit("chat:receiveMessageActions", {
+        type,
+        info: storedMsg,
+      })
+    } catch (error) {
+      console.log(error)
+    }
   })
 }
 

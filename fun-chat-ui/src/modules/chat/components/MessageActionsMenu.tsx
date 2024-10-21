@@ -3,17 +3,32 @@ import {
   TrashIcon,
   ReplyIcon,
 } from 'modules/core/components/icons'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Button, AppModal } from 'modules/core/components'
+import { useAppDispatch, useAppSelector, useSocket } from 'modules/core/hooks'
 import classNames from 'classnames'
 import Tippy from '@tippyjs/react/headless'
+import { selectCurrentRoomId, selectCurrentRoomInfo } from '../states/roomSlice'
+import { replyMessage } from '../states/messageSlice'
 
 type Props = {
   setContextualMenuOpen: React.Dispatch<React.SetStateAction<boolean>>
+  msg: { _id: string; ownerId: string }
+  content: string
+  allowDel: boolean
 }
-const ContextualMenu: React.FC<Props> = ({ setContextualMenuOpen }) => {
+const MessageActionsMenu: React.FC<Props> = ({
+  msg,
+  allowDel,
+  content,
+  setContextualMenuOpen,
+}) => {
+  const { emitEvent } = useSocket()
   const [showModal, setShowModal] = useState<boolean>(false)
   const [visible, setVisible] = useState<boolean>(false)
+  const dispatch = useAppDispatch()
+  const roomSelectedId = useAppSelector(selectCurrentRoomId)
+  const roomSelectedInfo = useAppSelector(selectCurrentRoomInfo)
 
   const show = () => {
     setVisible(true)
@@ -26,6 +41,25 @@ const ContextualMenu: React.FC<Props> = ({ setContextualMenuOpen }) => {
   const onClose = () => {
     setShowModal(false)
   }
+
+  const handleReplyMessage = useCallback(() => {
+    if (!msg._id || !content) return
+    dispatch(replyMessage({ _id: msg._id, content, ownerId: msg?.ownerId }))
+    hide()
+  }, [])
+
+  const handleRemoveMessage = useCallback(() => {
+    if (!msg._id || !allowDel) return
+    emitEvent('chat:messageActions', {
+      type: 'deletion',
+      msgId: msg?._id,
+      roomId: roomSelectedId,
+      recipient: roomSelectedInfo?._id,
+      body: {
+        isDeleted: true,
+      },
+    })
+  }, [])
 
   const classes =
     'flex items-center py-3 px-4 cursor-pointer hover:bg-grey-200 dark:hover:bg-grey-800 '
@@ -41,24 +75,26 @@ const ContextualMenu: React.FC<Props> = ({ setContextualMenuOpen }) => {
               {...attrs}
               className="bg-grey-50 dark:bg-grey-900 text-grey-950 dark:text-grey-50 w-60 rounded-2xl overflow-hidden shadow-xl"
             >
-              <li className={classes} onClick={hide}>
+              <li className={classes} onClick={handleReplyMessage}>
                 <span className="mr-4">
                   <ReplyIcon />
                 </span>
                 Reply
               </li>
-              <li
-                onClick={() => {
-                  setShowModal(true)
-                  hide()
-                }}
-                className={`${classes} text-red-600 rounded-b-2xl`}
-              >
-                <span className="mr-4">
-                  <TrashIcon />
-                </span>
-                Delete message
-              </li>
+              {allowDel && (
+                <li
+                  onClick={() => {
+                    setShowModal(true)
+                    hide()
+                  }}
+                  className={`${classes} text-red-600 rounded-b-2xl`}
+                >
+                  <span className="mr-4">
+                    <TrashIcon />
+                  </span>
+                  Delete message
+                </li>
+              )}
             </ul>
           )}
         >
@@ -82,10 +118,10 @@ const ContextualMenu: React.FC<Props> = ({ setContextualMenuOpen }) => {
         </p>
         <div className="flex items-center justify-end py-2">
           <Button title="Cancel" textBold onClick={onClose} />
-          <Button title="DELETE" textBold />
+          <Button title="DELETE" textBold onClick={handleRemoveMessage} />
         </div>
       </AppModal>
     </>
   )
 }
-export default ContextualMenu
+export default MessageActionsMenu

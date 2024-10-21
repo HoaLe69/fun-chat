@@ -17,4 +17,9 @@ export type IMessageStore = {
     status: 'idle' | 'loading' | 'successful' | 'failure'
     msgs: IMessage[]
   }
+  replyMsg?: {
+    _id: string
+    ownerId: string
+    content: string
+  }
 }

@@ -6,26 +6,17 @@ import classNames from 'classnames'
 import { Fragment } from 'react/jsx-runtime'
 import { groupEmojiByUserId } from '../utils/message'
 import { UserAvatar, AppModal } from 'modules/core/components'
+import { selectCurrentRoomInfo } from '../states/roomSlice'
 
 type Props = {
   isOpen: boolean
   onClose: () => void
   reacts: Array<{ emoji: string; ownerId: string }>
-  recipient: {
-    _id: string | null
-    picture: string | null
-    displayName: string | null
-  }
 }
 
-const MessageReactionModal: React.FC<Props> = ({
-  isOpen,
-  onClose,
-  reacts,
-  recipient,
-}) => {
+const MessageReactionModal: React.FC<Props> = ({ isOpen, onClose, reacts }) => {
   const userLogin = useAppSelector(authSelector.selectUser)
-  console.log({ reacts })
+  const roomSelectedInfo = useAppSelector(selectCurrentRoomInfo)
 
   const renderTab = (emoji: string) => {
     return (
@@ -59,20 +50,22 @@ const MessageReactionModal: React.FC<Props> = ({
     _id: string
     emoji: string
   }) => {
-    const currUser = _id === userLogin._id
+    const currUser = _id === userLogin?._id
     return (
       <div
         className="mt-2 gap-2 flex items-center text-grey-950 dark:text-grey-50"
         key={_id}
       >
         <UserAvatar
-          src={(currUser ? userLogin?.picture : recipient?.picture) || ''}
+          src={
+            (currUser ? userLogin?.picture : roomSelectedInfo?.picture) || ''
+          }
           alt={
-            (currUser ? userLogin?.display_name : recipient?.displayName) || ''
+            (currUser ? userLogin?.display_name : roomSelectedInfo?.name) || ''
           }
         />
         <p className="text-sm">
-          {currUser ? userLogin?.display_name : recipient?.displayName}
+          {currUser ? userLogin?.display_name : roomSelectedInfo?.name}
         </p>
         <span className="ml-auto">{emoji}</span>
       </div>
@@ -86,7 +79,6 @@ const MessageReactionModal: React.FC<Props> = ({
         <TabPanels className="max-h-80 overflow-auto">
           <TabPanel>
             {groupEmojiByUserId(reacts).map(react => {
-              console.log({ react })
               return renderUserReactInfo({
                 _id: react.ownerId,
                 emoji: react.emojis.join(' ') + ' ' + react.amount,

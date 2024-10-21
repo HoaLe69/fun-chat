@@ -22,6 +22,7 @@ import DiscordIcon from './assets/discord-icon.svg?react'
 import ArrowDownIcon from './assets/arrow-down.svg?react'
 import CheckCircle from './assets/check-circle.svg?react'
 import CheckCircleFill from './assets/check-circle-fill.svg?react'
+import CloseIcon from './assets/close.svg?react'
 
 export {
   MenuBurgerIcon,
@@ -48,6 +49,7 @@ export {
   ArrowDownIcon,
   CheckCircle,
   CheckCircleFill,
+  CloseIcon,
 }
 
 export const LaughSmallIcon = () => {

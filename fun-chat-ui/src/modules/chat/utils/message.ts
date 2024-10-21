@@ -21,7 +21,7 @@ export const groupMessagesByTime = (messages: Array<MessageType>) => {
   return result
 }
 
-export const groupReactMessageByEmoji = (reacts: Array<MessageReactType>) => {
+export const groupReactionByEmoji = (reacts: Array<MessageReactType>) => {
   if (!reacts.length) return []
   const reactCollections: Record<
     string,
@@ -51,6 +51,7 @@ export const groupReactMessageByEmoji = (reacts: Array<MessageReactType>) => {
 }
 
 export const groupEmojiByUserId = (reacts: Array<MessageReactType>) => {
+  if (!reacts.length) return []
   const cols: Record<
     string,
     {

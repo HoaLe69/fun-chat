@@ -18,6 +18,8 @@ import {
 import {
   addMessage,
   messageSelector,
+  updateMessageInfo,
+  updateMessageInfos,
   updateStatusMessage,
   updateStatusMessages,
 } from '../states/messageSlice'
@@ -26,7 +28,7 @@ import classNames from 'classnames'
 import { userSelector } from 'modules/user/states/userSlice'
 
 const Wrapper = ({ children }: { children: React.ReactNode }) => (
-  <div className="relative flex-1 flex flex-col bg-grey-50 dark:bg-grey-950">
+  <div className="relative w-3/4 flex flex-col bg-grey-50 dark:bg-grey-950">
     {children}
   </div>
 )
@@ -130,6 +132,16 @@ const ChatArea: React.FC = () => {
         dispatch(updateStatusMessages(msg))
       })
     }
+    subscribeEvent('chat:receiveMessageActions', (msg: any) => {
+      if (msg.type === 'deletion') {
+        if (msg.info.replyBy.length > 0) {
+          dispatch(updateMessageInfos(msg.info.replyBy))
+        }
+        dispatch(updateRoomLatestMessage(msg.info))
+      }
+      dispatch(updateMessageInfo(msg.info))
+    })
+
     subscribeEvent('chat:receiveMessage', (msg: any) => {
       if (roomSelectedId) {
         // hide the tying indicator components when new message came.
@@ -166,6 +178,7 @@ const ChatArea: React.FC = () => {
       unSubcribeEvent('chat:userTypingStatus')
       unSubcribeEvent('chat:updateStatusMessage')
       unSubcribeEvent('chat:updateStatusMessages')
+      unSubcribeEvent('chat:receiveMessageActions')
       console.log(`user leave ${roomSelectedId} `)
     }
   }, [roomSelectedId])

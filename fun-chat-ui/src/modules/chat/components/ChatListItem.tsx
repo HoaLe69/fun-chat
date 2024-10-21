@@ -50,6 +50,7 @@ const ChatListItem: React.FC<Props> = props => {
         _id: recipient?._id,
         name: recipient?.display_name,
         picture: recipient?.picture,
+        status: usersOnline[recipient?._id || ''],
       },
     }
     dispatch(selectRoom(roomInfo))
@@ -70,7 +71,7 @@ const ChatListItem: React.FC<Props> = props => {
             />
           )}
           {usersOnline[recipient?._id || ''] && (
-            <div className="absolute w-3 h-3 rounded-full bg-green-500 bottom-0 right-1"></div>
+            <div className="absolute w-3 h-3 rounded-full bg-green-500 bottom-0 right-1" />
           )}
         </div>
         <div className="pl-2 flex-1 min-w-0">

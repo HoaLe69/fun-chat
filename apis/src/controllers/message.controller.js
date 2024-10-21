@@ -2,6 +2,15 @@ const Message = require("@models/Message")
 const Room = require("@models/Room")
 
 const messageController = {
+  getMessageById: async (req, res, next) => {
+    try {
+      const msgId = req.query.id
+      const storedMessage = await Message.findOne({ _id: msgId })
+      return res.status(200).json(storedMessage)
+    } catch (error) {
+      next(error)
+    }
+  },
   create: async (req, res) => {
     try {
       const newMsg = await new Message(req.body).save()
