@@ -138,7 +138,7 @@ const Message: React.FC<Props> = props => {
           { '!mb-4': react.length > 0 && !isDeleted },
         )}
       >
-        {replyTo && replyMessage && (
+        {replyTo && replyMessage && !isDeleted && (
           <MessageReply
             text={replyMessage?.text}
             isRemoved={replyMessage.isDeleted}

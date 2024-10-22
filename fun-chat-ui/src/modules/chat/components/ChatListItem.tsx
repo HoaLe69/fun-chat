@@ -68,12 +68,9 @@ const ChatListItem: React.FC<Props> = props => {
 
   const renderStatusOfLatestMessage = () => {
     const status = latestMessage?.status?.type
-    const isDeleted = latestMessage.isDeleted
     return (
       <div>
-        {isDeleted ?
-          null
-        : status !== 'seen' ?
+        {status !== 'seen' ?
           <span className="ml-auto inline-block w-3 h-3 rounded-full bg-blue-400" />
         : latestMessage.ownerId === userLoginId ?
           <div className="w-3 h-3">
