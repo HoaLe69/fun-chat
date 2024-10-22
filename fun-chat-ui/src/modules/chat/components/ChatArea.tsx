@@ -10,6 +10,7 @@ import { ArrowDownIcon } from 'modules/core/components/icons'
 import { useAppDispatch, useAppSelector, useSocket } from 'modules/core/hooks'
 
 import {
+  markLatestMessageAsSeen,
   selectCurrentRoomId,
   selectCurrentRoomInfo,
   updateRoomLatestMessage,
@@ -127,14 +128,19 @@ const ChatArea: React.FC = () => {
       subscribeEvent('chat:updateStatusMessage', (msg: any) => {
         dispatch(updateStatusMessage(msg))
       })
-      // update status multiple messages
-      subscribeEvent('chat:updateStatusMessages', (msg: any) => {
-        dispatch(updateStatusMessages(msg))
-      })
     }
+    // update status multiple messages
+    subscribeEvent('chat:updateStatusMessages', (msg: any) => {
+      //mean all message in room mark as seen (the other user current online and in conversation)
+      if (msg.recipient !== userLogin?._id) {
+        dispatch(updateStatusMessages(msg))
+      }
+      dispatch(markLatestMessageAsSeen(msg))
+    })
     subscribeEvent('chat:receiveMessageActions', (msg: any) => {
       if (msg.type === 'deletion') {
         if (msg.info.replyBy.length > 0) {
+          // remove all message have been replied this message
           dispatch(updateMessageInfos(msg.info.replyBy))
         }
         dispatch(updateRoomLatestMessage(msg.info))

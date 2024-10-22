@@ -2,7 +2,7 @@
 import type { IConversation, IUser } from 'modules/chat/types'
 import { UserAvatar } from 'modules/core/components'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import moment from 'moment'
 
 import { minimalTime } from '../utils/dateTimeFormat'
@@ -11,6 +11,7 @@ import { useAppDispatch, useAppSelector } from 'modules/core/hooks'
 import { selectRoom } from '../states/roomSlice'
 import { userServices } from 'modules/user/services'
 import { userSelector } from 'modules/user/states/userSlice'
+import classNames from 'classnames'
 
 type Props = IConversation & {
   userLoginId: string | undefined
@@ -36,11 +37,54 @@ const ChatListItem: React.FC<Props> = props => {
     getRecipientInfo()
   }, [recipientId])
 
+  const latestMessageText = useCallback(() => {
+    const ownerMsg = latestMessage.ownerId === userLoginId
+
+    if (latestMessage.isDeleted) {
+      if (ownerMsg) {
+        return `You was unsent message`
+      } else return `${recipient?.display_name} was unsent message`
+    } else {
+      if (ownerMsg) {
+        return `You: ${latestMessage.text}`
+      }
+      return latestMessage.text
+    }
+  }, [latestMessage])
+
   const renderLatestMessage = () => {
     return (
-      <p className="text-sm truncate flex-1  text-gray-500 mt-1">
-        {latestMessage.text}
+      <p
+        className={classNames('text-sm truncate flex-1  text-gray-500 mt-1', {
+          'dark:text-grey-50 text-grey-950':
+            latestMessage.status?.type !== 'seen' && !latestMessage.isDeleted,
+          itatlic: latestMessage.isDeleted,
+        })}
+      >
+        {latestMessageText()}
       </p>
+    )
+  }
+
+  const renderStatusOfLatestMessage = () => {
+    const status = latestMessage?.status?.type
+    const isDeleted = latestMessage.isDeleted
+    return (
+      <div>
+        {isDeleted ?
+          null
+        : status !== 'seen' ?
+          <span className="ml-auto inline-block w-3 h-3 rounded-full bg-blue-400" />
+        : latestMessage.ownerId === userLoginId ?
+          <div className="w-3 h-3">
+            <img
+              className="rounded-full"
+              src={recipient?.picture}
+              alt={recipient?.display_name}
+            />
+          </div>
+        : null}
+      </div>
     )
   }
   const handleSelectedRoom = (_id: string) => {
@@ -81,8 +125,9 @@ const ChatListItem: React.FC<Props> = props => {
               {minimalTime(moment(latestMessage?.createdAt).fromNow())}
             </span>
           </div>
-          <div className="text-grey-500 flex items-center justify-between">
+          <div className="text-grey-500 flex items-center">
             {renderLatestMessage()}
+            {renderStatusOfLatestMessage()}
           </div>
         </div>
       </div>

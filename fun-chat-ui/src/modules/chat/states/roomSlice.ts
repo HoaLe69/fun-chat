@@ -17,6 +17,15 @@ const roomSlice = createSlice({
     addRoom(state, action) {
       state.rooms = [...state.rooms, action.payload]
     },
+    markLatestMessageAsSeen(state, action) {
+      const { roomId, status } = action.payload
+      const rooms = state.rooms
+      state.rooms = rooms.map(room => {
+        if (room._id === roomId)
+          return { ...room, latestMessage: { ...room.latestMessage, status } }
+        return room
+      })
+    },
     updateRoomLatestMessage(state, action) {
       const msg = action.payload
       const rooms = state.rooms
@@ -42,6 +51,7 @@ export const roomSelector = {}
 export const {
   selectRoom,
   addRoom,
+  markLatestMessageAsSeen,
   markCurrentRoomCreated,
   updateRoomLatestMessage,
 } = roomSlice.actions

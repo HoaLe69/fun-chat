@@ -70,9 +70,16 @@ const chatEvent = (socket, io) => {
           },
         )
         console.log({ updatedMsg })
+        socket.emit("chat:updateStatusMessages", {
+          msgs,
+          status,
+          roomId,
+          recipient,
+        })
         io.to(recipient).emit("chat:updateStatusMessages", {
           msgs,
           status,
+          roomId,
         })
         break
     }
