@@ -9,23 +9,26 @@ import {
   CheckCircleFill,
   ReplyIcon,
 } from 'modules/core/components/icons'
-import { memo, useCallback, useEffect, useState } from 'react'
+import { forwardRef, memo, useCallback, useEffect, useState } from 'react'
 import { useAppSelector } from 'modules/core/hooks'
 import { selectCurrentRoomInfo } from '../states/roomSlice'
 import { groupReactionByEmoji } from '../utils/message'
 import { messageServices } from '../services'
 import { authSelector } from 'modules/auth/states/authSlice'
+import Tippy from '@tippyjs/react/headless'
+import moment from 'moment'
 
 type Props = IMessage & {
   isLast?: boolean
   showAvatar: boolean
+  showTimeDivider: string
   type: string
   position: string | null
   userLoginId: string | undefined
   showStatusMsg: boolean
 }
 
-const Message: React.FC<Props> = props => {
+const Message: React.FC<Props> = (props) => {
   const {
     _id,
     type,
@@ -39,6 +42,8 @@ const Message: React.FC<Props> = props => {
     userLoginId,
     position,
     showAvatar,
+    createdAt,
+    showTimeDivider,
     showStatusMsg,
     statusOfReplyMessage,
   } = props
@@ -87,26 +92,22 @@ const Message: React.FC<Props> = props => {
      * */
     if (viewedAs === 'sender') {
       if (replyMessage?.ownerId === userLogin?._id) {
-        text =
-          replyMessage?.isDeleted ?
-            'You replied to a removed message'
+        text = replyMessage?.isDeleted
+          ? 'You replied to a removed message'
           : 'You replied to yourself'
       } else {
-        text =
-          replyMessage?.isDeleted ?
-            'You replied to a removed message'
+        text = replyMessage?.isDeleted
+          ? 'You replied to a removed message'
           : `You replied to ${roomSelectedInfo?.name}`
       }
     } else {
       if (replyMessage?.ownerId === userLogin?._id) {
-        text =
-          replyMessage?.isDeleted ?
-            `${roomSelectedInfo?.name} replied to a removed message`
+        text = replyMessage?.isDeleted
+          ? `${roomSelectedInfo?.name} replied to a removed message`
           : `${roomSelectedInfo?.name} replied to you`
       } else {
-        text =
-          replyMessage?.isDeleted ?
-            `${roomSelectedInfo?.name} replied to a removed message`
+        text = replyMessage?.isDeleted
+          ? `${roomSelectedInfo?.name} replied to a removed message`
           : `${roomSelectedInfo?.name} replied to themself`
       }
     }
@@ -128,6 +129,11 @@ const Message: React.FC<Props> = props => {
 
   return (
     <>
+      {showTimeDivider && (
+        <div className="flex items-center justify-center my-2 text-grey-500 font-medium">
+          {showTimeDivider}
+        </div>
+      )}
       <Wrapper
         id={_id}
         className={classNames(
@@ -151,12 +157,14 @@ const Message: React.FC<Props> = props => {
         <MessageOuter>
           <MessageAvatar>
             {viewedAs === 'recipient' &&
-              (showAvatar ?
+              (showAvatar ? (
                 <UserAvatar
                   src={roomSelectedInfo?.picture || ''}
                   alt={roomSelectedInfo?.name || ''}
                 />
-              : <div className="w-9 h-9" />)}
+              ) : (
+                <div className="w-9 h-9" />
+              ))}
           </MessageAvatar>
           <MessageInner viewedAs={viewedAs}>
             <MessageBubbleWrapper>
@@ -166,11 +174,33 @@ const Message: React.FC<Props> = props => {
                 onClick={handleVisibleReactionList}
                 react={react}
               />
-              <MessageBubble id={_id} viewedAs={viewedAs} position={position}>
-                {isDeleted ?
-                  <p className="text-grey-500 italic">message was recall</p>
-                : <div>{text}</div>}
-              </MessageBubble>
+              <Tippy
+                placement="right"
+                delay={1000}
+                render={(attrs) => (
+                  <div
+                    {...attrs}
+                    className={classNames(
+                      'p-2 rounded-xl bg-black/80 text-grey-50 dark:bg-white/80 dark:text-grey-950',
+                    )}
+                  >
+                    <span>{moment(createdAt).format('hh:mm A')}</span>
+                  </div>
+                )}
+              >
+                <MessageBubble
+                  id={_id}
+                  viewedAs={viewedAs}
+                  type={type}
+                  position={position}
+                >
+                  {isDeleted ? (
+                    <p className="text-grey-500 italic">message was recall</p>
+                  ) : (
+                    <div>{text}</div>
+                  )}
+                </MessageBubble>
+              </Tippy>
             </MessageBubbleWrapper>
             <MessageActions
               tryVisible={contextualMenuOpen}
@@ -193,6 +223,7 @@ const Message: React.FC<Props> = props => {
           </MessageInner>
         </MessageOuter>
       </Wrapper>
+
       <MessageStatus
         visible={showStatusMsg && viewedAs === 'sender'}
         seenIcon={roomSelectedInfo?.picture}
@@ -246,51 +277,60 @@ const MessageBubbleWrapper = ({ children }: { children: React.ReactNode }) => (
   </div>
 )
 
-const MessageBubble = ({
-  children,
-  viewedAs,
-  position,
-  id,
-}: {
-  children: React.ReactNode
-  viewedAs: string
-  position: string | null
-  id: string
-}) => {
-  const themeMessageBubble =
-    viewedAs === 'sender' ?
-      'bg-blue-600  dark:bg-blue-500 text-white'
-    : 'bg-grey-300 dark:bg-grey-700'
+const MessageBubble = forwardRef(
+  (
+    {
+      children,
+      viewedAs,
+      position,
+      type,
+      id,
+    }: {
+      children: React.ReactNode
+      viewedAs: string
+      position: string | null
+      type: string
+      id: string
+    },
+    ref,
+  ) => {
+    const themeMessageBubble =
+      viewedAs === 'sender'
+        ? 'bg-blue-600  dark:bg-blue-500 text-white'
+        : 'bg-grey-300 dark:bg-grey-700'
 
-  const rounded = (() => {
-    switch (position) {
-      case 'first':
-        return viewedAs === 'sender' ?
-            'rounded-l-3xl rounded-tr-3xl'
-          : 'rounded-r-3xl rounded-tl-3xl'
-      case 'middle':
-        return viewedAs === 'sender' ? 'rounded-l-3xl' : 'rounded-r-3xl'
-      case 'last':
-        return viewedAs === 'sender' ?
-            'rounded-l-3xl rounded-br-3xl'
-          : 'rounded-r-3xl rounded-bl-3xl'
-      case null:
-        return 'rounded-3xl'
-    }
-  })()
-  return (
-    <div
-      id={id}
-      className={classNames(
-        'p-2 px-4 break-words',
-        themeMessageBubble,
-        rounded,
-      )}
-    >
-      {children}
-    </div>
-  )
-}
+    const rounded = (() => {
+      if (type === 'single') return 'rounded-3xl'
+      switch (position) {
+        case 'first':
+          return viewedAs === 'sender'
+            ? 'rounded-l-3xl rounded-tr-3xl'
+            : 'rounded-r-3xl rounded-tl-3xl'
+        case 'middle':
+          return viewedAs === 'sender' ? 'rounded-l-3xl' : 'rounded-r-3xl'
+        case 'last':
+          return viewedAs === 'sender'
+            ? 'rounded-l-3xl rounded-br-3xl'
+            : 'rounded-r-3xl rounded-bl-3xl'
+        case null:
+          return 'rounded-3xl'
+      }
+    })()
+    return (
+      <div
+        ref={ref}
+        id={id}
+        className={classNames(
+          'p-2 px-4 break-words',
+          themeMessageBubble,
+          rounded,
+        )}
+      >
+        {children}
+      </div>
+    )
+  },
+)
 const MessageReply = ({
   text,
   viewedAs,
@@ -323,9 +363,11 @@ const MessageReply = ({
         )}
       >
         <div>
-          {isRemoved ?
+          {isRemoved ? (
             <i className="text-grey-500">Message removed</i>
-          : <p className="truncate text-sm">{text}</p>}
+          ) : (
+            <p className="truncate text-sm">{text}</p>
+          )}
         </div>
       </div>
     </div>
@@ -342,6 +384,7 @@ const MessageReaction = ({
   isDeleted: boolean
   onClick: () => void
 }) => (
+  //TODO: margin bottom
   <div className="reaction mb-1 absolute top-full -translate-y-1/2 right-2 ">
     <div
       className={classNames('reaction-content flex gap-1 items-center', {
@@ -353,7 +396,7 @@ const MessageReaction = ({
           onClick={onClick}
           className="text-xs p-1 bg-grey-100 dark:bg-grey-900 rounded-xl cursor-pointer"
         >
-          {groupReactionByEmoji(react).map(r => {
+          {groupReactionByEmoji(react).map((r) => {
             return `${r.emoji} ${r.amount > 1 ? r.amount : ' '}`
           })}
         </span>

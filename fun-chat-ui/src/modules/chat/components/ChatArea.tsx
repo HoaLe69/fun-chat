@@ -27,6 +27,7 @@ import {
 import { fetchHistoryMessageAsync } from '../states/messageActions'
 import classNames from 'classnames'
 import { userSelector } from 'modules/user/states/userSlice'
+import { msgTimeDividerHandler } from '../utils/dateTimeFormat'
 
 const Wrapper = ({ children }: { children: React.ReactNode }) => (
   <div className="relative w-3/4 flex flex-col bg-grey-50 dark:bg-grey-950">
@@ -82,11 +83,11 @@ const ChatArea: React.FC = () => {
       const observerCallback = (entries, observer) => {
         if (!lastMessage) return
         //@ts-ignore
-        entries.forEach(entry => {
+        entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const unSeenMsgEls = containerMsgEl.querySelectorAll('.new-message')
             //un seen message id list
-            const msgs = Array.from(unSeenMsgEls).map(msgEl =>
+            const msgs = Array.from(unSeenMsgEls).map((msgEl) =>
               msgEl.getAttribute('data-msg-id'),
             )
             emitEvent('chat:statusMessage', {
@@ -121,7 +122,7 @@ const ChatArea: React.FC = () => {
     if (roomSelectedId) {
       emitEvent('join', roomSelectedId)
       subscribeEvent('chat:userTypingStatus', (msg: any) => {
-        setTypingIndicator(pre => ({ ...pre, ...msg }))
+        setTypingIndicator((pre) => ({ ...pre, ...msg }))
       })
       console.log(`user join ${roomSelectedId} `)
       // update single msg
@@ -203,15 +204,24 @@ const ChatArea: React.FC = () => {
     }
   }, [refContainer])
 
-  const groupStatusMessageByCurrentUserId = useMemo(() => {
+  const processMessageStatusAndTime = useMemo(() => {
     let status = {}
+    let period: Record<string, string> = {}
+    const divider: Record<string, string> = {}
     for (const msg of historyMsgs) {
+      // stacking status of message
       if (msg && msg.ownerId === userLogin?._id) {
         //@ts-ignore
         status[msg.status?.type] = msg._id
       }
+      //stacking time of message
+      const time = msgTimeDividerHandler(msg.createdAt)
+      if (!period[time]) {
+        period[time] = msg._id
+        divider[msg._id] = time
+      }
     }
-    return status
+    return { status, divider }
   }, [historyMsgs])
 
   if (!roomSelectedId)
@@ -235,14 +245,14 @@ const ChatArea: React.FC = () => {
           <span
             className={classNames(
               'text-sm ',
-              usersOnline[roomSelectedInfo?._id || '']?.status === 'online' ?
-                'text-green-500'
-              : 'text-grey-500',
+              usersOnline[roomSelectedInfo?._id || '']?.status === 'online'
+                ? 'text-green-500'
+                : 'text-grey-500',
             )}
           >
-            {usersOnline[roomSelectedInfo?._id || '']?.status === 'online' ?
-              'Online'
-            : 'Offline'}
+            {usersOnline[roomSelectedInfo?._id || '']?.status === 'online'
+              ? 'Online'
+              : 'Offline'}
           </span>
         </div>
       </div>
@@ -253,7 +263,7 @@ const ChatArea: React.FC = () => {
         className="flex-1 overflow-y-auto overflow-x-hidden px-2 flex flex-col"
       >
         <>
-          {historyMsgs?.length > 0 ?
+          {historyMsgs?.length > 0 ? (
             <>
               {historyMsgs.map((message: IMessage, index: number) => {
                 const previous = historyMsgs[index - 1]
@@ -262,6 +272,14 @@ const ChatArea: React.FC = () => {
                 let showAvatar = false
                 let type = 'single'
                 let position = null
+                const showStatusMsg =
+                  processMessageStatusAndTime.status[
+                    //@ts-ignore
+                    current.status?.type
+                  ] === current?._id
+
+                const showTimeDivider =
+                  processMessageStatusAndTime.divider[current._id]
 
                 if (
                   current.ownerId !== previous?.ownerId &&
@@ -270,13 +288,19 @@ const ChatArea: React.FC = () => {
                   showAvatar = true
                   type = 'single'
                 } else {
+                  // first msg in group
                   if (
                     current.ownerId !== previous?.ownerId &&
                     current.ownerId === next?.ownerId
                   ) {
                     showAvatar = false
-                    type = 'group'
-                    position = 'first'
+                    if (current.react.length > 0) {
+                      type = 'single'
+                    } else {
+                      type = 'group'
+                      position = 'first'
+                    }
+                    // middle msg in group
                   } else if (
                     current.ownerId === previous?.ownerId &&
                     current.ownerId === next?.ownerId
@@ -284,25 +308,42 @@ const ChatArea: React.FC = () => {
                     showAvatar = false
                     type = 'group'
                     position = 'middle'
+                    if (
+                      previous.react.length > 0 &&
+                      current.react.length === 0
+                    ) {
+                      position = 'first'
+                    } else if (
+                      previous.react.length > 0 &&
+                      current.react.length > 0
+                    ) {
+                      type = 'single'
+                    } else if (
+                      previous.react.length === 0 &&
+                      current.react.length > 0
+                    ) {
+                      position = 'last'
+                    }
+                    // last msg in group
                   } else if (
                     current.ownerId === previous?.ownerId &&
                     current.ownerId !== next?.ownerId
                   ) {
                     showAvatar = true
-                    type = 'group'
-                    position = 'last'
+                    if (previous.react.length > 0) {
+                      type = 'single'
+                    } else {
+                      type = 'group'
+                      position = 'last'
+                    }
                   }
                 }
-                const showStatusMsg =
-                  //@ts-ignore
-                  groupStatusMessageByCurrentUserId[current.status?.type] ===
-                  current?._id
-
                 return (
                   <Message
                     type={type}
                     key={message._id}
                     showAvatar={showAvatar}
+                    showTimeDivider={showTimeDivider}
                     showStatusMsg={showStatusMsg}
                     position={position}
                     userLoginId={userLogin?._id}
@@ -312,10 +353,11 @@ const ChatArea: React.FC = () => {
                 )
               })}
             </>
-          : <div className="h-full flex items-center justify-center">
+          ) : (
+            <div className="h-full flex items-center justify-center">
               <EmptyState content="No chats here yet" />
             </div>
-          }
+          )}
           {typingIndicator?.isTyping &&
             typingIndicator?.userId !== userLogin?._id && (
               <div className="flex my-2">
