@@ -21,11 +21,15 @@ import {
 } from '../states/roomSlice'
 import { authSelector } from 'modules/auth/states/authSlice'
 import { cancelReplyMessage, messageSelector } from '../states/messageSlice'
+import { MDXEditor, MDXEditorMethods, headingsPlugin } from '@mdxeditor/editor'
+import '@mdxeditor/editor/style.css'
+import './MdxEditor.css'
 
 const ChatForm: React.FC = () => {
-  const [textMessage, setTextMessage] = useState<string>('')
+  const [editorKey, setEditorKey] = useState(0)
+  const [markdownContent, setMarkdownContent] = useState<string>('')
   const [isOpenEmojiPicker, setIsOpenEmojiPicker] = useState<boolean>(false)
-  const refInput = useRef<HTMLInputElement>(null)
+  const mdxEditorRef = useRef<MDXEditorMethods>(null)
   const refTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const dispatch = useAppDispatch()
   const { emitEvent } = useSocket()
@@ -34,12 +38,18 @@ const ChatForm: React.FC = () => {
   const roomSelectedInfo = useAppSelector(selectCurrentRoomInfo)
   const roomSelectedStatus = useAppSelector(selectStatusCurrentRoom)
   const replyMessage = useAppSelector(messageSelector.selectReplyMessage)
-  const debounceValue = useDebounce(textMessage, 200)
+  const debounceValue = useDebounce(markdownContent, 200)
 
   const userLogin = useAppSelector(authSelector.selectUser)
 
+  useEffect(() => {
+    // reset
+    setMarkdownContent('')
+    const mdxEditorEl = mdxEditorRef.current
+    if (mdxEditorEl) mdxEditorEl.focus()
+  }, [roomSelectedId])
+
   const createNewChat = useCallback(() => {
-    console.log('start with new chat')
     if (!userLogin?._id || !roomSelectedInfo?._id) return
     const data = {
       roomInfo: {
@@ -48,25 +58,17 @@ const ChatForm: React.FC = () => {
         recipient: roomSelectedInfo?._id,
       },
       message: {
-        text: textMessage,
+        text: markdownContent,
         ownerId: userLogin?._id,
       },
     }
     emitEvent('room:createRoomChat', data)
-  }, [textMessage])
-
-  const resetChatForm = useCallback(() => {
-    const inputEl = refInput.current
-    if (inputEl) {
-      inputEl.focus()
-    }
-    setTextMessage('')
-  }, [refInput])
+  }, [markdownContent])
 
   const chatWithFriend = () => {
     if (replyMessage) dispatch(cancelReplyMessage())
     const msg = {
-      text: textMessage,
+      text: markdownContent,
       ownerId: userLogin?._id,
       roomId: roomSelectedId,
       replyTo: replyMessage?._id,
@@ -74,20 +76,18 @@ const ChatForm: React.FC = () => {
     emitEvent('chat:sendMessage', { msg, recipientId: roomSelectedInfo?._id })
   }
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (!textMessage.trim()) return
+  const handleSubmit = () => {
+    if (!markdownContent.trim()) return
     try {
       if (roomSelectedStatus) createNewChat()
       else chatWithFriend()
-      resetChatForm()
     } catch (error) {
       console.log(error)
     }
   }
+
   useEffect(() => {
     if (!debounceValue) return
-    // emit event here
     emitEvent('chat:typing', {
       roomId: roomSelectedId,
       isTyping: true,
@@ -95,26 +95,19 @@ const ChatForm: React.FC = () => {
     })
   }, [debounceValue])
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target
-    setTextMessage(value)
-
-    //detect user stop typing after two second
-    if (typeof refTimer.current === 'number') clearTimeout(refTimer.current)
-    refTimer.current = setTimeout(() => {
-      //emit event here
-      emitEvent('chat:typing', {
-        roomId: roomSelectedId,
-        isTyping: false,
-        userId: userLogin?._id,
-      })
-    }, 1000)
-  }
-
-  const appendEmojiToText = useCallback((emoji: string) => {
-    setTextMessage(pre => pre + emoji)
-  }, [])
-
+  const appendEmojiToText = useCallback(
+    (emoji: string) => {
+      if (!emoji) return
+      const mdxEditorEl = mdxEditorRef.current
+      if (mdxEditorEl) {
+        mdxEditorEl.focus(() => {
+          mdxEditorEl.insertMarkdown(emoji)
+        })
+      }
+      //append emoji to markdownContent
+    },
+    [mdxEditorRef],
+  )
   const onClose = () => {
     setIsOpenEmojiPicker(false)
   }
@@ -123,6 +116,34 @@ const ChatForm: React.FC = () => {
     dispatch(cancelReplyMessage())
   }, [])
 
+  const handleChange = (markdown: string) => {
+    setMarkdownContent(markdown)
+    // detect user stop typing after one seconds
+    if (typeof refTimer.current === 'number') clearTimeout(refTimer.current)
+    refTimer.current = setTimeout(() => {
+      emitEvent('chat:typing', {
+        roomId: roomSelectedId,
+        isTyping: false,
+        userId: userLogin?._id,
+      })
+    }, 1000)
+  }
+
+  const handleKeydown = (e: React.KeyboardEvent) => {
+    const mdxEditorEl = mdxEditorRef.current
+    if (mdxEditorEl) {
+      const key = e.key
+      // user submit form
+      if (key === 'Enter' && !e.shiftKey) {
+        handleSubmit()
+        // send a message here
+        mdxEditorEl.setMarkdown('') // clear editor
+        setEditorKey((pre) => pre + 1) // force re-render editor
+        setMarkdownContent('')
+      }
+    }
+  }
+
   return (
     <div className="border-t-2 bg-grey-50 dark:bg-grey-900 border-grey-300 dark:border-grey-700 py-2">
       {replyMessage && (
@@ -130,9 +151,9 @@ const ChatForm: React.FC = () => {
           <div className="flex items-center justify-between">
             <span className="text-xl/8 block font-semibold">
               Reply to{' '}
-              {replyMessage.ownerId === userLogin?._id ?
-                'yourself'
-              : roomSelectedInfo?.name}
+              {replyMessage.ownerId === userLogin?._id
+                ? 'yourself'
+                : roomSelectedInfo?.name}
             </span>
             <button
               onClick={handleCancelReplyMessage}
@@ -152,50 +173,45 @@ const ChatForm: React.FC = () => {
         </span>
         <form
           onSubmit={handleSubmit}
+          onKeyDown={handleKeydown}
           className="flex-1 flex gap-2 items-center px-2"
         >
-          <div
-            className={classNames(
-              'flex items-center h-full border-grey-300 dark:border-grey-700 focus-within:border-blue-500  dark:focus-within:border-blue-400 rounded-3xl flex-1 pl-4 pr-2 border-2 bg-grey-50 dark:bg-grey-900 caret-blue-500 ',
-            )}
-          >
-            <input
-              ref={refInput}
-              value={textMessage}
-              autoComplete="off"
-              onChange={handleInputChange}
-              className="flex-1 dark:bg-grey-900 outline-none border-none pr-2 py-3"
-              name="message"
-              id="message"
-              placeholder="Type your message"
+          <MDXEditor
+            key={editorKey}
+            autoFocus
+            ref={mdxEditorRef}
+            onChange={(value) => handleChange(value)}
+            className="editor"
+            markdown={''}
+            placeholder="Enter your message..."
+            plugins={[headingsPlugin()]}
+          />
+          <span className="text-grey-500 relative">
+            <LaughIcon
+              className="cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsOpenEmojiPicker(true)
+              }}
             />
-            <span className="text-grey-500 relative">
-              <LaughIcon
-                className="cursor-pointer"
-                onClick={e => {
-                  e.stopPropagation()
-                  setIsOpenEmojiPicker(true)
-                }}
-              />
-              <EmojiPicker
-                appendEmojiToText={appendEmojiToText}
-                isOpen={isOpenEmojiPicker}
-                onClose={onClose}
-              />
-            </span>
-          </div>
-          <button
-            type="submit"
-            className={classNames(
-              'w-10 h-10 rounded-full inline-flex items-center justify-center',
-              textMessage.trim().length === 0 ?
-                'bg-grey-400 dark:bg-grey-600'
-              : 'bg-blue-500 dark:bg-blue-400',
-            )}
-          >
-            <SendIcon />
-          </button>
+            <EmojiPicker
+              appendEmojiToText={appendEmojiToText}
+              isOpen={isOpenEmojiPicker}
+              onClose={onClose}
+            />
+          </span>
         </form>
+        <button
+          onClick={handleSubmit}
+          className={classNames(
+            'w-10 h-10 rounded-full inline-flex items-center justify-center',
+            markdownContent.trim().length === 0
+              ? 'bg-grey-400 dark:bg-grey-600'
+              : 'bg-blue-500 dark:bg-blue-400',
+          )}
+        >
+          <SendIcon />
+        </button>
       </div>
     </div>
   )
