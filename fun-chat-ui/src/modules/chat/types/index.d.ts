@@ -10,25 +10,50 @@ export type IConversation = {
   members: Array<string>
   status?: string
 }
-
-export enum StatusOfReplyMessage {
-  REMOVE,
-  ACTIVE,
+export type IMessageContentImage = {
+  url: string
+  altText: string
+}
+export type IMessageContentFile = {
+  path: string
+  fileName: string
+  fileType: string
+  size: number
+}
+export type IMessageContent = {
+  text: string
+  images: IMessageContentImage[]
+  files: IMessageContentFile[]
+  link: {
+    url: string
+    title: string
+    description: string
+    thumbnail: string
+  }
 }
 
 export type IMessage = {
   _id: string
-  text: string
+  content: IMessageContent
   roomId: string
   ownerId: string
   isDeleted: boolean
   react: Array<{ ownerId: string; emoji: string }>
   createdAt: string
-  replyTo: string | null
+  replyTo: IMessage | null
   replyBy: Array
-  statusOfReplyMessage: StatusOfReplyMessage
   status?: {
     readBy: Array<string>
     type: string
   }
+}
+
+export type IFileUpload = {
+  preview: {
+    name: string
+    size: number
+    path: string
+    type: string
+  }
+  original: File
 }

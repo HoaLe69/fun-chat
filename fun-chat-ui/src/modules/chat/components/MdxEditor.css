@@ -1,0 +1,6 @@
+.editor {
+  @apply flex-1 min-h-min max-h-40 overflow-y-auto;
+}
+.editor * {
+  @apply text-grey-950 dark:text-grey-50;
+}

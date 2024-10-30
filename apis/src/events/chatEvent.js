@@ -86,11 +86,11 @@ const chatEvent = (socket, io) => {
   })
   socket.on("chat:sendMessage", async data => {
     try {
-      const { msg, recipientId } = data
+      const { msg, recipientId, replyMessage } = data
       const newMessage = new Message({ ...msg })
-      if (msg.replyTo) {
+      if (replyMessage) {
         await Message.findOneAndUpdate(
-          { _id: msg.replyTo },
+          { _id: replyMessage._id },
           {
             $push: {
               replyBy: newMessage._id,
@@ -112,8 +112,14 @@ const chatEvent = (socket, io) => {
         },
       )
       //send to this room
-      socket.emit("chat:receiveMessage", savedMessage)
-      io.to(recipientId).emit("chat:receiveMessage", savedMessage)
+      socket.emit("chat:receiveMessage", {
+        ...savedMessage._doc,
+        replyTo: replyMessage,
+      })
+      io.to(recipientId).emit("chat:receiveMessage", {
+        ...savedMessage._doc,
+        replyTo: replyMessage,
+      })
     } catch (error) {
       console.log("error", error)
     }

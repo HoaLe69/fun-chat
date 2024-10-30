@@ -3,7 +3,7 @@ import { messageServices } from '../services/messageServices'
 
 export const fetchHistoryMessageAsync = createAsyncThunk<any, string>(
   '/message/hisotry',
-  async roomId => {
+  async (roomId) => {
     try {
       if (!roomId) return []
       const res = await messageServices.getHistoryMessage(roomId)

@@ -2,7 +2,6 @@ import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from 'modules/core/store'
 import { fetchHistoryMessageAsync } from './messageActions'
 import { IMessageStore } from './type'
-import { StatusOfReplyMessage } from '../types/index.d'
 
 const initialState: IMessageStore = {
   historyMsgs: {
@@ -24,28 +23,39 @@ const messageSlice = createSlice({
       const historyMsgs = state.historyMsgs.msgs
       state.historyMsgs.msgs = [...historyMsgs, action.payload]
     },
-    updateMessageInfo(state, action) {
+    updateMessageReaction(state, action) {
       const updateInfo = action.payload
       const historyMsgs = state.historyMsgs.msgs
-      state.historyMsgs.msgs = historyMsgs.map(msg => {
-        if (msg._id === updateInfo._id) return { ...msg, ...updateInfo }
+      state.historyMsgs.msgs = historyMsgs.map((msg) => {
+        if (msg._id === updateInfo._id)
+          return { ...msg, react: updateInfo.react }
         return msg
       })
     },
-    updateMessageInfos(state, action) {
+    updateReplyMessageRemoved(state, action) {
       const ids = action.payload
 
       const historyMsgs = state.historyMsgs.msgs
-      state.historyMsgs.msgs = historyMsgs.map(msg => {
+      //@ts-ignore
+      state.historyMsgs.msgs = historyMsgs.map((msg) => {
         if (ids.includes(msg._id))
-          return { ...msg, statusOfReplyMessage: StatusOfReplyMessage.REMOVE }
+          return { ...msg, replyTo: { ...msg.replyTo, isDeleted: true } }
+        return msg
+      })
+    },
+    removeMessage(state, action) {
+      const updateInfo = action.payload
+      const historyMsgs = state.historyMsgs.msgs
+      state.historyMsgs.msgs = historyMsgs.map((msg) => {
+        if (msg._id === updateInfo._id)
+          return { ...msg, isDeleted: updateInfo.isDeleted }
         return msg
       })
     },
     updateStatusMessage(state, action) {
       const { _id, status } = action.payload
       const historyMsgs = state.historyMsgs.msgs
-      state.historyMsgs.msgs = [...historyMsgs].map(msg => {
+      state.historyMsgs.msgs = [...historyMsgs].map((msg) => {
         if (msg?._id === _id) return { ...msg, status }
         return msg
       })
@@ -53,7 +63,7 @@ const messageSlice = createSlice({
     updateStatusMessages(state, action) {
       const { msgs: unSeenMsgs, status } = action.payload
       const historyMsgs = state.historyMsgs.msgs
-      state.historyMsgs.msgs = historyMsgs.map(msg => {
+      state.historyMsgs.msgs = historyMsgs.map((msg) => {
         if (unSeenMsgs.includes(msg._id))
           return {
             ...msg,
@@ -65,20 +75,22 @@ const messageSlice = createSlice({
   },
   extraReducers(builder) {
     builder
-      .addCase(fetchHistoryMessageAsync.pending, state => {
+      .addCase(fetchHistoryMessageAsync.pending, (state) => {
         state.historyMsgs.status = 'loading'
       })
       .addCase(fetchHistoryMessageAsync.fulfilled, (state, action) => {
         state.historyMsgs.status = 'successful'
         state.historyMsgs.msgs = action.payload
       })
-      .addCase(fetchHistoryMessageAsync.rejected, state => {
+      .addCase(fetchHistoryMessageAsync.rejected, (state) => {
         state.historyMsgs.status = 'failure'
       })
   },
 })
 export const messageSelector = {
   selectHistoryMsgs: (state: RootState) => state.message.historyMsgs.msgs,
+  selectHistoryMsgsStatus: (state: RootState) =>
+    state.message.historyMsgs.status,
   selectStatusHistoryMsgs: (state: RootState) =>
     state.message.historyMsgs.status,
   selectReplyMessage: (state: RootState) => state.message.replyMsg,
@@ -90,8 +102,9 @@ export const {
   cancelReplyMessage,
   updateStatusMessage,
   updateStatusMessages,
-  updateMessageInfo,
-  updateMessageInfos,
+  updateMessageReaction,
+  updateReplyMessageRemoved,
+  removeMessage,
 } = messageSlice.actions
 
 export default messageSlice.reducer

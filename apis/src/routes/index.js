@@ -8,7 +8,7 @@ const verifyToken = require("@middleware/requireAuth")
 
 router.use("/users", verifyToken, user)
 router.use("/room", verifyToken, room)
-router.use("/message", verifyToken, message)
+router.use("/message", message)
 router.use("/auth", auth)
 
 module.exports = router

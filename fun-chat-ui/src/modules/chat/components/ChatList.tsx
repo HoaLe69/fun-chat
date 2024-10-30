@@ -73,7 +73,7 @@ const ChatList: React.FC = () => {
           >
             <ArrowLeftIcon />
           </button>
-        : <HambergerMenu />}
+          : <HambergerMenu />}
         <div className="relative group flex-1">
           <span className="absolute left-3 top-1/2 -translate-y-1/2  text-gray-500 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400">
             <SearchIcon />
@@ -95,7 +95,7 @@ const ChatList: React.FC = () => {
           <div className="absolute inset-0">
             <SearchUser searchTerm={searchValue} />
           </div>
-        : <div className="h-full">
+          : <div className="h-full">
             <ul className="overflow-x-hidden w-full transition-all">
               {rooms?.map((room: IConversation) => {
                 return (

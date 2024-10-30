@@ -10,17 +10,16 @@ import classNames from 'classnames'
 import Tippy from '@tippyjs/react/headless'
 import { selectCurrentRoomId, selectCurrentRoomInfo } from '../states/roomSlice'
 import { replyMessage } from '../states/messageSlice'
+import type { IMessage } from '../types'
 
 type Props = {
   setContextualMenuOpen: React.Dispatch<React.SetStateAction<boolean>>
-  msg: { _id: string; ownerId: string }
-  content: string
+  message: IMessage
   allowDel: boolean
 }
 const MessageActionsMenu: React.FC<Props> = ({
-  msg,
   allowDel,
-  content,
+  message,
   setContextualMenuOpen,
 }) => {
   const { emitEvent } = useSocket()
@@ -43,16 +42,16 @@ const MessageActionsMenu: React.FC<Props> = ({
   }
 
   const handleReplyMessage = useCallback(() => {
-    if (!msg._id || !content) return
-    dispatch(replyMessage({ _id: msg._id, content, ownerId: msg?.ownerId }))
+    if (!message._id || !message.content) return
+    dispatch(replyMessage(message))
     hide()
   }, [])
 
   const handleRemoveMessage = useCallback(() => {
-    if (!msg._id || !allowDel) return
+    if (!message._id || !allowDel) return
     emitEvent('chat:messageActions', {
       type: 'deletion',
-      msgId: msg?._id,
+      msgId: message?._id,
       roomId: roomSelectedId,
       recipient: roomSelectedInfo?._id,
       body: {
@@ -70,7 +69,7 @@ const MessageActionsMenu: React.FC<Props> = ({
           interactive
           visible={visible}
           onClickOutside={hide}
-          render={attrs => (
+          render={(attrs) => (
             <ul
               {...attrs}
               className="bg-grey-50 dark:bg-grey-900 text-grey-950 dark:text-grey-50 w-60 rounded-2xl overflow-hidden shadow-xl"

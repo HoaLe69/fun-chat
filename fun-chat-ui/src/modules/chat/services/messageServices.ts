@@ -7,6 +7,15 @@ type MessageRequest = {
 }
 
 export const messageServices = {
+  async uploadFiles(files: File[]) {
+    const formData = new FormData()
+    files.forEach((file) => {
+      formData.append('files', file)
+    })
+    console.log({ formData })
+    const response = await apiClient.post('/message/uploads', formData)
+    return response.data
+  },
   async getMessageById(msgId: string) {
     const res = await apiClient.get('/message', {
       params: {

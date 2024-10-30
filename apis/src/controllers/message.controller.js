@@ -1,7 +1,18 @@
 const Message = require("@models/Message")
 const Room = require("@models/Room")
+const messageServices = require("@services/messageServices")
 
 const messageController = {
+  uploadMessageAttachment: async (req, res, next) => {
+    try {
+      const files = req.files
+      console.log({ files })
+      const fileDetails = messageServices.getFileDetail(req, files)
+      return res.status(200).json(fileDetails)
+    } catch (error) {
+      next(error)
+    }
+  },
   getMessageById: async (req, res, next) => {
     try {
       const msgId = req.query.id
@@ -72,7 +83,7 @@ const messageController = {
       if (!roomId) return res.status(400).send("Invalid params ")
       const messages = await Message.find({
         roomId,
-      })
+      }).populate("replyTo")
       return res.status(200).json(messages)
       // const groupMessage = await Message.aggregate([
       //   {

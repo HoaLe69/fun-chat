@@ -17,13 +17,13 @@ type Props = IConversation & {
   userLoginId: string | undefined
 }
 
-const ChatListItem: React.FC<Props> = props => {
+const ChatListItem: React.FC<Props> = (props) => {
   const dispatch = useAppDispatch()
   const { _id, members, userLoginId, latestMessage } = props
   const [recipient, setRecipient] = useState<IUser>()
   const usersOnline = useAppSelector(userSelector.selectListCurrentUserOnline)
 
-  const recipientId = members.find(m => m !== userLoginId)
+  const recipientId = members.find((m) => m !== userLoginId)
 
   useEffect(() => {
     const getRecipientInfo = async () => {
@@ -46,11 +46,15 @@ const ChatListItem: React.FC<Props> = props => {
       } else return `${recipient?.display_name} was unsent message`
     } else {
       if (ownerMsg) {
-        return `You: ${latestMessage.text}`
+        return latestMessage.content.text
+          ? `You: ${latestMessage?.content?.text}`
+          : `You: send a photo`
       }
-      return latestMessage.text
+      return latestMessage?.content?.text
+        ? latestMessage.content.text
+        : `${recipient?.display_name} send a photo`
     }
-  }, [latestMessage])
+  }, [latestMessage, recipient])
 
   const renderLatestMessage = () => {
     return (
@@ -70,9 +74,9 @@ const ChatListItem: React.FC<Props> = props => {
     const status = latestMessage?.status?.type
     return (
       <div>
-        {status !== 'seen' ?
+        {status !== 'seen' ? (
           <span className="ml-auto inline-block w-3 h-3 rounded-full bg-blue-400" />
-        : latestMessage.ownerId === userLoginId ?
+        ) : latestMessage.ownerId === userLoginId ? (
           <div className="w-3 h-3">
             <img
               className="rounded-full"
@@ -80,7 +84,7 @@ const ChatListItem: React.FC<Props> = props => {
               alt={recipient?.display_name}
             />
           </div>
-        : null}
+        ) : null}
       </div>
     )
   }

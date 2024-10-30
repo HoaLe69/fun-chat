@@ -53,6 +53,8 @@ app.post("/seed-data-user", async (req, res) => {
 })
 
 app.use(express.static(path.join(__dirname, "public")))
+//serve static file
+app.use("/uploads", express.static(path.join(__dirname, "src/uploads")))
 
 //app routing
 app.use("/api/v1", router)

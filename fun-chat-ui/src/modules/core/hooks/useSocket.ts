@@ -5,8 +5,8 @@ export const socket = io('http://localhost:8082', {
 })
 
 export const useSocket = () => {
-  const emitEvent = (event: string, data: any) => {
-    socket.emit(event, data)
+  const emitEvent = (event: string, data: any, ...args: any) => {
+    socket.emit(event, data, ...args)
   }
 
   const subscribeEvent = (event: string, eventHandler: any) => {
@@ -16,5 +16,5 @@ export const useSocket = () => {
   const unSubcribeEvent = (event: string) => {
     socket.off(event)
   }
-  return { emitEvent, subscribeEvent, unSubcribeEvent }
+  return { socket, emitEvent, subscribeEvent, unSubcribeEvent }
 }

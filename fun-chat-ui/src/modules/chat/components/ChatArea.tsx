@@ -2,32 +2,11 @@ import Message from './Message'
 import { UserAvatar, EmptyState } from 'modules/core/components'
 import ChatForm from './ChatForm'
 import type { IMessage } from 'modules/chat/types'
-import { authSelector } from 'modules/auth/states/authSlice'
-import { useRef, useState, useEffect, useCallback, useMemo } from 'react'
 import ReactLoading from 'react-loading'
 import { ArrowDownIcon } from 'modules/core/components/icons'
-
-import { useAppDispatch, useAppSelector, useSocket } from 'modules/core/hooks'
-
-import {
-  markLatestMessageAsSeen,
-  selectCurrentRoomId,
-  selectCurrentRoomInfo,
-  updateRoomLatestMessage,
-} from '../states/roomSlice'
-
-import {
-  addMessage,
-  messageSelector,
-  updateMessageInfo,
-  updateMessageInfos,
-  updateStatusMessage,
-  updateStatusMessages,
-} from '../states/messageSlice'
-import { fetchHistoryMessageAsync } from '../states/messageActions'
 import classNames from 'classnames'
-import { userSelector } from 'modules/user/states/userSlice'
-import { msgTimeDividerHandler } from '../utils/dateTimeFormat'
+import { useChatArea } from '../hooks'
+import { useCallback } from 'react'
 
 const Wrapper = ({ children }: { children: React.ReactNode }) => (
   <div className="relative w-3/4 flex flex-col bg-grey-50 dark:bg-grey-950">
@@ -36,203 +15,22 @@ const Wrapper = ({ children }: { children: React.ReactNode }) => (
 )
 
 const ChatArea: React.FC = () => {
-  const { emitEvent, subscribeEvent, unSubcribeEvent } = useSocket()
-  const [showJumpToButton, setShowJumpToButton] = useState<boolean>(false)
-  const [typingIndicator, setTypingIndicator] = useState({
-    isTyping: false,
-    userId: '',
-  })
-  const dispatch = useAppDispatch()
-  const historyMsgs = useAppSelector(messageSelector.selectHistoryMsgs)
-  const userLogin = useAppSelector(authSelector.selectUser)
-  const roomSelectedId = useAppSelector(selectCurrentRoomId)
-  const roomSelectedInfo = useAppSelector(selectCurrentRoomInfo)
-  const usersOnline = useAppSelector(userSelector.selectListCurrentUserOnline)
+  const {
+    userLogin,
+    typingIndicator,
+    roomSelectedId,
+    roomSelectedInfo,
+    usersOnline,
+    refContainer,
+    refJumpToButton,
+    historyMsgs,
+    processMessageStatusAndTime,
+    historyMsgsStatus,
+    handleJumpToBottom,
+  } = useChatArea()
 
-  const refContainer = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const containerMsgEl = refContainer.current
-    const scrollHandler = () => {
-      //@ts-ignore
-      const { scrollHeight, scrollTop, clientHeight } = containerMsgEl
-      // current position of scrollbar at bottom
-      if (!(scrollHeight - scrollTop - clientHeight)) {
-        setShowJumpToButton(false)
-        return
-      }
-      setShowJumpToButton(true)
-    }
-    //init scrollbar position
-    if (containerMsgEl) {
-      if (!showJumpToButton) {
-        containerMsgEl.scrollTop = containerMsgEl.scrollHeight
-      }
-      containerMsgEl?.addEventListener('scroll', scrollHandler)
-    }
-    return () => containerMsgEl?.removeEventListener('scroll', scrollHandler)
-  }, [historyMsgs, typingIndicator.isTyping])
-
-  useEffect(() => {
-    const containerMsgEl = refContainer.current
-    if (containerMsgEl) {
-      let lastMessage = containerMsgEl.querySelector('.last-message')
-      if (!lastMessage) return
-      console.log({ newMessage: lastMessage.getAttribute('data-msg-id') })
-      //      @ts-ignore
-      const observerCallback = (entries, observer) => {
-        if (!lastMessage) return
-        //@ts-ignore
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const unSeenMsgEls = containerMsgEl.querySelectorAll('.new-message')
-            //un seen message id list
-            const msgs = Array.from(unSeenMsgEls).map((msgEl) =>
-              msgEl.getAttribute('data-msg-id'),
-            )
-            emitEvent('chat:statusMessage', {
-              msgs,
-              recipient: roomSelectedInfo?._id,
-              roomId: roomSelectedId,
-              status: {
-                type: 'seen',
-                readBy: [
-                  {
-                    userId: userLogin?._id,
-                    readAt: new Date(),
-                  },
-                ],
-              },
-            })
-            lastMessage?.classList.remove('last-message')
-            lastMessage = null
-          }
-        })
-      }
-      const observer = new IntersectionObserver(observerCallback, {
-        root: containerMsgEl,
-        rootMargin: '0px',
-        threshold: 1.0,
-      })
-      observer.observe(lastMessage)
-    }
-  }, [historyMsgs])
-
-  useEffect(() => {
-    if (roomSelectedId) {
-      emitEvent('join', roomSelectedId)
-      subscribeEvent('chat:userTypingStatus', (msg: any) => {
-        setTypingIndicator((pre) => ({ ...pre, ...msg }))
-      })
-      console.log(`user join ${roomSelectedId} `)
-      // update single msg
-      subscribeEvent('chat:updateStatusMessage', (msg: any) => {
-        dispatch(updateStatusMessage(msg))
-      })
-    }
-    // update status multiple messages
-    subscribeEvent('chat:updateStatusMessages', (msg: any) => {
-      //mean all message in room mark as seen (the other user current online and in conversation)
-      if (msg.recipient !== userLogin?._id) {
-        dispatch(updateStatusMessages(msg))
-      }
-      dispatch(markLatestMessageAsSeen(msg))
-    })
-    subscribeEvent('chat:receiveMessageActions', (msg: any) => {
-      if (msg.type === 'deletion') {
-        if (msg.info.replyBy.length > 0) {
-          // remove all message have been replied this message
-          dispatch(updateMessageInfos(msg.info.replyBy))
-        }
-        dispatch(updateRoomLatestMessage(msg.info))
-      }
-      dispatch(updateMessageInfo(msg.info))
-    })
-
-    subscribeEvent('chat:receiveMessage', (msg: any) => {
-      if (roomSelectedId) {
-        // hide the tying indicator components when new message came.
-        setTypingIndicator({
-          userId: '',
-          isTyping: false,
-        })
-        dispatch(addMessage(msg))
-        // force scrollbar move to bottom on local machine
-        if (msg.ownerId === userLogin?._id) {
-          setTimeout(() => {
-            handleJumpToBottom()
-          }, 0)
-        }
-      }
-      //handler receive message on recipient machine
-      if (msg?.ownerId !== userLogin?._id) {
-        emitEvent('chat:statusMessage', {
-          msg: {
-            _id: msg?._id,
-            ownerId: msg?.ownerId,
-          },
-          status: {
-            type: 'delivered',
-            readBy: [],
-          },
-        })
-      }
-      dispatch(updateRoomLatestMessage(msg))
-    })
-    return () => {
-      emitEvent('leave', roomSelectedId)
-      unSubcribeEvent('chat:receiveMessage')
-      unSubcribeEvent('chat:userTypingStatus')
-      unSubcribeEvent('chat:updateStatusMessage')
-      unSubcribeEvent('chat:updateStatusMessages')
-      unSubcribeEvent('chat:receiveMessageActions')
-      console.log(`user leave ${roomSelectedId} `)
-    }
-  }, [roomSelectedId])
-
-  useEffect(() => {
-    if (roomSelectedId !== undefined)
-      dispatch(fetchHistoryMessageAsync(roomSelectedId))
-  }, [roomSelectedId])
-
-  /*Event handler*/
-  const handleJumpToBottom = useCallback(() => {
-    const containerMsgEl = refContainer.current
-
-    if (containerMsgEl) {
-      containerMsgEl.scrollTop = containerMsgEl.scrollHeight
-    }
-  }, [refContainer])
-
-  const processMessageStatusAndTime = useMemo(() => {
-    let status = {}
-    let period: Record<string, string> = {}
-    const divider: Record<string, string> = {}
-    for (const msg of historyMsgs) {
-      // stacking status of message
-      if (msg && msg.ownerId === userLogin?._id) {
-        //@ts-ignore
-        status[msg.status?.type] = msg._id
-      }
-      //stacking time of message
-      const time = msgTimeDividerHandler(msg.createdAt)
-      if (!period[time]) {
-        period[time] = msg._id
-        divider[msg._id] = time
-      }
-    }
-    return { status, divider }
-  }, [historyMsgs])
-
-  if (!roomSelectedId)
-    return (
-      <Wrapper>
-        <div>No Room Selected</div>
-      </Wrapper>
-    )
-  return (
-    <Wrapper>
-      {/*Header*/}
+  const renderHeaderChatArea = useCallback(
+    () => (
       <div className="p-4 flex items-center bg-grey-50 dark:bg-grey-900 border-b-2 border-grey-300 dark:border-grey-700">
         <UserAvatar
           className="mr-4"
@@ -256,129 +54,150 @@ const ChatArea: React.FC = () => {
           </span>
         </div>
       </div>
+    ),
+    [roomSelectedInfo, usersOnline],
+  )
 
+  if (!roomSelectedId)
+    return (
+      <Wrapper>
+        <div>No Room Selected</div>
+      </Wrapper>
+    )
+
+  return (
+    <Wrapper>
+      {/*Header*/}
+      {renderHeaderChatArea()}
       {/*Messages*/}
       <div
         ref={refContainer}
-        className="flex-1 overflow-y-auto overflow-x-hidden px-2 flex flex-col"
+        className="flex-1 overflow-y-auto overflow-x-hidden px-2 flex flex-col justify-start"
       >
-        <>
-          {historyMsgs?.length > 0 ? (
-            <>
-              {historyMsgs.map((message: IMessage, index: number) => {
-                const previous = historyMsgs[index - 1]
-                const next = historyMsgs[index + 1]
-                const current = message
-                let showAvatar = false
-                let type = 'single'
-                let position = null
-                const showStatusMsg =
-                  processMessageStatusAndTime.status[
-                    //@ts-ignore
-                    current.status?.type
-                  ] === current?._id
+        {historyMsgsStatus === 'loading' ? (
+          <div className="flex items-center justify-center h-full text-grey-500 font-medium">
+            Loading message...
+          </div>
+        ) : (
+          <>
+            {historyMsgs?.length > 0 ? (
+              <>
+                {historyMsgs.map((message: IMessage, index: number) => {
+                  const previous = historyMsgs[index - 1]
+                  const next = historyMsgs[index + 1]
+                  const current = message
+                  let showAvatar = false
+                  let type = 'single'
+                  let position = null
+                  const showStatusMsg =
+                    processMessageStatusAndTime.status[
+                      //@ts-ignore
+                      current.status?.type
+                    ] === current?._id
 
-                const showTimeDivider =
-                  processMessageStatusAndTime.divider[current._id]
+                  const showTimeDivider =
+                    processMessageStatusAndTime.divider[current._id]
 
-                if (
-                  current.ownerId !== previous?.ownerId &&
-                  current.ownerId !== next?.ownerId
-                ) {
-                  showAvatar = true
-                  type = 'single'
-                } else {
-                  // first msg in group
                   if (
                     current.ownerId !== previous?.ownerId &&
-                    current.ownerId === next?.ownerId
-                  ) {
-                    showAvatar = false
-                    if (current.react.length > 0) {
-                      type = 'single'
-                    } else {
-                      type = 'group'
-                      position = 'first'
-                    }
-                    // middle msg in group
-                  } else if (
-                    current.ownerId === previous?.ownerId &&
-                    current.ownerId === next?.ownerId
-                  ) {
-                    showAvatar = false
-                    type = 'group'
-                    position = 'middle'
-                    if (
-                      previous.react.length > 0 &&
-                      current.react.length === 0
-                    ) {
-                      position = 'first'
-                    } else if (
-                      previous.react.length > 0 &&
-                      current.react.length > 0
-                    ) {
-                      type = 'single'
-                    } else if (
-                      previous.react.length === 0 &&
-                      current.react.length > 0
-                    ) {
-                      position = 'last'
-                    }
-                    // last msg in group
-                  } else if (
-                    current.ownerId === previous?.ownerId &&
                     current.ownerId !== next?.ownerId
                   ) {
                     showAvatar = true
-                    if (previous.react.length > 0) {
-                      type = 'single'
-                    } else {
+                    type = 'single'
+                  } else {
+                    // first msg in group
+                    if (
+                      current.ownerId !== previous?.ownerId &&
+                      current.ownerId === next?.ownerId
+                    ) {
+                      showAvatar = false
+                      if (current.react.length > 0) {
+                        type = 'single'
+                      } else {
+                        type = 'group'
+                        position = 'first'
+                      }
+                      // middle msg in group
+                    } else if (
+                      current.ownerId === previous?.ownerId &&
+                      current.ownerId === next?.ownerId
+                    ) {
+                      showAvatar = false
                       type = 'group'
-                      position = 'last'
+                      position = 'middle'
+                      if (
+                        previous.react.length > 0 &&
+                        current.react.length === 0
+                      ) {
+                        position = 'first'
+                      } else if (
+                        previous.react.length > 0 &&
+                        current.react.length > 0
+                      ) {
+                        type = 'single'
+                      } else if (
+                        previous.react.length === 0 &&
+                        current.react.length > 0
+                      ) {
+                        position = 'last'
+                      }
+                      // last msg in group
+                    } else if (
+                      current.ownerId === previous?.ownerId &&
+                      current.ownerId !== next?.ownerId
+                    ) {
+                      showAvatar = true
+                      if (previous.react.length > 0) {
+                        type = 'single'
+                      } else {
+                        type = 'group'
+                        position = 'last'
+                      }
                     }
                   }
-                }
-                return (
-                  <Message
-                    type={type}
-                    key={message._id}
-                    showAvatar={showAvatar}
-                    showTimeDivider={showTimeDivider}
-                    showStatusMsg={showStatusMsg}
-                    position={position}
-                    userLoginId={userLogin?._id}
-                    isLast={index === historyMsgs.length - 1}
-                    {...message}
-                  />
-                )
-              })}
-            </>
-          ) : (
-            <div className="h-full flex items-center justify-center">
-              <EmptyState content="No chats here yet" />
-            </div>
-          )}
-          {typingIndicator?.isTyping &&
-            typingIndicator?.userId !== userLogin?._id && (
-              <div className="flex my-2">
-                <div className="pl-[6px] pr-4">
-                  <UserAvatar
-                    src={roomSelectedInfo?.picture || ''}
-                    alt={roomSelectedInfo?.name || ''}
-                  />
-                </div>
-                <div className="max-w-max flex items-center justify-center bg-grey-200 dark:bg-grey-800 p-2 rounded-3xl">
-                  <ReactLoading type="bubbles" width="25px" height="25px" />
-                </div>
+                  if (index === historyMsgs.length - 1) console.log({ message })
+                  return (
+                    <Message
+                      type={type}
+                      key={message._id}
+                      showAvatar={showAvatar}
+                      showTimeDivider={showTimeDivider}
+                      showStatusMsg={showStatusMsg}
+                      position={position}
+                      userLoginId={userLogin?._id}
+                      isLast={index === historyMsgs.length - 1}
+                      {...message}
+                    />
+                  )
+                })}
+              </>
+            ) : (
+              <div className="h-full flex items-center justify-center">
+                <EmptyState content="No chats here yet" />
               </div>
             )}
-        </>
+            {typingIndicator?.isTyping &&
+              typingIndicator?.userId !== userLogin?._id && (
+                <div className="flex my-2">
+                  <div className="pl-[6px] pr-4">
+                    <UserAvatar
+                      src={roomSelectedInfo?.picture || ''}
+                      alt={roomSelectedInfo?.name || ''}
+                    />
+                  </div>
+                  <div className="max-w-max flex items-center justify-center bg-grey-200 dark:bg-grey-800 p-2 rounded-3xl">
+                    <ReactLoading type="bubbles" width="25px" height="25px" />
+                  </div>
+                </div>
+              )}
+          </>
+        )}
       </div>
       <button
+        ref={refJumpToButton}
         onClick={handleJumpToBottom}
         className={classNames(
-          'animate-bounce absolute dark:bg-grey-900 bg-grey-50 bottom-20 left-1/2 -translate-x-1/2 w-10 h-10 items-center justify-center rounded-full shadow-[0px_2px_4px_rgba(0,0,0,0.25)] dark:shadow-[0px_2px_4px_rgba(0,0,0,0.5)] hover:brightness-75',
-          showJumpToButton ? 'flex' : 'hidden',
+          'flex animate-bounce absolute dark:bg-grey-900 bg-grey-50 bottom-20 left-1/2 -translate-x-1/2 w-10 h-10 items-center justify-center rounded-full shadow-[0px_2px_4px_rgba(0,0,0,0.25)] dark:shadow-[0px_2px_4px_rgba(0,0,0,0.5)] hover:brightness-75',
         )}
       >
         <span className="text-blue-500 dark:text-blue-400">

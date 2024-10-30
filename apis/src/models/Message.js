@@ -11,9 +11,43 @@ const reactIconSchema = new Schema(
 
 const messageSchema = new Schema(
   {
-    text: {
-      type: String,
-      required: [true, "Message is require"],
+    content: {
+      text: {
+        type: String,
+        default: null,
+      },
+      images: {
+        type: [
+          {
+            url: String,
+            altText: String,
+          },
+        ],
+        default: [],
+        _id: false,
+      },
+      files: {
+        type: [
+          {
+            path: String,
+            fileName: String,
+            fileType: String,
+            size: String,
+          },
+        ],
+        default: [],
+        _id: false,
+      },
+      link: {
+        type: {
+          url: String,
+          title: String,
+          description: String,
+          thumbnail: String,
+        },
+        default: null,
+        _id: false,
+      },
     },
     roomId: {
       type: String,
@@ -35,7 +69,11 @@ const messageSchema = new Schema(
       type: [String],
       default: [],
     },
-    replyTo: { type: mongoose.Schema.Types.ObjectId, default: null },
+    replyTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Message",
+      default: null,
+    },
     status: {
       readBy: {
         type: [

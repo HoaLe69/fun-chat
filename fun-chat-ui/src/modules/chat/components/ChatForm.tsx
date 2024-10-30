@@ -1,176 +1,146 @@
-import React, { useState, useRef, useCallback, memo, useEffect } from 'react'
+import React, { useCallback, memo } from 'react'
 import classNames from 'classnames'
 import {
   SendIcon,
   LaughIcon,
   CloseIcon,
   PlusCircleIcon,
+  ImageIcon,
 } from 'modules/core/components/icons'
 
 import EmojiPicker from './EmojiPicker'
-import {
-  useAppSelector,
-  useSocket,
-  useDebounce,
-  useAppDispatch,
-} from 'modules/core/hooks'
-import {
-  selectCurrentRoomId,
-  selectCurrentRoomInfo,
-  selectStatusCurrentRoom,
-} from '../states/roomSlice'
-import { authSelector } from 'modules/auth/states/authSlice'
-import { cancelReplyMessage, messageSelector } from '../states/messageSlice'
-import { MDXEditor, MDXEditorMethods, headingsPlugin } from '@mdxeditor/editor'
+import { MDXEditor, headingsPlugin } from '@mdxeditor/editor'
+import Tippy from '@tippyjs/react/headless'
 import '@mdxeditor/editor/style.css'
 import './MdxEditor.css'
+import FilePreview from './FilePreview'
+import { useChatForm } from 'modules/chat/hooks'
+
+interface MenuMessageExtraProps {
+  children: JSX.Element
+  visible: boolean
+  onClose: () => void
+  onSelect: (event: React.ChangeEvent<HTMLInputElement>) => void
+}
+
+const MenuMessageExtra: React.FC<MenuMessageExtraProps> = ({
+  children,
+  onClose,
+  visible,
+  onSelect,
+}) => (
+  <div>
+    <Tippy
+      interactive
+      visible={visible}
+      onClickOutside={onClose}
+      placement="top-start"
+      render={(attrs) => (
+        <ul
+          {...attrs}
+          className="w-40 p-1 rounded-md bg-grey-50 shadow-[0_0_4px_rgba(0,0,0,0.2)] dark:shadow-[0_0_4px_rgba(0,0,0,0.9)] dark:bg-grey-900"
+        >
+          <li>
+            <label
+              htmlFor="file"
+              className="p-2 flex items-center cursor-pointer rounded-md hover:bg-grey-200 dark:hover:bg-grey-800 "
+            >
+              <span className="mr-2 inline-block">
+                <ImageIcon />
+              </span>
+              Attach a file
+            </label>
+            <input
+              onChange={onSelect}
+              type="file"
+              id="file"
+              accept="image/*, text/*, application/*"
+              className="absolute hidden"
+            />
+          </li>
+        </ul>
+      )}
+    >
+      {children}
+    </Tippy>
+  </div>
+)
 
 const ChatForm: React.FC = () => {
-  const [editorKey, setEditorKey] = useState(0)
-  const [markdownContent, setMarkdownContent] = useState<string>('')
-  const [isOpenEmojiPicker, setIsOpenEmojiPicker] = useState<boolean>(false)
-  const mdxEditorRef = useRef<MDXEditorMethods>(null)
-  const refTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const dispatch = useAppDispatch()
-  const { emitEvent } = useSocket()
+  const {
+    editorKey,
+    markdownContent,
+    replyMessage,
+    mdxEditorRef,
+    visibleMenuMessageExtra,
+    visibleEmojiPicker,
+    userLogin,
+    roomSelectedInfo,
+    fileSelections,
+    setFileSelections,
+    handleRemoveReplyMessage,
+    handleCloseMenuMessageExtra,
+    handleFileSelectionAndPreview,
+    handleOpenMenuMessageExtra,
+    handleSubmit,
+    handleKeydown,
+    handleEditorChange,
+    handleOpenEmojiPicker,
+    handleCloseEmojiPicker,
+    handleAppendEmojiToMarkdownContent,
+  } = useChatForm()
 
-  const roomSelectedId = useAppSelector(selectCurrentRoomId)
-  const roomSelectedInfo = useAppSelector(selectCurrentRoomInfo)
-  const roomSelectedStatus = useAppSelector(selectStatusCurrentRoom)
-  const replyMessage = useAppSelector(messageSelector.selectReplyMessage)
-  const debounceValue = useDebounce(markdownContent, 200)
+  const renderReplyMessageContent = useCallback(() => {
+    if (replyMessage?.content.text) return replyMessage.content.text
+    if (!replyMessage?.content.text && replyMessage?.content.images)
+      return 'image'
+    if (!replyMessage?.content.text && replyMessage?.content.link) return 'link'
+  }, [replyMessage])
 
-  const userLogin = useAppSelector(authSelector.selectUser)
-
-  useEffect(() => {
-    // reset
-    setMarkdownContent('')
-    const mdxEditorEl = mdxEditorRef.current
-    if (mdxEditorEl) mdxEditorEl.focus()
-  }, [roomSelectedId])
-
-  const createNewChat = useCallback(() => {
-    if (!userLogin?._id || !roomSelectedInfo?._id) return
-    const data = {
-      roomInfo: {
-        _id: roomSelectedId,
-        sender: userLogin?._id,
-        recipient: roomSelectedInfo?._id,
-      },
-      message: {
-        text: markdownContent,
-        ownerId: userLogin?._id,
-      },
-    }
-    emitEvent('room:createRoomChat', data)
-  }, [markdownContent])
-
-  const chatWithFriend = () => {
-    if (replyMessage) dispatch(cancelReplyMessage())
-    const msg = {
-      text: markdownContent,
-      ownerId: userLogin?._id,
-      roomId: roomSelectedId,
-      replyTo: replyMessage?._id,
-    }
-    emitEvent('chat:sendMessage', { msg, recipientId: roomSelectedInfo?._id })
-  }
-
-  const handleSubmit = () => {
-    if (!markdownContent.trim()) return
-    try {
-      if (roomSelectedStatus) createNewChat()
-      else chatWithFriend()
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  useEffect(() => {
-    if (!debounceValue) return
-    emitEvent('chat:typing', {
-      roomId: roomSelectedId,
-      isTyping: true,
-      userId: userLogin?._id,
-    })
-  }, [debounceValue])
-
-  const appendEmojiToText = useCallback(
-    (emoji: string) => {
-      if (!emoji) return
-      const mdxEditorEl = mdxEditorRef.current
-      if (mdxEditorEl) {
-        mdxEditorEl.focus(() => {
-          mdxEditorEl.insertMarkdown(emoji)
-        })
-      }
-      //append emoji to markdownContent
-    },
-    [mdxEditorRef],
-  )
-  const onClose = () => {
-    setIsOpenEmojiPicker(false)
-  }
-
-  const handleCancelReplyMessage = useCallback(() => {
-    dispatch(cancelReplyMessage())
-  }, [])
-
-  const handleChange = (markdown: string) => {
-    setMarkdownContent(markdown)
-    // detect user stop typing after one seconds
-    if (typeof refTimer.current === 'number') clearTimeout(refTimer.current)
-    refTimer.current = setTimeout(() => {
-      emitEvent('chat:typing', {
-        roomId: roomSelectedId,
-        isTyping: false,
-        userId: userLogin?._id,
-      })
-    }, 1000)
-  }
-
-  const handleKeydown = (e: React.KeyboardEvent) => {
-    const mdxEditorEl = mdxEditorRef.current
-    if (mdxEditorEl) {
-      const key = e.key
-      // user submit form
-      if (key === 'Enter' && !e.shiftKey) {
-        handleSubmit()
-        // send a message here
-        mdxEditorEl.setMarkdown('') // clear editor
-        setEditorKey((pre) => pre + 1) // force re-render editor
-        setMarkdownContent('')
-      }
-    }
-  }
+  const renderReplyMessageElement = useCallback(() => {
+    return (
+      <div className="px-3 pb-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xl/8 block font-semibold">
+            Reply to{' '}
+            {replyMessage?.ownerId === userLogin?._id
+              ? 'yourself'
+              : roomSelectedInfo?.name}
+          </span>
+          <button
+            onClick={handleRemoveReplyMessage}
+            className="text-xs text-grey-400 p-3 mr-2 hover:bg-grey-200 hover:dark:bg-grey-800 rounded-full cursor-pointer"
+          >
+            <CloseIcon />
+          </button>
+        </div>
+        <p className="truncate text-sm text-grey-500">
+          {renderReplyMessageContent()}
+        </p>
+      </div>
+    )
+  }, [replyMessage])
 
   return (
     <div className="border-t-2 bg-grey-50 dark:bg-grey-900 border-grey-300 dark:border-grey-700 py-2">
-      {replyMessage && (
-        <div className="px-3 pb-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xl/8 block font-semibold">
-              Reply to{' '}
-              {replyMessage.ownerId === userLogin?._id
-                ? 'yourself'
-                : roomSelectedInfo?.name}
-            </span>
-            <button
-              onClick={handleCancelReplyMessage}
-              className="text-xs text-grey-400 p-3 mr-2 hover:bg-grey-200 hover:dark:bg-grey-800 rounded-full cursor-pointer"
-            >
-              <CloseIcon />
-            </button>
-          </div>
-          <p className="truncate text-sm text-grey-500">
-            {replyMessage.content}
-          </p>
-        </div>
+      {fileSelections.length > 0 && (
+        <FilePreview files={fileSelections} setFiles={setFileSelections} />
       )}
+      {replyMessage && renderReplyMessageElement()}
       <div className="flex items-center px-3">
-        <span className="text-grey-500 ">
-          <PlusCircleIcon />
-        </span>
+        {/*options menu*/}
+        <MenuMessageExtra
+          onSelect={handleFileSelectionAndPreview}
+          onClose={handleCloseMenuMessageExtra}
+          visible={visibleMenuMessageExtra}
+        >
+          <span
+            onClick={handleOpenMenuMessageExtra}
+            className="text-grey-500 cursor-pointer"
+          >
+            <PlusCircleIcon />
+          </span>
+        </MenuMessageExtra>
         <form
           onSubmit={handleSubmit}
           onKeyDown={handleKeydown}
@@ -180,7 +150,7 @@ const ChatForm: React.FC = () => {
             key={editorKey}
             autoFocus
             ref={mdxEditorRef}
-            onChange={(value) => handleChange(value)}
+            onChange={(value) => handleEditorChange(value)}
             className="editor"
             markdown={''}
             placeholder="Enter your message..."
@@ -189,15 +159,12 @@ const ChatForm: React.FC = () => {
           <span className="text-grey-500 relative">
             <LaughIcon
               className="cursor-pointer"
-              onClick={(e) => {
-                e.stopPropagation()
-                setIsOpenEmojiPicker(true)
-              }}
+              onClick={handleOpenEmojiPicker}
             />
             <EmojiPicker
-              appendEmojiToText={appendEmojiToText}
-              isOpen={isOpenEmojiPicker}
-              onClose={onClose}
+              appendEmojiToText={handleAppendEmojiToMarkdownContent}
+              isOpen={visibleEmojiPicker}
+              onClose={handleCloseEmojiPicker}
             />
           </span>
         </form>

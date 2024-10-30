@@ -23,6 +23,13 @@ import ArrowDownIcon from './assets/arrow-down.svg?react'
 import CheckCircle from './assets/check-circle.svg?react'
 import CheckCircleFill from './assets/check-circle-fill.svg?react'
 import CloseIcon from './assets/close.svg?react'
+import ImageIcon from './assets/image.svg?react'
+import FilePDFIcon from './assets/pdf.svg?react'
+import FileCodeIcon from './assets/file-code.svg?react'
+import FileTextIcon from './assets/file-text.svg?react'
+import FileSheetIcon from './assets/file-sheet.svg?react'
+import FileDefaultIcon from './assets/file-default.svg?react'
+import FilePresentationIcon from './assets/file-presentation.svg?react'
 
 export {
   MenuBurgerIcon,
@@ -50,6 +57,13 @@ export {
   CheckCircle,
   CheckCircleFill,
   CloseIcon,
+  ImageIcon,
+  FilePDFIcon,
+  FileCodeIcon,
+  FileTextIcon,
+  FileSheetIcon,
+  FileDefaultIcon,
+  FilePresentationIcon,
 }
 
 export const LaughSmallIcon = () => {
