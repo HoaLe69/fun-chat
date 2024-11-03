@@ -10,11 +10,7 @@ import { authSelector } from 'modules/auth/states/authSlice'
 
 import { SearchIcon, ArrowLeftIcon } from 'modules/core/components/icons'
 import SearchUser from './SearchUser'
-import {
-  addRoom,
-  markCurrentRoomCreated,
-  selectListRoom,
-} from '../states/roomSlice'
+import { addRoom, markCurrentRoomCreated, selectListRoom } from '../states/roomSlice'
 import { fetchListRoomAsync } from '../states/roomActions'
 import { addMessage } from '../states/messageSlice'
 
@@ -64,16 +60,18 @@ const ChatList: React.FC = () => {
     setSearchValue(e.target.value)
   }
   return (
-    <aside className="w-1/4 flex flex-col px-2 bg-grey-50 dark:bg-grey-900 overflow-y-auto border-r-2 border-grey-300 dark:border-grey-700">
+    <aside className="w-1/4 flex flex-col px-2 bg-secondary-bg-light dark:bg-secondary-bg-dark overflow-y-auto ">
       <header className="flex w-full py-3 items-center gap-2">
-        {openSearch ?
+        {openSearch ? (
           <button
             onClick={handleCloseSearchAndClearInput}
             className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-grey-200 dark:hover:bg-grey-800"
           >
             <ArrowLeftIcon />
           </button>
-          : <HambergerMenu />}
+        ) : (
+          <HambergerMenu />
+        )}
         <div className="relative group flex-1">
           <span className="absolute left-3 top-1/2 -translate-y-1/2  text-gray-500 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400">
             <SearchIcon />
@@ -91,24 +89,19 @@ const ChatList: React.FC = () => {
         </div>
       </header>
       <div className="flex-1 overflow-y-auto relative">
-        {openSearch ?
+        {openSearch ? (
           <div className="absolute inset-0">
             <SearchUser searchTerm={searchValue} />
           </div>
-          : <div className="h-full">
+        ) : (
+          <div className="h-full">
             <ul className="overflow-x-hidden w-full transition-all">
               {rooms?.map((room: IConversation) => {
-                return (
-                  <ChatListItem
-                    userLoginId={userLogin?._id}
-                    key={room._id}
-                    {...room}
-                  />
-                )
+                return <ChatListItem userLoginId={userLogin?._id} key={room._id} {...room} />
               })}
             </ul>
           </div>
-        }
+        )}
       </div>
     </aside>
   )

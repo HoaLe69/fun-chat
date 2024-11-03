@@ -1,0 +1,69 @@
+DEVIDER/SEPARATE in the conversation
+
+-- group message by day
+----- show particular time in the day (20 minutes)
+
+-- show relative time when user hover on the message (tippy -- tooltip)
+
+scope of time : 
+    if the day not the same with current day ----> Month, Day 22 2024 time
+    if so , only show time in the day ----- > 10:20 AM
+
+message a (9:30)
+         message b (9:35)
+--------------Tue 22/10/2024 -----------------
+message c (9 : 40)
+        message d (9 : 45)
+--------------10:00 AM---------------
+message g (10)
+  message h (10:02)
+------------10: 20 AM---------------
+message j (10:21)
+  message k (10:25)
+sample dat
+[
+  {
+    "status": {
+        "type": "seen",
+        "readBy": [
+            {
+                "userId": "67087f7b4d4bfb1dc55013fe",
+                "readAt": "2024-10-17T08:41:08.073Z"
+            }
+        ]
+    },
+    "replyBy": [],
+    "replyTo": null,
+    "_id": "6710cd8e792c93f537ebeb0b",
+    "text": "nice to meet you",
+    "roomId": "6710cd79792c93f537ebeafe",
+    "ownerId": "67087f0905a73a0aedbd8f6f",
+    "isDeleted": false,
+    "react": [],
+    "createdAt": "2024-10-17T08:40:46.849Z", (10/17/2024, 3:40:46 PM)
+    "updatedAt": "2024-10-17T08:41:08.074Z",
+    "__v": 0
+  },
+  {
+    "status": {
+        "type": "seen",
+        "readBy": [
+            {
+                "userId": "67087f7b4d4bfb1dc55013fe",
+                "readAt": "2024-10-17T08:41:08.073Z"
+            }
+        ]
+    },
+    "replyBy": [],
+    "replyTo": null,
+    "_id": "6710cda1792c93f537ebeb0f",
+    "text": "We've met at the conference",
+    "roomId": "6710cd79792c93f537ebeafe",
+    "ownerId": "67087f0905a73a0aedbd8f6f",
+    "isDeleted": false,
+    "react": [],
+    "createdAt": "2024-10-17T08:41:05.631Z" (10/17/2024, 3:41:05 PM),
+    "updatedAt": "2024-10-17T08:41:08.074Z",
+    "__v": 0
+}
+]

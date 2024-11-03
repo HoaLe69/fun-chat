@@ -32,6 +32,11 @@ export type IMessageContent = {
   }
 }
 
+export type IMessageReact = {
+  ownerId: string
+  emoji: string
+}
+
 export type IMessage = {
   _id: string
   content: IMessageContent

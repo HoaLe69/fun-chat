@@ -7,6 +7,11 @@ type MessageRequest = {
 }
 
 export const messageServices = {
+  async downloadFile(filename?: string) {
+    if (!filename) return
+    const response = await apiClient.post(`/message/download/${filename}`)
+    return response
+  },
   async uploadFiles(files: File[]) {
     const formData = new FormData()
     files.forEach((file) => {

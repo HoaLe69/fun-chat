@@ -16,7 +16,7 @@ const userSlice = createSlice({
       state.usersOnline = _userOnlines
     },
   },
-  extraReducers: builder => {
+  extraReducers: (builder) => {
     builder
   },
 })

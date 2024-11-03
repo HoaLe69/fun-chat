@@ -1,4 +1,3 @@
-import Message from './Message'
 import { UserAvatar, EmptyState } from 'modules/core/components'
 import ChatForm from './ChatForm'
 import type { IMessage } from 'modules/chat/types'
@@ -7,11 +6,11 @@ import { ArrowDownIcon } from 'modules/core/components/icons'
 import classNames from 'classnames'
 import { useChatArea } from '../hooks'
 import { useCallback } from 'react'
+import Message from './Message'
+import { isTimeDiffInMins } from '../utils/dateTimeFormat'
 
 const Wrapper = ({ children }: { children: React.ReactNode }) => (
-  <div className="relative w-3/4 flex flex-col bg-grey-50 dark:bg-grey-950">
-    {children}
-  </div>
+  <div className="relative w-3/4 flex flex-col bg-main-bg-light dark:bg-main-bg-dark">{children}</div>
 )
 
 const ChatArea: React.FC = () => {
@@ -31,7 +30,7 @@ const ChatArea: React.FC = () => {
 
   const renderHeaderChatArea = useCallback(
     () => (
-      <div className="p-4 flex items-center bg-grey-50 dark:bg-grey-900 border-b-2 border-grey-300 dark:border-grey-700">
+      <div className="p-4 flex items-center bg-main-bg-light dark:bg-main-bg-dark shadow-xl">
         <UserAvatar
           className="mr-4"
           alt={roomSelectedInfo?.name || ''}
@@ -43,14 +42,10 @@ const ChatArea: React.FC = () => {
           <span
             className={classNames(
               'text-sm ',
-              usersOnline[roomSelectedInfo?._id || '']?.status === 'online'
-                ? 'text-green-500'
-                : 'text-grey-500',
+              usersOnline[roomSelectedInfo?._id || '']?.status === 'online' ? 'text-green-500' : 'text-grey-500',
             )}
           >
-            {usersOnline[roomSelectedInfo?._id || '']?.status === 'online'
-              ? 'Online'
-              : 'Offline'}
+            {usersOnline[roomSelectedInfo?._id || '']?.status === 'online' ? 'Online' : 'Offline'}
           </span>
         </div>
       </div>
@@ -70,14 +65,9 @@ const ChatArea: React.FC = () => {
       {/*Header*/}
       {renderHeaderChatArea()}
       {/*Messages*/}
-      <div
-        ref={refContainer}
-        className="flex-1 overflow-y-auto overflow-x-hidden px-2 flex flex-col justify-start"
-      >
+      <div ref={refContainer} className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col justify-start">
         {historyMsgsStatus === 'loading' ? (
-          <div className="flex items-center justify-center h-full text-grey-500 font-medium">
-            Loading message...
-          </div>
+          <div className="flex items-center justify-center h-full text-grey-500 font-medium">Loading message...</div>
         ) : (
           <>
             {historyMsgs?.length > 0 ? (
@@ -88,29 +78,22 @@ const ChatArea: React.FC = () => {
                   const current = message
                   let showAvatar = false
                   let type = 'single'
-                  let position = null
+                  let position
                   const showStatusMsg =
                     processMessageStatusAndTime.status[
                       //@ts-ignore
                       current.status?.type
                     ] === current?._id
 
-                  const showTimeDivider =
-                    processMessageStatusAndTime.divider[current._id]
+                  const showTimeDivider = processMessageStatusAndTime.divider[current._id]
 
-                  if (
-                    current.ownerId !== previous?.ownerId &&
-                    current.ownerId !== next?.ownerId
-                  ) {
+                  if (current.ownerId !== previous?.ownerId && current.ownerId !== next?.ownerId) {
                     showAvatar = true
                     type = 'single'
                   } else {
                     // first msg in group
-                    if (
-                      current.ownerId !== previous?.ownerId &&
-                      current.ownerId === next?.ownerId
-                    ) {
-                      showAvatar = false
+                    if (current.ownerId !== previous?.ownerId && current.ownerId === next?.ownerId) {
+                      showAvatar = true
                       if (current.react.length > 0) {
                         type = 'single'
                       } else {
@@ -118,35 +101,20 @@ const ChatArea: React.FC = () => {
                         position = 'first'
                       }
                       // middle msg in group
-                    } else if (
-                      current.ownerId === previous?.ownerId &&
-                      current.ownerId === next?.ownerId
-                    ) {
+                    } else if (current.ownerId === previous?.ownerId && current.ownerId === next?.ownerId) {
                       showAvatar = false
                       type = 'group'
                       position = 'middle'
-                      if (
-                        previous.react.length > 0 &&
-                        current.react.length === 0
-                      ) {
+                      if (previous.react.length > 0 && current.react.length === 0) {
                         position = 'first'
-                      } else if (
-                        previous.react.length > 0 &&
-                        current.react.length > 0
-                      ) {
+                      } else if (previous.react.length > 0 && current.react.length > 0) {
                         type = 'single'
-                      } else if (
-                        previous.react.length === 0 &&
-                        current.react.length > 0
-                      ) {
+                      } else if (previous.react.length === 0 && current.react.length > 0) {
                         position = 'last'
                       }
                       // last msg in group
-                    } else if (
-                      current.ownerId === previous?.ownerId &&
-                      current.ownerId !== next?.ownerId
-                    ) {
-                      showAvatar = true
+                    } else if (current.ownerId === previous?.ownerId && current.ownerId !== next?.ownerId) {
+                      showAvatar = false
                       if (previous.react.length > 0) {
                         type = 'single'
                       } else {
@@ -155,17 +123,27 @@ const ChatArea: React.FC = () => {
                       }
                     }
                   }
-                  if (index === historyMsgs.length - 1) console.log({ message })
+                  if (
+                    showTimeDivider ||
+                    current.replyTo ||
+                    !isTimeDiffInMins(current?.createdAt, previous?.createdAt)
+                  ) {
+                    type = 'single'
+                    showAvatar = true
+                  }
+
                   return (
                     <Message
-                      type={type}
                       key={message._id}
+                      message={message}
+                      msgType={type}
+                      // key={message._id}
                       showAvatar={showAvatar}
                       showTimeDivider={showTimeDivider}
-                      showStatusMsg={showStatusMsg}
                       position={position}
-                      userLoginId={userLogin?._id}
-                      isLast={index === historyMsgs.length - 1}
+                      // showStatusMsg={showStatusMsg}
+                      // userLoginId={userLogin?._id}
+                      // isLast={index === historyMsgs.length - 1}
                       {...message}
                     />
                   )
@@ -176,20 +154,16 @@ const ChatArea: React.FC = () => {
                 <EmptyState content="No chats here yet" />
               </div>
             )}
-            {typingIndicator?.isTyping &&
-              typingIndicator?.userId !== userLogin?._id && (
-                <div className="flex my-2">
-                  <div className="pl-[6px] pr-4">
-                    <UserAvatar
-                      src={roomSelectedInfo?.picture || ''}
-                      alt={roomSelectedInfo?.name || ''}
-                    />
-                  </div>
-                  <div className="max-w-max flex items-center justify-center bg-grey-200 dark:bg-grey-800 p-2 rounded-3xl">
-                    <ReactLoading type="bubbles" width="25px" height="25px" />
-                  </div>
+            {typingIndicator?.isTyping && typingIndicator?.userId !== userLogin?._id && (
+              <div className="flex my-2">
+                <div className="pl-[6px] pr-4">
+                  <UserAvatar src={roomSelectedInfo?.picture || ''} alt={roomSelectedInfo?.name || ''} />
                 </div>
-              )}
+                <div className="max-w-max flex items-center justify-center bg-grey-200 dark:bg-grey-800 p-2 rounded-3xl">
+                  <ReactLoading type="bubbles" width="25px" height="25px" />
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>

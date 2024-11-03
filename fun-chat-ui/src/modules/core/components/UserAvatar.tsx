@@ -16,11 +16,7 @@ const UserAvatar: React.FC<Props> = ({ size = 'sm', src, alt, className }) => {
         className,
       )}
     >
-      <img
-        src={src}
-        alt={alt}
-        className="w-full h-full rounded-full object-cover"
-      />
+      <img src={src} alt={alt} className="w-full h-full rounded-full object-cover" />
     </div>
   )
 }

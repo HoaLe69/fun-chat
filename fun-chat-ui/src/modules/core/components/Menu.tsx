@@ -69,11 +69,7 @@ const Menu: React.FC<Props> = ({
         <div className="flex justify-center">
           <div className="relative inline-block">
             {/*trigger button*/}
-            <button
-              className="cursor-pointer"
-              ref={trigger}
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-            >
+            <button className="cursor-pointer" ref={trigger} onClick={() => setDropdownOpen(!dropdownOpen)}>
               {triggerButton(dropdownOpen)}
             </button>
             {/*Menu body*/}

@@ -25,7 +25,7 @@ const LoginForm: React.FC = () => {
     } catch (error: any) {
       const message = error?.response.data.message || 'Something went wrong.'
       console.log({ error })
-      setError(pre => ({ ...pre, apiErrorMessage: message }))
+      setError((pre) => ({ ...pre, apiErrorMessage: message }))
       setIsProcessing(false)
     }
   }
@@ -38,7 +38,7 @@ const LoginForm: React.FC = () => {
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setFormData(pre => ({ ...pre, [name]: value }))
+    setFormData((pre) => ({ ...pre, [name]: value }))
   }
 
   const isEnableToSubmitForm = useMemo(() => {
@@ -54,7 +54,7 @@ const LoginForm: React.FC = () => {
           name="email"
           label="Email"
           value={formData.email}
-          onChange={e => handleInputChange(e)}
+          onChange={(e) => handleInputChange(e)}
         />
         <Input
           type="password"
@@ -62,13 +62,11 @@ const LoginForm: React.FC = () => {
           name="password"
           label="Password"
           value={formData.password}
-          onChange={e => handleInputChange(e)}
+          onChange={(e) => handleInputChange(e)}
         />
         <div className="flex items-center my-2">
           {error.apiErrorMessage && (
-            <p className="text-left text-red-500 text-sm font-semibold">
-              {error.apiErrorMessage}
-            </p>
+            <p className="text-left text-red-500 text-sm font-semibold">{error.apiErrorMessage}</p>
           )}
         </div>
         <button
@@ -78,11 +76,7 @@ const LoginForm: React.FC = () => {
             { 'opacity-75': !isEnableToSubmitForm },
           )}
         >
-          {isProcessing ? (
-            <ReactLoading type="spinningBubbles" width="20px" height="20px" />
-          ) : (
-            'Sign in now'
-          )}
+          {isProcessing ? <ReactLoading type="spinningBubbles" width="20px" height="20px" /> : 'Sign in now'}
         </button>
       </form>
     </div>

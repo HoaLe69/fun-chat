@@ -46,13 +46,9 @@ const ChatListItem: React.FC<Props> = (props) => {
       } else return `${recipient?.display_name} was unsent message`
     } else {
       if (ownerMsg) {
-        return latestMessage.content.text
-          ? `You: ${latestMessage?.content?.text}`
-          : `You: send a photo`
+        return latestMessage.content.text ? `You: ${latestMessage?.content?.text}` : `You: send a photo`
       }
-      return latestMessage?.content?.text
-        ? latestMessage.content.text
-        : `${recipient?.display_name} send a photo`
+      return latestMessage?.content?.text ? latestMessage.content.text : `${recipient?.display_name} send a photo`
     }
   }, [latestMessage, recipient])
 
@@ -60,8 +56,7 @@ const ChatListItem: React.FC<Props> = (props) => {
     return (
       <p
         className={classNames('text-sm truncate flex-1  text-gray-500 mt-1', {
-          'dark:text-grey-50 text-grey-950':
-            latestMessage.status?.type !== 'seen' && !latestMessage.isDeleted,
+          'dark:text-grey-50 text-grey-950': latestMessage.status?.type !== 'seen' && !latestMessage.isDeleted,
           itatlic: latestMessage.isDeleted,
         })}
       >
@@ -78,11 +73,7 @@ const ChatListItem: React.FC<Props> = (props) => {
           <span className="ml-auto inline-block w-3 h-3 rounded-full bg-blue-400" />
         ) : latestMessage.ownerId === userLoginId ? (
           <div className="w-3 h-3">
-            <img
-              className="rounded-full"
-              src={recipient?.picture}
-              alt={recipient?.display_name}
-            />
+            <img className="rounded-full" src={recipient?.picture} alt={recipient?.display_name} />
           </div>
         ) : null}
       </div>
@@ -108,13 +99,7 @@ const ChatListItem: React.FC<Props> = (props) => {
     >
       <div className="flex items-center">
         <div className="relative">
-          {recipient && (
-            <UserAvatar
-              alt={recipient?.display_name}
-              src={recipient?.picture}
-              size="lg"
-            />
-          )}
+          {recipient && <UserAvatar alt={recipient?.display_name} src={recipient?.picture} size="lg" />}
           {usersOnline[recipient?._id || ''] && (
             <div className="absolute w-3 h-3 rounded-full bg-green-500 bottom-0 right-1" />
           )}
@@ -122,9 +107,7 @@ const ChatListItem: React.FC<Props> = (props) => {
         <div className="pl-2 flex-1 min-w-0">
           <div className="flex items-center justify-between">
             <span className="font-semibold">{recipient?.display_name}</span>
-            <span className="text-xs text-gray-500 ">
-              {minimalTime(moment(latestMessage?.createdAt).fromNow())}
-            </span>
+            <span className="text-xs text-gray-500 ">{minimalTime(moment(latestMessage?.createdAt).fromNow())}</span>
           </div>
           <div className="text-grey-500 flex items-center">
             {renderLatestMessage()}

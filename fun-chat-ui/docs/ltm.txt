@@ -1,0 +1,9 @@
+USE CASE FOR UPDATE LATEST MESSAGE ON THE CHAT LIST
+
+- update both side's latest message on the chat list when the last message in the conversation has any  actions such as drop emoji, unsend
+- update latest message on the chat list on the current user's machine temporarily when the current user unsend message isn't the last message
+
+- when the current user drop any icons on the other user messages --> update the latest message that describes what icons the current user was dropper on chat list on the other user.
+
+- when the current user's unsend their messages and The unsend message isn't last message in the conversation ----> update the lastest message only the the current user machine temporarily.
+

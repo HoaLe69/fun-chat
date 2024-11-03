@@ -1,0 +1,4 @@
+rounded message case:
+  if have any reaction above current message ----> rounded full current message
+  if current message have been replied other message ----> rounded full current message
+  if current message have a time divider ----> rounded full current message

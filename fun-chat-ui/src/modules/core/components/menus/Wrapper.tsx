@@ -11,7 +11,7 @@ type Props = {
 
 const Wrapper: React.FC<Props> = ({ icon, transition, anchor, children }) => {
   const WrapperContentMenu = ({ children }: { children: ReactNode }) =>
-    transition ?
+    transition ? (
       <Transition
         as={Fragment}
         enter="transition ease-out duration-100"
@@ -23,19 +23,17 @@ const Wrapper: React.FC<Props> = ({ icon, transition, anchor, children }) => {
       >
         {children}
       </Transition>
-    : <Fragment>{children}</Fragment>
+    ) : (
+      <Fragment>{children}</Fragment>
+    )
   return (
     <Menu>
       <MenuButton className="w-11 h-11">
         {({ active }) => (
           <span
-            className={classNames(
-              'w-full h-full rounded-full flex items-center justify-center text-gray-500',
-              {
-                'bg-grey-200 dark:bg-grey-800 !text-blue-500 dark:text-blue-400':
-                  active,
-              },
-            )}
+            className={classNames('w-full h-full rounded-full flex items-center justify-center text-gray-500', {
+              'bg-grey-200 dark:bg-grey-800 !text-blue-500 dark:text-blue-400': active,
+            })}
           >
             {icon}
           </span>

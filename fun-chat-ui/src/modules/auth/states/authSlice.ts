@@ -22,12 +22,12 @@ const authSlice = createSlice({
       state.isAuthenticated = false
     },
   },
-  extraReducers: builder => {
+  extraReducers: (builder) => {
     builder.addCase(verifyUserAsync.fulfilled, (state, action) => {
       state.user = action.payload
       state.isAuthenticated = true
     })
-    builder.addCase(verifyUserAsync.rejected, state => {
+    builder.addCase(verifyUserAsync.rejected, (state) => {
       state.isAuthenticated = false
     })
   },

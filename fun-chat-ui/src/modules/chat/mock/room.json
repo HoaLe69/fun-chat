@@ -1,0 +1,92 @@
+[
+  {
+    "_id": "64caa8e74b8b9a001c6bc001",
+    "latestMessage": {
+      "text": "Hey Alice, how's it going?",
+      "createAt": "2024-10-03T10:05:00Z",
+      "ownerId": "64caa7e74b8b9a001c6bc001"
+    },
+    "members": ["64caa7e74b8b9a001c6bc001", "66f4cb94d3b0a0d8037a5d0c"]
+  },
+  {
+    "_id": "64caa8e74b8b9a001c6bc002",
+    "latestMessage": {
+      "text": "I'm working on a new project!",
+      "createAt": "2024-10-03T11:00:00Z",
+      "ownerId": "64caa7e74b8b9a001c6bc002"
+    },
+    "members": ["64caa7e74b8b9a001c6bc002", "66f4cb94d3b0a0d8037a5d0c"]
+  },
+  {
+    "_id": "64caa8e74b8b9a001c6bc003",
+    "latestMessage": {
+      "text": "How are things going, David?",
+      "createAt": "2024-10-03T09:45:00Z",
+      "ownerId": "64caa7e74b8b9a001c6bc003"
+    },
+    "members": ["64caa7e74b8b9a001c6bc003", "66f4cb94d3b0a0d8037a5d0c"]
+  },
+  {
+    "_id": "64caa8e74b8b9a001c6bc004",
+    "latestMessage": {
+      "text": "Let's meet later to discuss.",
+      "createAt": "2024-10-03T13:15:00Z",
+      "ownerId": "64caa7e74b8b9a001c6bc004"
+    },
+    "members": ["64caa7e74b8b9a001c6bc004", "66f4cb94d3b0a0d8037a5d0c"]
+  },
+  {
+    "_id": "64caa8e74b8b9a001c6bc005",
+    "latestMessage": {
+      "text": "Got the latest updates?",
+      "createAt": "2024-10-03T14:00:00Z",
+      "ownerId": "64caa7e74b8b9a001c6bc005"
+    },
+    "members": ["64caa7e74b8b9a001c6bc005", "66f4cb94d3b0a0d8037a5d0c"]
+  },
+  {
+    "_id": "64caa8e74b8b9a001c6bc006",
+    "latestMessage": {
+      "text": "Let's review this document.",
+      "createAt": "2024-10-03T15:30:00Z",
+      "ownerId": "64caa7e74b8b9a001c6bc006"
+    },
+    "members": ["64caa7e74b8b9a001c6bc006", "66f4cb94d3b0a0d8037a5d0c"]
+  },
+  {
+    "_id": "64caa8e74b8b9a001c6bc007",
+    "latestMessage": {
+      "text": "How's the code review going?",
+      "createAt": "2024-10-03T16:10:00Z",
+      "ownerId": "64caa7e74b8b9a001c6bc007"
+    },
+    "members": ["64caa7e74b8b9a001c6bc007", "66f4cb94d3b0a0d8037a5d0c"]
+  },
+  {
+    "_id": "64caa8e74b8b9a001c6bc008",
+    "latestMessage": {
+      "text": "I'll push the latest changes now.",
+      "createAt": "2024-10-03T17:00:00Z",
+      "ownerId": "64caa7e74b8b9a001c6bc008"
+    },
+    "members": ["64caa7e74b8b9a001c6bc008", "66f4cb94d3b0a0d8037a5d0c"]
+  },
+  {
+    "_id": "64caa8e74b8b9a001c6bc009",
+    "latestMessage": {
+      "text": "The feature's almost done.",
+      "createAt": "2024-10-03T18:20:00Z",
+      "ownerId": "64caa7e74b8b9a001c6bc009"
+    },
+    "members": ["64caa7e74b8b9a001c6bc009", "66f4cb94d3b0a0d8037a5d0c"]
+  },
+  {
+    "_id": "64caa8e74b8b9a001c6bc010",
+    "latestMessage": {
+      "text": "Ready for testing?",
+      "createAt": "2024-10-03T19:00:00Z",
+      "ownerId": "64caa7e74b8b9a001c6bc010"
+    },
+    "members": ["64caa7e74b8b9a001c6bc010", "66f4cb94d3b0a0d8037a5d0c"]
+  }
+]

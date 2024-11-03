@@ -12,24 +12,11 @@ interface InputProps {
   onBlur?: (e: FocusEventHandler<HTMLInputElement>) => void
 }
 
-const Input: FC<InputProps> = ({
-  type,
-  label,
-  value,
-  name,
-  errorMessage,
-  disable,
-  onBlur,
-  onChange,
-  placeholder,
-}) => {
+const Input: FC<InputProps> = ({ type, label, value, name, errorMessage, disable, onBlur, onChange, placeholder }) => {
   return (
     <div className="mt-5">
       {label && (
-        <label
-          className="font-semibold  block mb-2 text-gray-700 text-left "
-          htmlFor={label}
-        >
+        <label className="font-semibold  block mb-2 text-gray-700 text-left " htmlFor={label}>
           {label}
         </label>
       )}
@@ -45,9 +32,7 @@ const Input: FC<InputProps> = ({
         disabled={disable}
         placeholder={placeholder}
       />
-      {errorMessage && (
-        <p className="text-sm text-red-500 text-left mt-2">{errorMessage}</p>
-      )}
+      {errorMessage && <p className="text-sm text-red-500 text-left mt-2">{errorMessage}</p>}
     </div>
   )
 }

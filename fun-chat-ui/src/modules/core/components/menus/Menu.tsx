@@ -46,10 +46,7 @@ const Menu: React.FC<Props> = ({ children, triggerButton }) => {
         <div className="flex justify-center">
           <div className="relative inline-block">
             {/*trigger button*/}
-            <button
-              ref={trigger}
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-            >
+            <button ref={trigger} onClick={() => setDropdownOpen(!dropdownOpen)}>
               {triggerButton(dropdownOpen)}
             </button>
             {/*Menu body*/}

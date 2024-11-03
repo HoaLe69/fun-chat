@@ -29,9 +29,7 @@ const useChatArea = () => {
 
   const dispatch = useAppDispatch()
   const historyMsgs = useAppSelector(messageSelector.selectHistoryMsgs)
-  const historyMsgsStatus = useAppSelector(
-    messageSelector.selectHistoryMsgsStatus,
-  )
+  const historyMsgsStatus = useAppSelector(messageSelector.selectHistoryMsgsStatus)
   const roomSelectedId = useAppSelector(selectCurrentRoomId)
   const roomSelectedInfo = useAppSelector(selectCurrentRoomInfo)
   const usersOnline = useAppSelector(userSelector.selectListCurrentUserOnline)
@@ -94,9 +92,7 @@ const useChatArea = () => {
           if (entry.isIntersecting) {
             const unSeenMsgEls = containerMsgEl.querySelectorAll('.new-message')
             //un seen message id list
-            const msgs = Array.from(unSeenMsgEls).map((msgEl) =>
-              msgEl.getAttribute('data-msg-id'),
-            )
+            const msgs = Array.from(unSeenMsgEls).map((msgEl) => msgEl.getAttribute('data-msg-id'))
             emitEvent('chat:statusMessage', {
               msgs,
               recipient: roomSelectedInfo?._id,
@@ -152,13 +148,9 @@ const useChatArea = () => {
           dispatch(updateReplyMessageRemoved(msg.info.replyBy))
         }
         dispatch(updateRoomLatestMessage(msg.info))
-        dispatch(
-          removeMessage({ _id: msg.info._id, isDeleted: msg.info.isDeleted }),
-        )
+        dispatch(removeMessage({ _id: msg.info._id, isDeleted: msg.info.isDeleted }))
       } else if (msg.type == 'reaction') {
-        dispatch(
-          updateMessageReaction({ react: msg.info.react, _id: msg.info._id }),
-        )
+        dispatch(updateMessageReaction({ react: msg.info.react, _id: msg.info._id }))
       }
     })
 
@@ -205,8 +197,7 @@ const useChatArea = () => {
   }, [roomSelectedId])
 
   useEffect(() => {
-    if (roomSelectedId !== undefined)
-      dispatch(fetchHistoryMessageAsync(roomSelectedId))
+    if (roomSelectedId !== undefined) dispatch(fetchHistoryMessageAsync(roomSelectedId))
   }, [roomSelectedId])
 
   /*-----------Event handler------------------*/

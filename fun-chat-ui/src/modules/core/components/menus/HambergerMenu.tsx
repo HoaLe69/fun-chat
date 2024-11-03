@@ -45,7 +45,7 @@ const HambergerMenu = (): JSX.Element => {
 
   return (
     <Menu
-      triggerButton={active => (
+      triggerButton={(active) => (
         <span
           className={classNames(
             'text-gray-500  w-11 h-11 rounded-full flex items-center justify-center hover:bg-grey-200 hover:dark:bg-grey-800',
@@ -59,10 +59,7 @@ const HambergerMenu = (): JSX.Element => {
       )}
     >
       <div className="bg-white dark:bg-grey-900 w-[295px]">
-        <DropMenuUserItem
-          display_name={_user?.display_name}
-          picture={_user?.picture}
-        />
+        <DropMenuUserItem display_name={_user?.display_name} picture={_user?.picture} />
         {menus.map((menuItem: MenuItemType) => (
           <DropMenuItem key={menuItem.tag} {...menuItem} />
         ))}
@@ -79,20 +76,18 @@ type MenuItemType = {
   onClick?: () => void
 }
 
-const DropMenuItem: React.FC<MenuItemType> = props => {
+const DropMenuItem: React.FC<MenuItemType> = (props) => {
   const { name, icon, right, onClick } = props
   return (
     <div
-      onClick={e => {
+      onClick={(e) => {
         e.preventDefault()
         if (typeof onClick === 'function') onClick()
       }}
       className="w-full h-14 px-5 flex items-center hover:bg-grey-300 dark:hover:bg-grey-700 cursor-pointer"
     >
       <span className="w-9 flex justify-center text-grey-500">{icon}</span>
-      <p className="text-grey-950 dark:text-white font-bold leading-5 ml-2">
-        {name}
-      </p>
+      <p className="text-grey-950 dark:text-white font-bold leading-5 ml-2">{name}</p>
       {right && <div className="ml-auto">{right}</div>}
     </div>
   )
@@ -102,19 +97,17 @@ type Props = {
   display_name?: string
   picture?: string
 }
-const DropMenuUserItem: React.FC<Props> = props => {
+const DropMenuUserItem: React.FC<Props> = (props) => {
   const { display_name, picture } = props
   return (
     <div
-      onClick={e => {
+      onClick={(e) => {
         e.preventDefault()
       }}
       className="w-full h-14 px-5 flex items-center hover:bg-grey-300 dark:hover:bg-grey-700 cursor-pointer"
     >
       <UserAvatar src={picture ?? ''} alt={display_name ?? ''} size="md" />
-      <p className="text-grey-950 dark:text-white font-bold leading-5 ml-2">
-        {display_name}
-      </p>
+      <p className="text-grey-950 dark:text-white font-bold leading-5 ml-2">{display_name}</p>
     </div>
   )
 }

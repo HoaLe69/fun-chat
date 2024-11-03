@@ -1,21 +1,8 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
-import {
-  useAppDispatch,
-  useAppSelector,
-  useDebounce,
-  useSocket,
-} from 'modules/core/hooks'
-import type {
-  IFileUpload,
-  IMessageContentFile,
-  IMessageContentImage,
-} from '../types'
+import { useAppDispatch, useAppSelector, useDebounce, useSocket } from 'modules/core/hooks'
+import type { IFileUpload, IMessageContentFile, IMessageContentImage } from '../types'
 import { MDXEditorMethods } from '@mdxeditor/editor'
-import {
-  selectCurrentRoomId,
-  selectCurrentRoomInfo,
-  selectStatusCurrentRoom,
-} from '../states/roomSlice'
+import { selectCurrentRoomId, selectCurrentRoomInfo, selectStatusCurrentRoom } from '../states/roomSlice'
 import { cancelReplyMessage, messageSelector } from '../states/messageSlice'
 import { authSelector } from 'modules/auth/states/authSlice'
 import { messageServices } from '../services'
@@ -27,8 +14,7 @@ const useChatForm = () => {
   const [markdownContent, setMarkdownContent] = useState<string>('')
 
   const [visibleEmojiPicker, setVisibleEmojiPicker] = useState<boolean>(false)
-  const [visibleMenuMessageExtra, setVisibleMenuMessageExtra] =
-    useState<boolean>(false)
+  const [visibleMenuMessageExtra, setVisibleMenuMessageExtra] = useState<boolean>(false)
 
   const mdxEditorRef = useRef<MDXEditorMethods>(null)
   const refTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -69,10 +55,7 @@ const useChatForm = () => {
   )
 
   const sendMsgWithExistConversation = useCallback(
-    (uploadedFile?: {
-      images: IMessageContentImage[]
-      files: IMessageContentFile[]
-    }) => {
+    (uploadedFile?: { images: IMessageContentImage[]; files: IMessageContentFile[] }) => {
       const msg = {
         content: {
           text: markdownContent ? markdownContent : null,
@@ -107,6 +90,8 @@ const useChatForm = () => {
   const handleFileSelectionAndPreview = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const target = event?.target as HTMLInputElement
+      //FIX: it's doesn't work when change room
+      console.log('file change', target)
 
       if (target.files?.length) {
         const file = target.files[0]
@@ -150,13 +135,10 @@ const useChatForm = () => {
     setVisibleEmojiPicker(false)
   }, [])
 
-  const handleOpenEmojiPicker = useCallback(
-    (event: MouseEvent<SVGSVGElement>) => {
-      event.stopPropagation()
-      setVisibleEmojiPicker(true)
-    },
-    [],
-  )
+  const handleOpenEmojiPicker = useCallback((event: MouseEvent<SVGSVGElement>) => {
+    event.stopPropagation()
+    setVisibleEmojiPicker(true)
+  }, [])
   const handleOpenMenuMessageExtra = useCallback(() => {
     setVisibleMenuMessageExtra(true)
   }, [])
@@ -201,6 +183,7 @@ const useChatForm = () => {
     if (!markdownContent.trim() && !fileSelections.length) return
 
     const uploadedFile = await uploadFilesToServer()
+    console.log({ uploadedFile })
     if (fileSelections.length > 0 && !uploadedFile) return
 
     try {
@@ -227,6 +210,7 @@ const useChatForm = () => {
   useEffect(() => {
     // reset
     setMarkdownContent('')
+    setFileSelections([])
     const mdxEditorEl = mdxEditorRef.current
     if (mdxEditorEl) mdxEditorEl.focus()
   }, [roomSelectedId])

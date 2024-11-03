@@ -20,16 +20,15 @@ const roomSlice = createSlice({
     markLatestMessageAsSeen(state, action) {
       const { roomId, status } = action.payload
       const rooms = state.rooms
-      state.rooms = rooms.map(room => {
-        if (room._id === roomId)
-          return { ...room, latestMessage: { ...room.latestMessage, status } }
+      state.rooms = rooms.map((room) => {
+        if (room._id === roomId) return { ...room, latestMessage: { ...room.latestMessage, status } }
         return room
       })
     },
     updateRoomLatestMessage(state, action) {
       const msg = action.payload
       const rooms = state.rooms
-      state.rooms = rooms.map(room => {
+      state.rooms = rooms.map((room) => {
         if (room._id === msg.roomId)
           return {
             ...room,
@@ -48,28 +47,16 @@ const roomSlice = createSlice({
 
 export const roomSelector = {}
 
-export const {
-  selectRoom,
-  addRoom,
-  markLatestMessageAsSeen,
-  markCurrentRoomCreated,
-  updateRoomLatestMessage,
-} = roomSlice.actions
+export const { selectRoom, addRoom, markLatestMessageAsSeen, markCurrentRoomCreated, updateRoomLatestMessage } =
+  roomSlice.actions
 
 export default roomSlice.reducer
 
 // selector
 const selectCurrentRoomId = (state: RootState) => state.room.selectedRoom?._id
-const selectCurrentRoomInfo = (state: RootState) =>
-  state.room.selectedRoom?.recipientInfo
-const selectStatusCurrentRoom = (state: RootState) =>
-  state.room.selectedRoom?.new
+const selectCurrentRoomInfo = (state: RootState) => state.room.selectedRoom?.recipientInfo
+const selectStatusCurrentRoom = (state: RootState) => state.room.selectedRoom?.new
 
 const selectListRoom = (state: RootState) => state.room.rooms
 
-export {
-  selectListRoom,
-  selectCurrentRoomId,
-  selectCurrentRoomInfo,
-  selectStatusCurrentRoom,
-}
+export { selectListRoom, selectCurrentRoomId, selectCurrentRoomInfo, selectStatusCurrentRoom }

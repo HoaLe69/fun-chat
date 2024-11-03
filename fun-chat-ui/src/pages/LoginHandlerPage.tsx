@@ -35,15 +35,8 @@ const LoginLoungePage = () => {
             <span className="text-3xl font-semibold ">{errorMessage} 😩.</span>
           ) : (
             <>
-              <p className="flex-1 text-xl text-gray-700">
-                It take a while ! Let's chill
-              </p>
-              <ReactLoading
-                type="spinningBubbles"
-                color="#005fff"
-                height="20%"
-                width="20%"
-              />
+              <p className="flex-1 text-xl text-gray-700">It take a while ! Let's chill</p>
+              <ReactLoading type="spinningBubbles" color="#005fff" height="20%" width="20%" />
             </>
           )}
         </div>

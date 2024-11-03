@@ -34,8 +34,7 @@ export const groupReactionByEmoji = (reacts: Array<MessageReactType>) => {
     if (reactCollections[react.emoji] !== undefined) {
       if (!reactCollections[react.emoji].ownerIds.includes(react.ownerId))
         reactCollections[react.emoji].ownerIds.push(react.ownerId)
-      reactCollections[react.emoji].amount =
-        reactCollections[react.emoji].amount + 1
+      reactCollections[react.emoji].amount = reactCollections[react.emoji].amount + 1
     } else {
       reactCollections[react.emoji] = {
         ownerIds: [react.ownerId],
@@ -43,7 +42,7 @@ export const groupReactionByEmoji = (reacts: Array<MessageReactType>) => {
       }
     }
   }
-  return Object.keys(reactCollections).map(key => ({
+  return Object.keys(reactCollections).map((key) => ({
     emoji: key,
     ownerIds: reactCollections[key].ownerIds,
     amount: reactCollections[key].amount,
@@ -80,7 +79,7 @@ export const groupEmojiByUserId = (reacts: Array<MessageReactType>) => {
       }
     }
   }
-  return Object.keys(cols).map(key => ({
+  return Object.keys(cols).map((key) => ({
     ownerId: key,
     emojis: cols[key].emojis,
     amount: cols[key].amount,

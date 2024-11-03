@@ -18,4 +18,7 @@ export type IMessageStore = {
     msgs: IMessage[]
   }
   replyMsg?: IMessage
+  modal: {
+    isOpenMessageImageGallery: boolean
+  }
 }

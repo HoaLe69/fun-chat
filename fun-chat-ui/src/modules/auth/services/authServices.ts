@@ -38,13 +38,7 @@ export const authServices = {
   async refreshToken() {
     await apiClient.post('/auth/refreshToken')
   },
-  async loginWithSocial({
-    code,
-    platform,
-  }: {
-    code: string
-    platform?: string
-  }) {
+  async loginWithSocial({ code, platform }: { code: string; platform?: string }) {
     const res = await apiClient.post(`/auth/login/${platform}`, { code })
 
     return res.data

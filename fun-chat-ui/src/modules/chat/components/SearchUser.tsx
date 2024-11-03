@@ -29,10 +29,10 @@ const SearchUser: React.FC<Props> = ({ searchTerm }) => {
     const fetchUsersByEmail = async () => {
       setStatus({ error: false, isFetching: true })
       try {
-        await new Promise(resolve => setTimeout(resolve, 2000))
+        await new Promise((resolve) => setTimeout(resolve, 2000))
         const res = await userServices.searchUser({ q: debounceSearchTerm })
         setUsers(res)
-        setStatus(pre => ({ ...pre, isFetching: false }))
+        setStatus((pre) => ({ ...pre, isFetching: false }))
       } catch (error) {
         console.log(error)
         setStatus({ error: true, isFetching: false })
@@ -98,11 +98,7 @@ const SearchUser: React.FC<Props> = ({ searchTerm }) => {
           className="hover:bg-grey-200 dark:hover:bg-grey-800 cursor-pointer rounded-lg"
         >
           <div className="flex items-center px-2 py-3">
-            <UserAvatar
-              alt={user?.display_name}
-              src={user?.picture}
-              size="lg"
-            />
+            <UserAvatar alt={user?.display_name} src={user?.picture} size="lg" />
             <div className="pl-2 flex-1">
               <span className="font-bold">{user?.display_name}</span>
             </div>

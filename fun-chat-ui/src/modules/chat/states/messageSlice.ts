@@ -8,11 +8,21 @@ const initialState: IMessageStore = {
     status: 'idle',
     msgs: [],
   },
+  modal: {
+    isOpenMessageImageGallery: false,
+  },
 }
 const messageSlice = createSlice({
   name: 'message',
   initialState,
   reducers: {
+    openMessageImageGallery(state) {
+      state.modal.isOpenMessageImageGallery = true
+    },
+    closeMessageImageGallery(state) {
+      state.modal.isOpenMessageImageGallery = false
+    },
+
     replyMessage(state, action) {
       state.replyMsg = action.payload
     },
@@ -27,8 +37,7 @@ const messageSlice = createSlice({
       const updateInfo = action.payload
       const historyMsgs = state.historyMsgs.msgs
       state.historyMsgs.msgs = historyMsgs.map((msg) => {
-        if (msg._id === updateInfo._id)
-          return { ...msg, react: updateInfo.react }
+        if (msg._id === updateInfo._id) return { ...msg, react: updateInfo.react }
         return msg
       })
     },
@@ -38,8 +47,7 @@ const messageSlice = createSlice({
       const historyMsgs = state.historyMsgs.msgs
       //@ts-ignore
       state.historyMsgs.msgs = historyMsgs.map((msg) => {
-        if (ids.includes(msg._id))
-          return { ...msg, replyTo: { ...msg.replyTo, isDeleted: true } }
+        if (ids.includes(msg._id)) return { ...msg, replyTo: { ...msg.replyTo, isDeleted: true } }
         return msg
       })
     },
@@ -47,8 +55,7 @@ const messageSlice = createSlice({
       const updateInfo = action.payload
       const historyMsgs = state.historyMsgs.msgs
       state.historyMsgs.msgs = historyMsgs.map((msg) => {
-        if (msg._id === updateInfo._id)
-          return { ...msg, isDeleted: updateInfo.isDeleted }
+        if (msg._id === updateInfo._id) return { ...msg, isDeleted: updateInfo.isDeleted }
         return msg
       })
     },
@@ -89,11 +96,10 @@ const messageSlice = createSlice({
 })
 export const messageSelector = {
   selectHistoryMsgs: (state: RootState) => state.message.historyMsgs.msgs,
-  selectHistoryMsgsStatus: (state: RootState) =>
-    state.message.historyMsgs.status,
-  selectStatusHistoryMsgs: (state: RootState) =>
-    state.message.historyMsgs.status,
+  selectHistoryMsgsStatus: (state: RootState) => state.message.historyMsgs.status,
+  selectStatusHistoryMsgs: (state: RootState) => state.message.historyMsgs.status,
   selectReplyMessage: (state: RootState) => state.message.replyMsg,
+  selectStateModalMesssageGallery: (state: RootState) => state.message.modal.isOpenMessageImageGallery,
 }
 
 export const {
@@ -105,6 +111,8 @@ export const {
   updateMessageReaction,
   updateReplyMessageRemoved,
   removeMessage,
+  openMessageImageGallery,
+  closeMessageImageGallery,
 } = messageSlice.actions
 
 export default messageSlice.reducer
