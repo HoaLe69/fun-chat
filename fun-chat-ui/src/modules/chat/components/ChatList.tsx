@@ -60,7 +60,7 @@ const ChatList: React.FC = () => {
     setSearchValue(e.target.value)
   }
   return (
-    <aside className="w-1/4 flex flex-col px-2 bg-secondary-bg-light dark:bg-secondary-bg-dark overflow-y-auto ">
+    <aside className="w-1/4 min-w-80 flex flex-col px-2 bg-secondary-bg-light dark:bg-secondary-bg-dark overflow-y-auto ">
       <header className="flex w-full py-3 items-center gap-2">
         {openSearch ? (
           <button

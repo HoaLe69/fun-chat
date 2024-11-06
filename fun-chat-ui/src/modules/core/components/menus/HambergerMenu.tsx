@@ -58,7 +58,7 @@ const HambergerMenu = (): JSX.Element => {
         </span>
       )}
     >
-      <div className="bg-white dark:bg-grey-900 w-[295px]">
+      <div className="bg-white dark:bg-grey-900 w-[295px] z-50">
         <DropMenuUserItem display_name={_user?.display_name} picture={_user?.picture} />
         {menus.map((menuItem: MenuItemType) => (
           <DropMenuItem key={menuItem.tag} {...menuItem} />

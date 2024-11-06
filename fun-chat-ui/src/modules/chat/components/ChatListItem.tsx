@@ -2,13 +2,13 @@
 import type { IConversation, IUser } from 'modules/chat/types'
 import { UserAvatar } from 'modules/core/components'
 
-import { useCallback, useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useState } from 'react'
 import moment from 'moment'
 
 import { minimalTime } from '../utils/dateTimeFormat'
 //import users from 'modules/chat/mock/user.json'
 import { useAppDispatch, useAppSelector } from 'modules/core/hooks'
-import { selectRoom } from '../states/roomSlice'
+import { selectCurrentRoomId, selectRoom } from '../states/roomSlice'
 import { userServices } from 'modules/user/services'
 import { userSelector } from 'modules/user/states/userSlice'
 import classNames from 'classnames'
@@ -22,6 +22,7 @@ const ChatListItem: React.FC<Props> = (props) => {
   const { _id, members, userLoginId, latestMessage } = props
   const [recipient, setRecipient] = useState<IUser>()
   const usersOnline = useAppSelector(userSelector.selectListCurrentUserOnline)
+  const roomSelectedId = useAppSelector(selectCurrentRoomId)
 
   const recipientId = members.find((m) => m !== userLoginId)
 
@@ -80,6 +81,7 @@ const ChatListItem: React.FC<Props> = (props) => {
     )
   }
   const handleSelectedRoom = (_id: string) => {
+    if (roomSelectedId === _id) return
     const roomInfo = {
       _id,
       recipientInfo: {
@@ -95,7 +97,9 @@ const ChatListItem: React.FC<Props> = (props) => {
   return (
     <li
       onClick={() => handleSelectedRoom(_id)}
-      className="hover:bg-grey-200 dark:hover:bg-grey-800 cursor-pointer rounded-md px-2 py-3"
+      className={classNames('hover:bg-zinc-200 dark:hover:bg-zinc-800/80 cursor-pointer rounded-md px-2 py-3', {
+        'bg-zinc-200 dark:bg-zinc-800/80': roomSelectedId === _id,
+      })}
     >
       <div className="flex items-center">
         <div className="relative">
@@ -119,4 +123,4 @@ const ChatListItem: React.FC<Props> = (props) => {
   )
 }
 
-export default ChatListItem
+export default memo(ChatListItem)
