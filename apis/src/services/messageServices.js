@@ -4,9 +4,8 @@ const getFileDetail = (request, files) => {
     files: [],
   }
   files.forEach(file => {
-    console.log({ file })
     const extention = file.originalname.split(".").pop()
-    if (file.originalname.includes("image"))
+    if (file.mimetype.includes("image"))
       attachements.images.push({
         url: `${request.protocol}://${request.get("host")}/uploads/${file.filename}`,
         altText: file.originalname,

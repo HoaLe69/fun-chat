@@ -1,8 +1,29 @@
 const Message = require("@models/Message")
+const path = require("path")
 const Room = require("@models/Room")
 const messageServices = require("@services/messageServices")
+const { APIError } = require("@errors")
 
 const messageController = {
+  download: async (req, res, next) => {
+    try {
+      const { filename, originalname } = req.params
+      if (!filename) throw new APIError("File name is require")
+      const filePath = path.join("src/uploads", filename)
+      //set header to download with original name
+      res.setHeader("Content-Type", "application/octet-stream; charset=utf-8")
+      res.setHeader("Content-Disposition", `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`)
+      // Send the file with UTF-8 encoding
+      res.download(filePath, originalname, error => {
+        if (error) {
+          console.error("Error download file", error)
+          res.status(500).send("Error downloading file")
+        }
+      })
+    } catch (error) {
+      next(error)
+    }
+  },
   uploadMessageAttachment: async (req, res, next) => {
     try {
       const files = req.files
