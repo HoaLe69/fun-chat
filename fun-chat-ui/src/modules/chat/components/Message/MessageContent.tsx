@@ -1,10 +1,34 @@
-import type { IMessageContentFile, IMessageContentImage } from 'modules/chat/types'
+import type { IMessageContent, IMessageContentFile, IMessageContentImage } from 'modules/chat/types'
 import { useCallback, useMemo, useState } from 'react'
 import MessageImageOverlay from './MessageImageOverlay'
 import { SaveIcon } from 'modules/core/components/icons'
 import FileIcon from './MessageFileIcon'
+import Preview from '../MessageTextPreview'
 
-export const MessageContentFile = ({ files }: { files?: IMessageContentFile[] }) => {
+interface MessageContentProps {
+  content: IMessageContent
+  isDeleted?: boolean
+}
+
+const MessageContent: React.FC<MessageContentProps> = ({ content, isDeleted }) => {
+  if (isDeleted)
+    return (
+      <div className="py-1 min-h-6">
+        <i className="text-grey-500">Message was removed</i>
+      </div>
+    )
+  return (
+    <div className="py-1 min-h-6">
+      <Preview doc={content.text} />
+      <MessageContentImages images={content?.images} />
+      <MessageContentFile files={content?.files} />
+    </div>
+  )
+}
+
+export default MessageContent
+
+const MessageContentFile = ({ files }: { files?: IMessageContentFile[] }) => {
   const fileSize = useCallback((size: number) => {
     const kb = size / 1024
     const mb = kb / 1024
@@ -21,8 +45,7 @@ export const MessageContentFile = ({ files }: { files?: IMessageContentFile[] })
           files.length > 0 &&
           files?.map((file, index) => {
             const stn = Number(file.size)
-            const filename = file.path.split('/').pop()
-
+            const filename = file?.path?.split('/').pop()
             return (
               <li className="pt-1" key={file.path || index}>
                 <div className="relative group/file flex items-center p-4 mt-2 bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-900 w-max rounded-md">
@@ -111,4 +134,3 @@ const MessageContentImages = ({ images }: { images?: IMessageContentImage[] }) =
     </>
   )
 }
-export default MessageContentImages

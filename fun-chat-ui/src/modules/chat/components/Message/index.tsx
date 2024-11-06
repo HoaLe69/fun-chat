@@ -5,11 +5,12 @@ import { memo, useCallback, useState } from 'react'
 import { selectCurrentRoomInfo } from 'modules/chat/states/roomSlice'
 import MessageActions from './MessageActions'
 import MessageReply from './MessageReply'
-import { MessageInner, MessageContainer, MessageLeft, MessageRight } from './MessageLayout'
+import { MessageInner, MessageContainer, MessageLeft, MessageRight, MessageRightHeader } from './MessageLayout'
 import { UserAvatar } from 'modules/core/components'
 import moment from 'moment'
 import classNames from 'classnames'
 import MessageDivider from './MessageDivider'
+import MessageContent from './MessageContent'
 
 interface Props {
   message: IMessage
@@ -63,14 +64,16 @@ const Message: React.FC<Props> = ({ message, ...extra }) => {
             )}
           </MessageLeft>
 
-          <MessageRight
-            showAvatar={showAvatar}
-            isDeleted={message.isDeleted}
-            display_name={message?.ownerId === userLogin?._id ? userLogin?.display_name : roomSelectedInfo?.name}
-            createdAt={message.createdAt}
-            react={message.react}
-            content={message.content}
-          />
+          <MessageRight>
+            <MessageRightHeader
+              showAvatar={showAvatar}
+              createdAt={message.createdAt}
+              display_name={
+                message?.ownerId === userLogin?._id ? userLogin?.display_name : roomSelectedInfo?.name || ''
+              }
+            />
+            <MessageContent content={message.content} isDeleted={message.isDeleted} />
+          </MessageRight>
         </MessageInner>
         {!message.isDeleted && (
           <MessageActions

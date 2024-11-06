@@ -1,6 +1,4 @@
 import moment from 'moment'
-import MessageContentImages, { MessageContentFile } from './MessageContent'
-import MessageReaction from './MessageReaction'
 import type { MessageSectionProps } from './type'
 import classNames from 'classnames'
 
@@ -28,36 +26,16 @@ export const MessageLeft: React.FC<MessageSectionProps> = ({ children }) => {
   return <div className="max-w-[72px] w-full flex justify-center">{children}</div>
 }
 
-export const MessageRight: React.FC<MessageSectionProps> = ({
-  display_name,
-  createdAt,
-  react,
-  content,
-  isDeleted,
-  showAvatar,
-}) => {
+export const MessageRightHeader: React.FC<MessageSectionProps> = ({ showAvatar, display_name, createdAt }) => {
+  if (!showAvatar) return null
   return (
-    <div className="flex-1">
-      {showAvatar && (
-        <header className="flex items-center gap-2">
-          <span className="font-bold text-grey-950/80 dark:text-grey-50/80">{display_name}</span>
-          <span className="text-xs text-grey-500/90 dark:text-grey-400/90">{moment(createdAt).format('LLLL')}</span>
-        </header>
-      )}
-      <div className={classNames('py-1')}>
-        {isDeleted ? (
-          <span className="text-grey-500">
-            <i> Message was removed</i>
-          </span>
-        ) : (
-          <>
-            <p className="text-grey-950/80 dark:text-grey-50/80">{content?.text}</p>
-            <MessageContentImages images={content?.images} />
-            <MessageContentFile files={content?.files} />
-          </>
-        )}
-      </div>
-      <MessageReaction react={react} />
-    </div>
+    <header className="flex items-center gap-2">
+      <span className="font-bold text-grey-950/80 dark:text-grey-50">{display_name}</span>
+      <span className="text-xs text-grey-500/90 dark:text-grey-400/90">{moment(createdAt).format('LLLL')}</span>
+    </header>
   )
+}
+
+export const MessageRight: React.FC<MessageSectionProps> = ({ children }) => {
+  return <div className="flex-1">{children}</div>
 }
