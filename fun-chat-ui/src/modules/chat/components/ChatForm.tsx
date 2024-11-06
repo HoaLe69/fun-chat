@@ -3,12 +3,12 @@ import classNames from 'classnames'
 import { SendIcon, LaughIcon, CloseIcon, PlusCircleIcon, ImageIcon } from 'modules/core/components/icons'
 
 import EmojiPicker from './EmojiPicker'
-import { MDXEditor, headingsPlugin } from '@mdxeditor/editor'
 import Tippy from '@tippyjs/react/headless'
 import '@mdxeditor/editor/style.css'
 import './MdxEditor.css'
 import FilePreview from './FilePreview'
 import { useChatForm } from 'modules/chat/hooks'
+import MdxEditor from './MdxEditor'
 
 interface MenuMessageExtraProps {
   children: JSX.Element
@@ -57,10 +57,8 @@ const MenuMessageExtra: React.FC<MenuMessageExtraProps> = ({ children, onClose, 
 
 const ChatForm: React.FC = () => {
   const {
-    editorKey,
     markdownContent,
     replyMessage,
-    mdxEditorRef,
     visibleMenuMessageExtra,
     visibleEmojiPicker,
     userLogin,
@@ -72,7 +70,6 @@ const ChatForm: React.FC = () => {
     handleFileSelectionAndPreview,
     handleOpenMenuMessageExtra,
     handleSubmit,
-    handleKeydown,
     handleEditorChange,
     handleOpenEmojiPicker,
     handleCloseEmojiPicker,
@@ -105,10 +102,10 @@ const ChatForm: React.FC = () => {
   }, [replyMessage])
 
   return (
-    <div className="border-t-2 bg-grey-50 dark:bg-grey-900 border-grey-300 dark:border-grey-700 py-2">
+    <div className="bg-transparent py-2 px-2">
       {fileSelections.length > 0 && <FilePreview files={fileSelections} setFiles={setFileSelections} />}
       {replyMessage && renderReplyMessageElement()}
-      <div className="flex items-center px-3">
+      <div className="flex items-center px-3 py-1 bg-zinc-300 dark:bg-zinc-700 rounded-md">
         {/*options menu*/}
         <MenuMessageExtra
           onSelect={handleFileSelectionAndPreview}
@@ -119,17 +116,8 @@ const ChatForm: React.FC = () => {
             <PlusCircleIcon />
           </span>
         </MenuMessageExtra>
-        <form onSubmit={handleSubmit} onKeyDown={handleKeydown} className="flex-1 flex gap-2 items-center px-2">
-          <MDXEditor
-            key={editorKey}
-            autoFocus
-            ref={mdxEditorRef}
-            onChange={(value) => handleEditorChange(value)}
-            className="editor"
-            markdown={''}
-            placeholder="Enter your message..."
-            plugins={[headingsPlugin()]}
-          />
+        <form className="flex-1 flex gap-2 items-center px-2">
+          <MdxEditor value={markdownContent} className="editor" onChange={handleEditorChange} onSubmit={handleSubmit} />
           <span className="text-grey-500 relative">
             <LaughIcon className="cursor-pointer" onClick={handleOpenEmojiPicker} />
             <EmojiPicker
@@ -140,7 +128,7 @@ const ChatForm: React.FC = () => {
           </span>
         </form>
         <button
-          onClick={handleSubmit}
+          //          onClick={handleSubmit}
           className={classNames(
             'w-10 h-10 rounded-full inline-flex items-center justify-center',
             markdownContent.trim().length === 0 ? 'bg-grey-400 dark:bg-grey-600' : 'bg-blue-500 dark:bg-blue-400',
