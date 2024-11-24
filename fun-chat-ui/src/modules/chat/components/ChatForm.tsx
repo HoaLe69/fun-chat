@@ -4,7 +4,6 @@ import { SendIcon, LaughIcon, CloseIcon, PlusCircleIcon, ImageIcon } from 'modul
 
 import EmojiPicker from './EmojiPicker'
 import Tippy from '@tippyjs/react/headless'
-import '@mdxeditor/editor/style.css'
 import './MdxEditor.css'
 import FilePreview from './FilePreview'
 import { useChatForm } from 'modules/chat/hooks'
@@ -79,7 +78,7 @@ const ChatForm: React.FC = () => {
   const renderReplyMessageContent = useCallback(() => {
     if (replyMessage?.content.text) return replyMessage.content.text
     if (!replyMessage?.content.text && replyMessage?.content.images) return 'image'
-    if (!replyMessage?.content.text && replyMessage?.content.link) return 'link'
+    if (!replyMessage?.content.text && replyMessage?.content.links) return 'link'
   }, [replyMessage])
 
   const renderReplyMessageElement = useCallback(() => {

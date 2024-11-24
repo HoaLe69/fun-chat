@@ -9,7 +9,7 @@ import * as prod from 'react/jsx-runtime'
 //import 'github-markdown-css/github-markdown-light.css'
 import './Preview.css'
 import React from 'react'
-import { CodeBlock, H1, H2, H3 } from './PreviewCustomComp'
+import { CodeBlock, Link, H1, H2, H3 } from './PreviewCustomComp'
 //import { visit } from 'unist-util-visit'
 
 /*
@@ -33,6 +33,7 @@ const options: Options = {
     h1: H1,
     h2: H2,
     h3: H3,
+    a: Link,
   },
 }
 

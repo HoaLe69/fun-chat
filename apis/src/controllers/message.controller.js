@@ -5,6 +5,33 @@ const messageServices = require("@services/messageServices")
 const { APIError } = require("@errors")
 
 const messageController = {
+  getLinkPreview: async (req, res, next) => {
+    try {
+      const { links, msgId } = req.body
+      if (!links) throw new APIError("Links is require", 400)
+
+      const linkProcesses = links.map(link => {
+        return messageServices.fetchLinkPreview(link)
+      })
+
+      const linkPreviewInfos = await Promise.all(linkProcesses)
+
+      //update message in db
+      const updatedMessage = await Message.findOneAndUpdate(
+        { _id: msgId },
+        {
+          $set: {
+            "content.links": linkPreviewInfos,
+          },
+        },
+      )
+      console.log({ updatedMessage })
+
+      return res.status(200).json(linkPreviewInfos)
+    } catch (error) {
+      next(error)
+    }
+  },
   download: async (req, res, next) => {
     try {
       const { filename, originalname } = req.params

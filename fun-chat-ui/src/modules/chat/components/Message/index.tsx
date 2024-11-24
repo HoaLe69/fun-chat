@@ -11,6 +11,7 @@ import moment from 'moment'
 import classNames from 'classnames'
 import MessageDivider from './MessageDivider'
 import MessageContent from './MessageContent'
+import MessageReaction from './MessageReaction'
 
 interface Props {
   message: IMessage
@@ -72,7 +73,8 @@ const Message: React.FC<Props> = ({ message, ...extra }) => {
                 message?.ownerId === userLogin?._id ? userLogin?.display_name : roomSelectedInfo?.name || ''
               }
             />
-            <MessageContent content={message.content} isDeleted={message.isDeleted} />
+            <MessageContent content={message.content} isDeleted={message.isDeleted} msgId={message?._id} />
+            <MessageReaction react={message?.react} />
           </MessageRight>
         </MessageInner>
         {!message.isDeleted && (

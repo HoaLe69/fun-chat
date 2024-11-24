@@ -36,3 +36,15 @@ export const H2: React.FC<Props> = (props) => {
 export const H3: React.FC<Props> = (props) => {
   return <h3 className="text-base font-bold my-2">{props.children}</h3>
 }
+export const Link: React.FC<Props> = (props) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const isValidEmail = emailRegex.test(props.children)
+
+  if (isValidEmail) return <a href={`mailto:${props.children}`}>{props.children}</a>
+
+  return (
+    <a target="_blank" href={props.children} className={`devchatter-msg-link hover:underline cursor-pointer`}>
+      {props.children}
+    </a>
+  )
+}

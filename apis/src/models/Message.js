@@ -38,14 +38,17 @@ const messageSchema = new Schema(
         default: [],
         _id: false,
       },
-      link: {
-        type: {
-          url: String,
-          title: String,
-          description: String,
-          thumbnail: String,
-        },
-        default: null,
+      links: {
+        type: [
+          {
+            url: String,
+            title: String,
+            description: String,
+            image: String,
+            siteName: String,
+          },
+        ],
+        default: [],
         _id: false,
       },
     },

@@ -1,25 +1,56 @@
-import type { IMessageContent, IMessageContentFile, IMessageContentImage } from 'modules/chat/types'
-import { useCallback, useMemo, useState } from 'react'
+import type {
+  IMessageContent,
+  IMessageContentFile,
+  IMessageContentImage,
+  IMessageContentLinkMetadata,
+} from 'modules/chat/types'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import MessageImageOverlay from './MessageImageOverlay'
 import { SaveIcon } from 'modules/core/components/icons'
 import FileIcon from './MessageFileIcon'
 import Preview from '../MessageTextPreview'
+import { messageServices } from 'modules/chat/services'
 
 interface MessageContentProps {
   content: IMessageContent
   isDeleted?: boolean
+  msgId: string
 }
 
-const MessageContent: React.FC<MessageContentProps> = ({ content, isDeleted }) => {
+const MessageContent: React.FC<MessageContentProps> = ({ content, isDeleted, msgId }) => {
+  const [linkMetadatas, setLinkMetadatas] = useState<IMessageContentLinkMetadata[]>(content.links)
+  const refContainer = useRef<HTMLDivElement>(null)
   if (isDeleted)
     return (
       <div className="py-1 min-h-6">
         <i className="text-grey-500">Message was removed</i>
       </div>
     )
+
+  useEffect(() => {
+    if (content.links.length > 0) return
+    const loadLinkMetadata = async (links: Array<string | null>) => {
+      try {
+        const res = await messageServices.getMessageLinkPreviewMetadata(links, msgId)
+        if (res.data) {
+          setLinkMetadatas(res.data)
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    }
+    const containerEl = refContainer.current
+    if (containerEl) {
+      const linkElements = containerEl.querySelectorAll('.devchatter-msg-link')
+      const links = Array.from(linkElements).map((linkEl) => linkEl?.textContent)
+      if (!links.length) return
+      loadLinkMetadata(links)
+    }
+  }, [refContainer])
   return (
-    <div className="py-1 min-h-6">
+    <div ref={refContainer} className="py-1 min-h-6">
       <Preview doc={content.text} />
+      <MessageContentLinkPreview linkMetadatas={linkMetadatas} />
       <MessageContentImages images={content?.images} />
       <MessageContentFile files={content?.files} />
     </div>
@@ -27,6 +58,31 @@ const MessageContent: React.FC<MessageContentProps> = ({ content, isDeleted }) =
 }
 
 export default MessageContent
+
+const MessageContentLinkPreview = ({ linkMetadatas }: { linkMetadatas: IMessageContentLinkMetadata[] }) => {
+  //siteName
+  //title
+  //description
+  //image
+  return (
+    <div className="max-w-md w-max">
+      {linkMetadatas?.map((metadatas) => (
+        <div key={metadatas.url} className="bg-grey-300 dark:bg-grey-800 p-4 rounded-md mt-2">
+          <span className="text-xs text-gray-500 mt-2">{metadatas?.siteName}</span>
+          <a href={metadatas?.url} target="_blank" className="hover:underline block text-blue-400 font-medium">
+            {metadatas?.title}
+          </a>
+          <p className="text-sm mt-2 text-gray-500">{metadatas?.description}</p>
+          <div className="mt-2 w-full">
+            {metadatas?.image && (
+              <img src={metadatas?.image} alt={metadatas?.title} className="rounded-md w-full max-h-96 object-cover" />
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 const MessageContentFile = ({ files }: { files?: IMessageContentFile[] }) => {
   const fileSize = useCallback((size: number) => {

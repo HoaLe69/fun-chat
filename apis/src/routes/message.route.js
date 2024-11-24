@@ -11,4 +11,5 @@ router.get("/list/:roomId", messageController.getList)
 router.get("/", messageController.getMessageById)
 router.patch("/recall/:messageId", messageController.recall)
 router.patch("/react/:messageId", messageController.dropReact)
+router.post("/link/preview", messageController.getLinkPreview)
 module.exports = router

@@ -7,6 +7,10 @@ type MessageRequest = {
 }
 
 export const messageServices = {
+  async getMessageLinkPreviewMetadata(links: Array<string | null>, msgId: string) {
+    const response = await apiClient.post('/message/link/preview', { links, msgId })
+    return response
+  },
   async downloadFile(filename?: string) {
     if (!filename) return
     const response = await apiClient.post(`/message/download/${filename}`)

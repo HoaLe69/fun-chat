@@ -20,16 +20,18 @@ export type IMessageContentFile = {
   fileType: string
   size: number
 }
+export type IMessageContentLinkMetadata = {
+  url: string
+  title: string
+  description: string
+  image: string
+  siteName: string
+}
 export type IMessageContent = {
   text: string
   images: IMessageContentImage[]
   files: IMessageContentFile[]
-  link: {
-    url: string
-    title: string
-    description: string
-    thumbnail: string
-  }
+  links: IMessageContentLink[]
 }
 
 export type IMessageReact = {
