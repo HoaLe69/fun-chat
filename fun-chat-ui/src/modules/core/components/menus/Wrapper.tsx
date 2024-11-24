@@ -31,13 +31,9 @@ const Wrapper: React.FC<Props> = ({ icon, transition, anchor, children }) => {
       <MenuButton className="w-11 h-11">
         {({ active }) => (
           <span
-            className={classNames(
-              'w-full h-full rounded-full   flex items-center justify-center',
-              {
-                'bg-grey-200 dark:bg-grey-800 text-blue-500 dark:text-blue-400':
-                  active,
-              },
-            )}
+            className={classNames('w-full h-full rounded-full flex items-center justify-center text-gray-500', {
+              'bg-grey-200 dark:bg-grey-800 !text-blue-500 dark:text-blue-400': active,
+            })}
           >
             {icon}
           </span>

@@ -8,27 +8,18 @@ type Props = {
   email: string
   disabled: boolean
   inputValue: string
-  setCredentialInformation: React.Dispatch<
-    React.SetStateAction<CredentialInformationType>
-  >
+  setCredentialInformation: React.Dispatch<React.SetStateAction<CredentialInformationType>>
 }
 
 const EXPIRY_TIME_OTP = 60
 
-const OTPForm: React.FC<Props> = ({
-  email,
-  disabled,
-  inputValue,
-  setCredentialInformation,
-}) => {
-  const [sendOTPStatus, setSendOTPStatus] = useState<
-    'idle' | 'inprogress' | 'success' | 'failure'
-  >('idle')
+const OTPForm: React.FC<Props> = ({ email, disabled, inputValue, setCredentialInformation }) => {
+  const [sendOTPStatus, setSendOTPStatus] = useState<'idle' | 'inprogress' | 'success' | 'failure'>('idle')
   const [countdown, setCountdown] = useState<number>(EXPIRY_TIME_OTP)
   useEffect(() => {
     if (countdown === 0 || sendOTPStatus !== 'success') return
     const intervalId = setInterval(() => {
-      setCountdown(pre => pre - 1)
+      setCountdown((pre) => pre - 1)
     }, 1000)
     return () => {
       clearInterval(intervalId)
@@ -40,7 +31,7 @@ const OTPForm: React.FC<Props> = ({
     try {
       //      await new Promise(resolve => setTimeout(resolve, 3000))
       const response = await authServices.getOTP(email)
-      setCredentialInformation(pre => ({ ...pre, token: response.token }))
+      setCredentialInformation((pre) => ({ ...pre, token: response.token }))
       setCountdown(EXPIRY_TIME_OTP)
       setSendOTPStatus('success')
     } catch (error) {
@@ -77,9 +68,7 @@ const OTPForm: React.FC<Props> = ({
           maxLength={6}
           id="otp"
           placeholder="Enter 6-digit OTP"
-          onChange={e =>
-            setCredentialInformation(pre => ({ ...pre, otp: e.target.value }))
-          }
+          onChange={(e) => setCredentialInformation((pre) => ({ ...pre, otp: e.target.value }))}
         />
         <button
           type="button"

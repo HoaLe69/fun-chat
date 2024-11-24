@@ -1,8 +1,25 @@
+const chatEvent = require("./chatEvent")
+
+const onlines = {}
 const handleSocket = io => {
   io.on("connection", socket => {
     console.log("A user connected")
     socket.on("disconnect", () => {
+      console.log(onlines)
       console.log("user disconnected")
+    })
+
+    socket.on("online", id => {
+      socket.join(id)
+      onlines[id] = { status: "online" }
+      io.emit("user-online", onlines)
+    })
+    socket.on("offline", id => {
+      socket.leave(id)
+      console.log("id", id)
+      delete onlines[id]
+      console.log("onlines", onlines)
+      io.emit("user-offline", onlines)
     })
 
     socket.on("join", id => {
@@ -15,6 +32,7 @@ const handleSocket = io => {
       console.log({ message: `user left room : ${id}` })
     })
 
+    chatEvent(socket, io)
     socket.on("chat:typingStart", data => {
       const { userId, roomId } = data
       // broadCast to everyone in the room except the sender
@@ -31,11 +49,6 @@ const handleSocket = io => {
         userId,
         roomId,
       })
-    })
-
-    socket.on("room:createRoomChat", info => {
-      const { roomInfo, recipientId } = info
-      io.to(recipientId).emit("room:getNewChatInfo", roomInfo)
     })
 
     socket.on("chat:sendReactIcon", data => {
@@ -63,20 +76,6 @@ const handleSocket = io => {
           roomId,
         })
       }
-    })
-    socket.on("chat:sendMessage", data => {
-      console.log({ data })
-      const message = {
-        ...data,
-      }
-      io.to(data.recipientId).emit("room:getIncomingMessages", {
-        text: message.text,
-        roomId: message.roomId,
-        createdAt: message.createdAt,
-      })
-      io.to(data.roomId).emit("chat:getMessage", {
-        ...message,
-      })
     })
   })
 }

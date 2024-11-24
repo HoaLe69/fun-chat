@@ -11,8 +11,7 @@ import { LoginPage, ChatPage, LoginLoungePage } from 'pages'
 function App() {
   //  TODO: move logic code to another file
   const theme = (() => {
-    if (typeof localStorage !== undefined && localStorage.getItem('theme'))
-      return localStorage.getItem('theme')
+    if (typeof localStorage !== undefined && localStorage.getItem('theme')) return localStorage.getItem('theme')
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark'
     return 'light'
   })()
@@ -26,10 +25,7 @@ function App() {
         <BrowserRouter>
           <Suspense fallback={<LoadingSplashScreen />}>
             <Routes>
-              <Route
-                path="/login/redirect/:method"
-                element={<LoginLoungePage />}
-              />
+              <Route path="/login/redirect/:method" element={<LoginLoungePage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route
                 path="/"

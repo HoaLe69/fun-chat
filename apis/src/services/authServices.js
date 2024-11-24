@@ -92,7 +92,7 @@ const register = async authenticationInfo => {
  */
 const login = async ({ email, password }) => {
   const storedUser = await User.findUserByEmailAndNotNullPassword(email)
-
+  //TODO: handle case user not found
   if (!storedUser.isVerified) throw new APIError("Email is not active", 400)
 
   const isMatchPassword = await authUtils.compareHashedPassword(
@@ -123,7 +123,7 @@ const loginWithProvider = async ({
   const accessToken = provider === "google" ? code : await getTokenFn(code)
 
   const userInfo = await getUserProfifeFn(accessToken)
-  console.log({ userInfo })
+  console.log({ picture: userInfo.picture })
 
   if (!userInfo?.id) throw new APIError("Login session was expired", 400)
 
@@ -137,8 +137,8 @@ const loginWithProvider = async ({
   /*create new user*/
   const newUser = await new User({
     email: userInfo.email,
-    display_name: userInfo.name,
-    picture: userInfo.picture,
+    display_name: userInfo.name || userInfo?.global_name,
+    picture: authUtils.getUserAvatarUrlByProvider(provider, userInfo),
   })
 
   const savedUser = await newUser.save()
@@ -146,7 +146,7 @@ const loginWithProvider = async ({
   /*create new SocialAccount*/
   await new SocialAccount({
     socialId: userInfo.id,
-    platform: "google",
+    platform: provider,
     user: savedUser._id,
   }).save()
 

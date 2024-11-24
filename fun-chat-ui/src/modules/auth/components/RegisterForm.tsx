@@ -23,19 +23,16 @@ const RegisterForm = () => {
     displayName: '',
     password: '',
   })
-  const [credentialInformation, setCredentialInformation] =
-    useState<CredentialInformationType>({
-      token: '',
-      otp: '',
-    })
+  const [credentialInformation, setCredentialInformation] = useState<CredentialInformationType>({
+    token: '',
+    otp: '',
+  })
   const [errors, setErrors] = useState<Record<string, string | undefined>>({})
   const [isProcessing, setIsProcessing] = useState<boolean>(false)
   const [isFormValid, setIsFormValid] = useState<boolean>(false)
   const [isValidEmail, setIsValidEmail] = useState<boolean>(false)
 
-  const handleRegisterWithEmail = async (
-    e: React.FormEvent<HTMLFormElement>,
-  ) => {
+  const handleRegisterWithEmail = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const { email, password, displayName } = formData
     const { token, otp } = credentialInformation
@@ -53,7 +50,7 @@ const RegisterForm = () => {
     } catch (error: any) {
       console.log({ error })
       const message = error?.response?.data?.message || 'Something went wrong1'
-      setErrors(pre => ({ ...pre, apiErrorMessage: message }))
+      setErrors((pre) => ({ ...pre, apiErrorMessage: message }))
     }
     setIsProcessing(false)
   }
@@ -66,11 +63,11 @@ const RegisterForm = () => {
       if (isValidEmail) return
       await authServices.checkEmailAbleToUse(value)
       setIsValidEmail(true)
-      setErrors(pre => ({ ...pre, [name]: '' }))
+      setErrors((pre) => ({ ...pre, [name]: '' }))
     } catch (error: any) {
       setIsValidEmail(false)
       const message = error?.response.data.message
-      setErrors(pre => ({ ...pre, [name]: message }))
+      setErrors((pre) => ({ ...pre, [name]: message }))
     }
   }
   const validateField = (name: string, value: string): string => {
@@ -95,18 +92,16 @@ const RegisterForm = () => {
   }
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setFormData(pre => ({ ...pre, [name]: value }))
+    setFormData((pre) => ({ ...pre, [name]: value }))
 
     //validate the field on change on register form
     const error = validateField(name, value)
-    setErrors(pre => ({ ...pre, [name]: error }))
+    setErrors((pre) => ({ ...pre, [name]: error }))
   }
 
   useEffect(() => {
-    const isAllFieldFill = Object.values(formData).every(value => value !== '')
-    const isErrors = Object.keys(errors).every(
-      key => errors[key] === '' || key === 'apiErrorMessage',
-    )
+    const isAllFieldFill = Object.values(formData).every((value) => value !== '')
+    const isErrors = Object.keys(errors).every((key) => errors[key] === '' || key === 'apiErrorMessage')
     setIsFormValid(isAllFieldFill && isErrors)
   }, [formData, errors])
 
@@ -126,7 +121,7 @@ const RegisterForm = () => {
           label="How everyone can call you ?"
           errorMessage={errors?.displayName}
           value={formData.displayName}
-          onChange={e => handleInputChange(e)}
+          onChange={(e) => handleInputChange(e)}
         />
         <Input
           type="email"
@@ -135,8 +130,8 @@ const RegisterForm = () => {
           errorMessage={errors?.email}
           label="Email"
           value={formData.email}
-          onBlur={e => handleInputBlur(e)}
-          onChange={e => handleInputChange(e)}
+          onBlur={(e) => handleInputBlur(e)}
+          onChange={(e) => handleInputChange(e)}
         />
         <Input
           type="password"
@@ -144,7 +139,7 @@ const RegisterForm = () => {
           placeholder="Enter your password"
           name="password"
           value={formData.password}
-          onChange={e => handleInputChange(e)}
+          onChange={(e) => handleInputChange(e)}
         />
         <OTPForm
           email={formData.email}
@@ -154,9 +149,7 @@ const RegisterForm = () => {
         />
         <div className="flex items-center my-2">
           {errors?.apiErrorMessage && (
-            <p className="text-left text-red-500 text-sm font-semibold">
-              {errors.apiErrorMessage}
-            </p>
+            <p className="text-left text-red-500 text-sm font-semibold">{errors.apiErrorMessage}</p>
           )}
         </div>
         <button
@@ -167,11 +160,7 @@ const RegisterForm = () => {
             { 'opacity-75': allowSubmitRegisterForm() },
           )}
         >
-          {isProcessing ? (
-            <ReactLoading type="spinningBubbles" width="20px" height="20px" />
-          ) : (
-            'Sign up now'
-          )}
+          {isProcessing ? <ReactLoading type="spinningBubbles" width="20px" height="20px" /> : 'Sign up now'}
         </button>
       </form>
     </div>

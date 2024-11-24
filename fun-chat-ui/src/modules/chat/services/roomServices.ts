@@ -18,4 +18,15 @@ export const roomServices = {
     const res = await apiClient.get(`/room/list/${userId}`)
     return res.data
   },
+  async checkRoomExist(members: Array<string>) {
+    const [first, second] = members
+
+    const res = await apiClient.get(`/room/check-room`, {
+      params: {
+        first,
+        second,
+      },
+    })
+    return res.data
+  },
 }

@@ -66,6 +66,10 @@ userSchema.statics = {
     const user = this.findOne({ email, password: { $ne: null } })
     return user
   },
+  async findUsersByEmail(email) {
+    const users = this.find({ email })
+    return users
+  },
 }
 
 module.exports = mongoose.model("User", userSchema)

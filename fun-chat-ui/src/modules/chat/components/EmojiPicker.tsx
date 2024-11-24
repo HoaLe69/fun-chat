@@ -15,19 +15,10 @@ type Emoji = {
   shortcodes: string
   unified: string
 }
-const EmojiPicker: React.FC<Props> = ({
-  isOpen,
-  onClose,
-  appendEmojiToText,
-}) => {
+const EmojiPicker: React.FC<Props> = ({ isOpen, onClose, appendEmojiToText }) => {
   return (
     <div className={classNames('bottom-full right-0 absolute')}>
-      {isOpen && (
-        <Picker
-          onClickOutside={onClose}
-          onEmojiSelect={(emoji: Emoji) => appendEmojiToText(emoji.native)}
-        />
-      )}
+      {isOpen && <Picker onClickOutside={onClose} onEmojiSelect={(emoji: Emoji) => appendEmojiToText(emoji.native)} />}
     </div>
   )
 }

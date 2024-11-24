@@ -1,46 +1,36 @@
-import { MessageContainer } from 'modules/chat'
-import ChatList from 'modules/chat/components/ChatList'
-import { socket, useAppSelector, useAppDispatch } from 'modules/core/hooks'
+import { ChatArea, ChatList } from 'modules/chat'
+import { useSocket, useAppSelector, useAppDispatch } from 'modules/core/hooks'
 import { authSelector } from 'modules/auth/states/authSlice'
+import { getUsersOnline } from 'modules/user/states/userSlice'
 import { useEffect } from 'react'
-import { updateLatestMessage } from 'modules/chat/states/roomSlice'
 
 const ChatPage = (): JSX.Element => {
-  const dispatch = useAppDispatch()
   const userLogin = useAppSelector(authSelector.selectUser)
+  const dispatch = useAppDispatch()
+
+  const { emitEvent, subscribeEvent, unSubcribeEvent } = useSocket()
 
   useEffect(() => {
     if (userLogin?._id) {
-      socket.emit('join', userLogin?._id)
-    }
-    return () => {
-      socket.emit('leave', userLogin?._id)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (userLogin?._id) {
-      socket.on('room:getIncomingMessages', msg => {
-        dispatch(
-          updateLatestMessage({
-            roomId: msg.roomId,
-            latestMessage: {
-              text: msg.text,
-              createdAt: msg.createdAt,
-            },
-          }),
-        )
+      emitEvent('online', userLogin?._id)
+      subscribeEvent('user-online', (msg: any) => {
+        dispatch(getUsersOnline(msg))
+      })
+      subscribeEvent('user-offline', (msg: any) => {
+        dispatch(getUsersOnline(msg))
       })
     }
     return () => {
-      socket.off('room:getIncomingMessages')
+      unSubcribeEvent('user-online')
+      unSubcribeEvent('user-offline')
+      emitEvent('offline', userLogin?._id)
     }
-  }, [])
+  }, [userLogin])
 
   return (
-    <main className="flex text-grey-950 dark:text-white">
+    <main className="flex text-grey-950 dark:text-white h-screen">
       <ChatList />
-      <MessageContainer />
+      <ChatArea />
     </main>
   )
 }

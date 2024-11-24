@@ -1,124 +1,62 @@
 import { createSlice } from '@reduxjs/toolkit'
+import { IRoomStore } from './type'
 import { RootState } from 'modules/core/store'
-import { fetchListRoomAsync } from 'modules/chat/states/roomActions'
+import { fetchListRoomAsync } from './roomActions'
 
-const MAXIMUM_ROOM_AMOUNT = 3
-
-const initialState = {
-  fetchList: {
-    loading: false,
-    rooms: [],
-  },
-  selectedRoom: {
-    id: null,
-    recipient: {
-      _id: null,
-      display_name: null,
-      picture: null,
-      email: null,
-    },
-    latestMessage: {
-      text: null,
-      createdAt: null,
-    },
-  },
-  selectedRoomList: [],
-}
-
+const initialState: IRoomStore = { rooms: [] }
 const roomSlice = createSlice({
   name: 'room',
   initialState,
   reducers: {
-    quitSelectedRoom: state => {
-      state.selectedRoom.id = null
-      state.selectedRoom.recipient = null
+    selectRoom(state, action) {
+      state.selectedRoom = action.payload
     },
-    selectedRoom: (state, action) => {
-      const { roomId, recipient, latestMessage } = action.payload
-      state.selectedRoom.id = roomId
-      state.selectedRoom.recipient = recipient
-      state.selectedRoom.latestMessage = latestMessage
+    markCurrentRoomCreated(state) {
+      if (state?.selectedRoom) state.selectedRoom.new = false
     },
-    selectedRoomId: (state, action) => {
-      state.selectedRoom.id = action.payload
+    addRoom(state, action) {
+      state.rooms = [...state.rooms, action.payload]
     },
-    updateLatestMessage: (state, action) => {
-      const { roomId, latestMessage } = action.payload
-      state.selectedRoom.latestMessage = latestMessage
-      const _room = state.fetchList.rooms.map(room => {
-        return room?._id === roomId ? { ...room, latestMessage } : room
-      })
-
-      state.fetchList.rooms = _room.sort((roomA, roomB) => {
-        const lstMsgTimeA = roomA.latestMessage.createdAt
-        const lstMsgTimeB = roomB.latestMessage.createdAt
-        if (lstMsgTimeA > lstMsgTimeB) return -1
-        if (lstMsgTimeA < lstMsgTimeB) return 1
-        return 0
+    markLatestMessageAsSeen(state, action) {
+      const { roomId, status } = action.payload
+      const rooms = state.rooms
+      state.rooms = rooms.map((room) => {
+        if (room._id === roomId) return { ...room, latestMessage: { ...room.latestMessage, status } }
+        return room
       })
     },
-    addRoomChat(state, action) {
-      state.fetchList.rooms = [action.payload, ...state.fetchList.rooms]
-    },
-    addSelectedRoomToStack(state, action) {
-      const { roomId } = action.payload
-      const currentListRoomSelected = state.selectedRoomList
-      const isRoomAlreadyExist = currentListRoomSelected.some(
-        currentRoomId => currentRoomId === roomId,
-      )
-      if (isRoomAlreadyExist) return
-      if (currentListRoomSelected.length >= MAXIMUM_ROOM_AMOUNT) {
-        currentListRoomSelected.shift() // remove first room
-        state.selectedRoomList = [...currentListRoomSelected, roomId]
-      } else {
-        state.selectedRoomList = [...currentListRoomSelected, roomId]
-      }
-    },
-    // detect user is typing
-    updateStatusOfLatestMessage(state, action) {
-      const _rooms = [...state.fetchList.rooms]
-      const { roomId, isTyping, userId } = action.payload
-      state.fetchList.rooms = _rooms.map(room => {
-        return room?._id === roomId
-          ? { ...room, t: { userId, isTyping } }
-          : room
+    updateRoomLatestMessage(state, action) {
+      const msg = action.payload
+      const rooms = state.rooms
+      state.rooms = rooms.map((room) => {
+        if (room._id === msg.roomId)
+          return {
+            ...room,
+            latestMessage: msg,
+          }
+        return room
       })
     },
   },
   extraReducers(builder) {
-    builder
-      // fetch list room by your login id
-      .addCase(fetchListRoomAsync.pending, state => {
-        state.fetchList.loading = true
-      })
-      .addCase(fetchListRoomAsync.fulfilled, (state, action) => {
-        state.fetchList.loading = false
-        state.fetchList.rooms = action.payload
-      })
-      .addCase(fetchListRoomAsync.rejected, state => {
-        state.fetchList.loading = false
-      })
+    builder.addCase(fetchListRoomAsync.fulfilled, (state, action) => {
+      state.rooms = action.payload
+    })
   },
 })
 
-export const roomSelector = {
-  selectListRooms: (state: RootState) => state.room.fetchList.rooms,
-  selectListRoomsLoading: (state: RootState) => state.room.fetchList.loading,
-  selectRoomId: (state: RootState) => state.room.selectedRoom.id,
-  selectRoomRecipient: (state: RootState) => state.room.selectedRoom.recipient,
-  selectListRoomAlreadyVisited: (state: RootState) =>
-    state.room.selectedRoomList,
-  selectLatestMessageOfSelectdRoom: (state: RootState) =>
-    state.room.selectedRoom.latestMessage,
-}
-export const {
-  selectedRoom,
-  selectedRoomId,
-  quitSelectedRoom,
-  updateLatestMessage,
-  updateStatusOfLatestMessage,
-  addRoomChat,
-  addSelectedRoomToStack,
-} = roomSlice.actions
+export const roomSelector = {}
+
+export const { selectRoom, addRoom, markLatestMessageAsSeen, markCurrentRoomCreated, updateRoomLatestMessage } =
+  roomSlice.actions
 
 export default roomSlice.reducer
+
+// selector
+const selectCurrentRoomId = (state: RootState) => state.room.selectedRoom?._id
+const selectCurrentRoomInfo = (state: RootState) => state.room.selectedRoom?.recipientInfo
+const selectStatusCurrentRoom = (state: RootState) => state.room.selectedRoom?.new
+
+const selectListRoom = (state: RootState) => state.room.rooms
+
+export { selectListRoom, selectCurrentRoomId, selectCurrentRoomInfo, selectStatusCurrentRoom }

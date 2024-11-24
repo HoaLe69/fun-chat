@@ -7,7 +7,33 @@ type MessageRequest = {
 }
 
 export const messageServices = {
-  async getListMessageByRoomId(roomId: string) {
+  async getMessageLinkPreviewMetadata(links: Array<string | null>, msgId: string) {
+    const response = await apiClient.post('/message/link/preview', { links, msgId })
+    return response
+  },
+  async downloadFile(filename?: string) {
+    if (!filename) return
+    const response = await apiClient.post(`/message/download/${filename}`)
+    return response
+  },
+  async uploadFiles(files: File[]) {
+    const formData = new FormData()
+    files.forEach((file) => {
+      formData.append('files', file)
+    })
+    console.log({ formData })
+    const response = await apiClient.post('/message/uploads', formData)
+    return response.data
+  },
+  async getMessageById(msgId: string) {
+    const res = await apiClient.get('/message', {
+      params: {
+        id: msgId,
+      },
+    })
+    return res.data
+  },
+  async getHistoryMessage(roomId: string) {
     const res = await apiClient.get(`message/list/${roomId}`)
     return res.data
   },

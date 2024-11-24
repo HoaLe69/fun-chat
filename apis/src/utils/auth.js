@@ -90,7 +90,16 @@ const getUserProfileFromDiscord = async accessToken => {
 
   return userInfo
 }
-
+const getUserAvatarUrlByProvider = (provider, userInfo) => {
+  switch (provider) {
+    case "discord":
+      return getFullPathAvatarDiscord(userInfo.id, userInfo.avatar)
+    case "facebook":
+      return userInfo.picture.data.url
+    default:
+      return userInfo.picture
+  }
+}
 const getFullPathAvatarDiscord = (userId, avatarHash) => {
   const isAnimated = avatarHash.startsWith("a_")
   const extension = isAnimated ? "gif" : "png"
@@ -135,4 +144,5 @@ module.exports = {
   getAccessTokenFromDiscord,
   getFullPathAvatarDiscord,
   getUserProfileFromDiscord,
+  getUserAvatarUrlByProvider,
 }

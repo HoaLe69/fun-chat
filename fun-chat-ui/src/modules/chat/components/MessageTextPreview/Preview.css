@@ -1,0 +1,36 @@
+.markdown-body {
+  @apply dark:text-grey-300 text-grey-700;
+}
+
+.markdown-body pre {
+  @apply text-sm p-4 font-sans bg-zinc-800 rounded-md border border-zinc-950/20 text-grey-300;
+}
+
+.markdown-body p code {
+  @apply p-1 px-2 bg-zinc-800 border border-zinc-950/20 rounded-md text-sm text-grey-300;
+}
+
+.markdown-body h1,
+h2,
+h3 {
+  @apply dark:text-grey-50 text-grey-950;
+}
+
+.markdown-body ul {
+  @apply list-disc ml-4 mt-4;
+}
+.markdown-body ol {
+  @apply list-decimal ml-4 mt-4;
+}
+
+.markdown-body a {
+  @apply text-blue-400;
+}
+
+.markdown-body blockquote {
+  @apply p-1 pl-2 border-l-4 border-l-gray-500;
+}
+
+.markdown-body strong {
+  @apply dark:text-grey-100 text-grey-900;
+}

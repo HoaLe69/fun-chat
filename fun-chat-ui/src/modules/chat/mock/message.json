@@ -1,0 +1,173 @@
+[
+  {
+    "_id": 1,
+    "text": "Hey Alice, how's it going?",
+    "roomId": "64caa8e74b8b9a001c6bc001",
+    "ownerId": "64caa7e74b8b9a001c6bc001",
+    "isDeleted": false,
+    "react": [{ "ownerId": "66f4cb94d3b0a0d8037a5d0c", "emoji": "👍" }],
+    "createAt": "2024-10-03T10:05:00Z"
+  },
+  {
+    "_id": 2,
+    "text": "I'm doing well, thanks! What about you?",
+    "roomId": "64caa8e74b8b9a001c6bc001",
+    "ownerId": "66f4cb94d3b0a0d8037a5d0c",
+    "isDeleted": false,
+    "react": [],
+    "createAt": "2024-10-03T10:06:00Z"
+  },
+  {
+    "_id": 3,
+    "text": "Busy with work but good!",
+    "roomId": "64caa8e74b8b9a001c6bc001",
+    "ownerId": "64caa7e74b8b9a001c6bc001",
+    "isDeleted": false,
+    "react": [],
+    "createAt": "2024-10-03T10:07:00Z"
+  },
+  {
+    "_id": 4,
+    "text": "We should catch up soon.",
+    "roomId": "64caa8e74b8b9a001c6bc001",
+    "ownerId": "66f4cb94d3b0a0d8037a5d0c",
+    "isDeleted": false,
+    "react": [],
+    "createAt": "2024-10-03T10:08:00Z"
+  },
+  {
+    "_id": 5,
+    "text": "Absolutely! Let me know when you're free.",
+    "roomId": "64caa8e74b8b9a001c6bc001",
+    "ownerId": "64caa7e74b8b9a001c6bc001",
+    "isDeleted": false,
+    "react": [{ "ownerId": "66f4cb94d3b0a0d8037a5d0c", "emoji": "😊" }],
+    "createAt": "2024-10-03T10:10:00Z"
+  },
+  {
+    "_id": 6,
+    "text": "Will do! How's your new project going?",
+    "roomId": "64caa8e74b8b9a001c6bc001",
+    "ownerId": "66f4cb94d3b0a0d8037a5d0c",
+    "isDeleted": false,
+    "react": [],
+    "createAt": "2024-10-03T10:12:00Z"
+  },
+  {
+    "_id": 7,
+    "text": "It's great! Almost finished.",
+    "roomId": "64caa8e74b8b9a001c6bc001",
+    "ownerId": "64caa7e74b8b9a001c6bc001",
+    "isDeleted": false,
+    "react": [],
+    "createAt": "2024-10-03T10:13:00Z"
+  },
+  {
+    "_id": 8,
+    "text": "Nice! Looking forward to seeing it.",
+    "roomId": "64caa8e74b8b9a001c6bc001",
+    "ownerId": "66f4cb94d3b0a0d8037a5d0c",
+    "isDeleted": false,
+    "react": [{ "ownerId": "64caa7e74b8b9a001c6bc001", "emoji": "😃" }],
+    "createAt": "2024-10-03T10:14:00Z"
+  },
+  {
+    "_id": 10,
+    "text": "I'll send you the link once it's live.",
+    "roomId": "64caa8e74b8b9a001c6bc001",
+    "ownerId": "64caa7e74b8b9a001c6bc001",
+    "isDeleted": false,
+    "react": [],
+    "createAt": "2024-10-03T10:15:00Z"
+  },
+  {
+    "_id": 11,
+    "text": "Awesome, looking forward to it!",
+    "roomId": "64caa8e74b8b9a001c6bc001",
+    "ownerId": "66f4cb94d3b0a0d8037a5d0c",
+    "isDeleted": false,
+    "react": [],
+    "createAt": "2024-10-03T10:16:00Z"
+  },
+  {
+    "_id": 12,
+    "text": "I'm working on a new project!",
+    "roomId": "64caa8e74b8b9a001c6bc002",
+    "ownerId": "64caa7e74b8b9a001c6bc002",
+    "isDeleted": false,
+    "react": [],
+    "createAt": "2024-10-03T11:00:00Z"
+  },
+  {
+    "_id": 13,
+    "text": "That's exciting! What's it about?",
+    "roomId": "64caa8e74b8b9a001c6bc002",
+    "ownerId": "66f4cb94d3b0a0d8037a5d0c",
+    "isDeleted": false,
+    "react": [],
+    "createAt": "2024-10-03T11:01:00Z"
+  },
+  {
+    "_id": 14,
+    "text": "A chat app for developers.",
+    "roomId": "64caa8e74b8b9a001c6bc002",
+    "ownerId": "64caa7e74b8b9a001c6bc002",
+    "isDeleted": false,
+    "react": [],
+    "createAt": "2024-10-03T11:02:00Z"
+  },
+  {
+    "_id": 15,
+    "text": "Sounds cool! Need any help?",
+    "roomId": "64caa8e74b8b9a001c6bc002",
+    "ownerId": "66f4cb94d3b0a0d8037a5d0c",
+    "isDeleted": false,
+    "react": [],
+    "createAt": "2024-10-03T11:03:00Z"
+  },
+  {
+    "_id": 16,
+    "text": "Actually, yes! I could use some input.",
+    "roomId": "64caa8e74b8b9a001c6bc002",
+    "ownerId": "64caa7e74b8b9a001c6bc002",
+    "isDeleted": false,
+    "react": [],
+    "createAt": "2024-10-03T11:05:00Z"
+  },
+  {
+    "_id": 17,
+    "text": "Happy to help. Let me know what you need.",
+    "roomId": "64caa8e74b8b9a001c6bc002",
+    "ownerId": "66f4cb94d3b0a0d8037a5d0c",
+    "isDeleted": false,
+    "react": [],
+    "createAt": "2024-10-03T11:06:00Z"
+  },
+  {
+    "_id": 18,
+    "text": "I'll ping you later with the details.",
+    "roomId": "64caa8e74b8b9a001c6bc002",
+    "ownerId": "64caa7e74b8b9a001c6bc002",
+    "isDeleted": false,
+    "react": [],
+    "createAt": "2024-10-03T11:07:00Z"
+  },
+  {
+    "_id": 19,
+    "text": "Looking forward to it!",
+    "roomId": "64caa8e74b8b9a001c6bc002",
+    "ownerId": "66f4cb94d3b0a0d8037a5d0c",
+    "isDeleted": false,
+    "react": [],
+    "createAt": "2024-10-03T11:08:00Z"
+  },
+  {
+    "_id": 20,
+    "text": "Thanks, talk soon!",
+    "roomId": "64caa8e74b8b9a001c6bc002",
+    "ownerId": "64caa7e74b8b9a001c6bc002",
+    "isDeleted": false,
+    "react": [],
+    "createAt": "2024-10-03T11:09:00Z"
+  }
+]

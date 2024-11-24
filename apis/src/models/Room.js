@@ -1,20 +1,11 @@
 const mongoose = require("mongoose")
 const { Schema } = mongoose
 
-const latestMessageSchema = new Schema(
-  {
-    text: String,
-    createdAt: Date,
-    ownerId: String,
-  },
-  { _id: false },
-)
-
 const roomSchema = new Schema(
   {
     latestMessage: {
-      type: latestMessageSchema,
-      default: null,
+      type: Schema.Types.ObjectId,
+      ref: "Message",
     },
     members: {
       type: Array,
@@ -30,3 +21,14 @@ const roomSchema = new Schema(
 )
 
 module.exports = mongoose.model("Room", roomSchema)
+
+roomSchema.statics = {
+  async createNewRoom(newRoom) {
+    const room = await newRoom.save()
+    return room
+  },
+  async findRoomById(roomId) {
+    const room = await this.findOne({ _id: roomId })
+    return room
+  },
+}

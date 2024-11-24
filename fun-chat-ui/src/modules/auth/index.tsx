@@ -3,17 +3,8 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppSelector } from 'modules/core/hooks'
 import { authSelector } from 'modules/auth/states/authSlice'
-import {
-  FacebookIcon,
-  GoogleIcon,
-  DiscordIcon,
-  PersonIcon,
-} from 'modules/core/components/icons'
-import {
-  metaAuthorizeURL,
-  discordAuthorizeURL,
-  googleAuthorizeURL,
-} from 'const'
+import { FacebookIcon, GoogleIcon, DiscordIcon, PersonIcon } from 'modules/core/components/icons'
+import { metaAuthorizeURL, discordAuthorizeURL, googleAuthorizeURL } from 'const'
 import RegisterForm from './components/RegisterForm'
 import LoginForm from './components/LoginForm'
 
@@ -34,7 +25,7 @@ const LoginModule: React.FC = () => {
   }
 
   const handleGoogleLogin = useGoogleLogin({
-    onSuccess: tokenResponse => {
+    onSuccess: (tokenResponse) => {
       window.location.assign(googleAuthorizeURL(tokenResponse?.access_token))
     },
   })
@@ -68,34 +59,16 @@ const LoginModule: React.FC = () => {
             )
           ) : (
             <div className="flex flex-col items-center my-4">
-              <SocialLogInButton
-                onClick={handleLoginWithEmail}
-                type="default"
-                isRegister={isRegister}
-              />
-              <SocialLogInButton
-                onClick={handleFacebookLogin}
-                type="fb"
-                isRegister={isRegister}
-              />
-              <SocialLogInButton
-                onClick={handleGoogleLogin}
-                type="google"
-                isRegister={isRegister}
-              />
-              <SocialLogInButton
-                onClick={handleDiscordLogin}
-                type="discord"
-                isRegister={isRegister}
-              />
+              <SocialLogInButton onClick={handleLoginWithEmail} type="default" isRegister={isRegister} />
+              <SocialLogInButton onClick={handleFacebookLogin} type="fb" isRegister={isRegister} />
+              <SocialLogInButton onClick={handleGoogleLogin} type="google" isRegister={isRegister} />
+              <SocialLogInButton onClick={handleDiscordLogin} type="discord" isRegister={isRegister} />
               <div className="mt-2" />
             </div>
           )}
           <div className="">
             <p>
-              {isRegister
-                ? 'You already have an account ! '
-                : 'You are not member ! '}
+              {isRegister ? 'You already have an account ! ' : 'You are not member ! '}
               <a
                 href="#"
                 className="text-blue-500 font-medium"

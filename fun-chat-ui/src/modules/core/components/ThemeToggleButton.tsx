@@ -5,8 +5,7 @@ import { useCallback, useEffect, useState } from 'react'
 const themes = ['light', 'dark']
 const ThemeToggleButton = (): JSX.Element => {
   const [theme, setTheme] = useState(() => {
-    if (typeof localStorage !== undefined && localStorage.getItem('theme'))
-      return localStorage.getItem('theme')
+    if (typeof localStorage !== undefined && localStorage.getItem('theme')) return localStorage.getItem('theme')
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark'
     return 'light'
   })
@@ -22,9 +21,7 @@ const ThemeToggleButton = (): JSX.Element => {
     localStorage.setItem('theme', t)
   }, [theme])
   return (
-    <div
-      className={classNames('bg-grey-400 p-1 flex items-center rounded-3xl')}
-    >
+    <div className={classNames('bg-grey-400 p-1 flex items-center rounded-3xl')}>
       {themes.map((th: string) => {
         const t = th === 'dark'
         return (

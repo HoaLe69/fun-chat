@@ -35,3 +35,29 @@
     @apply w-[46px] h-[46px] rounded-2xl hover:bg-blue-100 dark:hover:bg-blue-900 not-first:not-last:mx-2 flex flex items-center justify-center cursor-pointer;
   }
 }
+
+@keyframes zoomOut {
+  0% {
+    scale: 0.8;
+  }
+  100% {
+    scale: 1;
+  }
+}
+@keyframes highlight {
+  0% {
+    background: rgb(0 25 61 / 0.2);
+  }
+  50% {
+    background: rgb(0 25 61 / 0.3);
+  }
+  100% {
+    background: unset;
+  }
+}
+.highlight {
+  animation: highlight ease 0.5s;
+}
+.animate-zoom {
+  animation: zoomOut ease 0.5s;
+}

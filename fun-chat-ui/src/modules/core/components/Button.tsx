@@ -7,13 +7,7 @@ type Props = {
   textBold?: boolean
   onClick?: () => void
 }
-const Button: React.FC<Props> = ({
-  type,
-  title,
-  onClick,
-  className,
-  textBold,
-}) => {
+const Button: React.FC<Props> = ({ type, title, onClick, className, textBold }) => {
   console.log({ type })
   return (
     <button

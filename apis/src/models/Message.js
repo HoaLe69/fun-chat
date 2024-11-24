@@ -11,9 +11,46 @@ const reactIconSchema = new Schema(
 
 const messageSchema = new Schema(
   {
-    text: {
-      type: String,
-      required: [true, "Message is require"],
+    content: {
+      text: {
+        type: String,
+        default: null,
+      },
+      images: {
+        type: [
+          {
+            url: String,
+            altText: String,
+          },
+        ],
+        default: [],
+        _id: false,
+      },
+      files: {
+        type: [
+          {
+            path: String,
+            fileName: String,
+            fileType: String,
+            size: String,
+          },
+        ],
+        default: [],
+        _id: false,
+      },
+      links: {
+        type: [
+          {
+            url: String,
+            title: String,
+            description: String,
+            image: String,
+            siteName: String,
+          },
+        ],
+        default: [],
+        _id: false,
+      },
     },
     roomId: {
       type: String,
@@ -31,8 +68,45 @@ const messageSchema = new Schema(
       type: [reactIconSchema],
       default: [],
     },
+    replyBy: {
+      type: [String],
+      default: [],
+    },
+    replyTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Message",
+      default: null,
+    },
+    status: {
+      readBy: {
+        type: [
+          {
+            userId: {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: "User",
+              required: true,
+            },
+            readAt: { type: Date },
+          },
+        ],
+        default: [],
+        _id: false, //Disable auto-generation _id in subdocuments
+      },
+      type: {
+        type: String,
+        enum: ["sent", "delivered", "seen"],
+        default: "sent",
+      },
+    },
   },
   { timestamps: true },
 )
 
 module.exports = mongoose.model("Message", messageSchema)
+
+messageSchema.statics = {
+  async createMessage(newMessage) {
+    const message = await newMessage.save()
+    return message
+  },
+}

@@ -8,12 +8,7 @@ const LoadingSplashPage = () => {
           <strong className="text-blue-500">FUN</strong>
           CHAT
         </h1>
-        <ReactLoading
-          type="spinningBubbles"
-          color="#005fff"
-          height="20%"
-          width="20%"
-        />
+        <ReactLoading type="spinningBubbles" color="#005fff" height="20%" width="20%" />
       </div>
     </div>
   )

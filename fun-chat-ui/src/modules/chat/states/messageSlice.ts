@@ -1,35 +1,118 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from 'modules/core/store'
-import { fetchListMessageAsync } from './messageActions'
+import { fetchHistoryMessageAsync } from './messageActions'
+import { IMessageStore } from './type'
 
-const initialState = {
-  list: {
-    loading: false,
+const initialState: IMessageStore = {
+  historyMsgs: {
+    status: 'idle',
     msgs: [],
   },
+  modal: {
+    isOpenMessageImageGallery: false,
+  },
 }
-
 const messageSlice = createSlice({
   name: 'message',
   initialState,
-  reducers: {},
+  reducers: {
+    openMessageImageGallery(state) {
+      state.modal.isOpenMessageImageGallery = true
+    },
+    closeMessageImageGallery(state) {
+      state.modal.isOpenMessageImageGallery = false
+    },
+
+    replyMessage(state, action) {
+      state.replyMsg = action.payload
+    },
+    cancelReplyMessage(state) {
+      state.replyMsg = undefined
+    },
+    addMessage(state, action) {
+      const historyMsgs = state.historyMsgs.msgs
+      state.historyMsgs.msgs = [...historyMsgs, action.payload]
+    },
+    updateMessageReaction(state, action) {
+      const updateInfo = action.payload
+      const historyMsgs = state.historyMsgs.msgs
+      state.historyMsgs.msgs = historyMsgs.map((msg) => {
+        if (msg._id === updateInfo._id) return { ...msg, react: updateInfo.react }
+        return msg
+      })
+    },
+    updateReplyMessageRemoved(state, action) {
+      const ids = action.payload
+
+      const historyMsgs = state.historyMsgs.msgs
+      //@ts-ignore
+      state.historyMsgs.msgs = historyMsgs.map((msg) => {
+        if (ids.includes(msg._id)) return { ...msg, replyTo: { ...msg.replyTo, isDeleted: true } }
+        return msg
+      })
+    },
+    removeMessage(state, action) {
+      const updateInfo = action.payload
+      const historyMsgs = state.historyMsgs.msgs
+      state.historyMsgs.msgs = historyMsgs.map((msg) => {
+        if (msg._id === updateInfo._id) return { ...msg, isDeleted: updateInfo.isDeleted }
+        return msg
+      })
+    },
+    updateStatusMessage(state, action) {
+      const { _id, status } = action.payload
+      const historyMsgs = state.historyMsgs.msgs
+      state.historyMsgs.msgs = [...historyMsgs].map((msg) => {
+        if (msg?._id === _id) return { ...msg, status }
+        return msg
+      })
+    },
+    updateStatusMessages(state, action) {
+      const { msgs: unSeenMsgs, status } = action.payload
+      const historyMsgs = state.historyMsgs.msgs
+      state.historyMsgs.msgs = historyMsgs.map((msg) => {
+        if (unSeenMsgs.includes(msg._id))
+          return {
+            ...msg,
+            status,
+          }
+        return msg
+      })
+    },
+  },
   extraReducers(builder) {
     builder
-      .addCase(fetchListMessageAsync.pending, state => {
-        state.list.loading = true
+      .addCase(fetchHistoryMessageAsync.pending, (state) => {
+        state.historyMsgs.status = 'loading'
       })
-      .addCase(fetchListMessageAsync.fulfilled, (state, action) => {
-        state.list.loading = false
-        state.list.msgs = action.payload
+      .addCase(fetchHistoryMessageAsync.fulfilled, (state, action) => {
+        state.historyMsgs.status = 'successful'
+        state.historyMsgs.msgs = action.payload
       })
-      .addCase(fetchListMessageAsync.rejected, state => {
-        state.list.loading = false
+      .addCase(fetchHistoryMessageAsync.rejected, (state) => {
+        state.historyMsgs.status = 'failure'
       })
   },
 })
 export const messageSelector = {
-  selectListMessageStatus: (state: RootState) => state.message.list.loading,
-  selectListMessage: (state: RootState) => state.message.list.msgs,
+  selectHistoryMsgs: (state: RootState) => state.message.historyMsgs.msgs,
+  selectHistoryMsgsStatus: (state: RootState) => state.message.historyMsgs.status,
+  selectStatusHistoryMsgs: (state: RootState) => state.message.historyMsgs.status,
+  selectReplyMessage: (state: RootState) => state.message.replyMsg,
+  selectStateModalMesssageGallery: (state: RootState) => state.message.modal.isOpenMessageImageGallery,
 }
+
+export const {
+  addMessage,
+  replyMessage,
+  cancelReplyMessage,
+  updateStatusMessage,
+  updateStatusMessages,
+  updateMessageReaction,
+  updateReplyMessageRemoved,
+  removeMessage,
+  openMessageImageGallery,
+  closeMessageImageGallery,
+} = messageSlice.actions
 
 export default messageSlice.reducer

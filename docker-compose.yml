@@ -29,13 +29,12 @@ services:
       - mongodb
 
   mongodb:
-    container_name: fun-chat-mogodb
+    container_name: fun-chat-mongodb
     image: mongo
     restart: always
     ports:
       - 27018:27017
     volumes:
       - mongodb_data:/data/db
-
 volumes:
   mongodb_data:
