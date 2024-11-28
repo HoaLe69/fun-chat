@@ -33,6 +33,24 @@ import FilePresentationIcon from './assets/file-presentation.svg?react'
 import ChevronLeftIcon from './assets/chevron-left.svg?react'
 import ChevronRightIcon from './assets/chevron-right.svg?react'
 import SaveIcon from './assets/save.svg?react'
+import DeleteIcon from './assets/delete.svg?react'
+import UpvoteIcon from './assets/upvote.svg?react'
+import DownvoteIcon from './assets/downvote.svg?react'
+import CommentBoxIcon from './assets/comment-box.svg?react'
+import ArrowLeftSmallIcon from './assets/arrow-left-small.svg?react'
+import ChevronDownIcon from './assets/chevron-down.svg?react'
+import BoldIcon from './assets/bold.svg?react'
+import ItalicIcon from './assets/italic.svg?react'
+import StrikethroughIcon from './assets/strikethrough.svg?react'
+import LinkIcon from './assets/link.svg?react'
+import OrderedListIcon from './assets/list-bulleted.svg?react'
+import UnorderedListIcon from './assets/unorder-list.svg?react'
+import CodeIcon from './assets/code.svg?react'
+import CodeBlockIcon from './assets/code-block.svg?react'
+import ImageAttachmentIcon from './assets/image-attach.svg?react'
+import QouteIcon from './assets/qoute.svg?react'
+import HeadingIcon from './assets/heading.svg?react'
+import CommunityDefaultPictureIcon from './assets/community-picture-default.svg?react'
 
 export {
   MenuBurgerIcon,
@@ -70,6 +88,25 @@ export {
   ChevronLeftIcon,
   ChevronRightIcon,
   SaveIcon,
+  DeleteIcon,
+  UpvoteIcon,
+  DownvoteIcon,
+  CommentBoxIcon,
+  ArrowLeftSmallIcon,
+  ChevronDownIcon,
+  // markdown editor icons
+  BoldIcon,
+  ItalicIcon,
+  StrikethroughIcon,
+  LinkIcon,
+  OrderedListIcon,
+  UnorderedListIcon,
+  CodeIcon,
+  CodeBlockIcon,
+  ImageAttachmentIcon,
+  QouteIcon,
+  HeadingIcon,
+  CommunityDefaultPictureIcon,
 }
 
 export const LaughSmallIcon = () => {
