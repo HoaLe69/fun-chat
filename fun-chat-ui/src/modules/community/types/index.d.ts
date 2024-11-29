@@ -1,5 +1,5 @@
 export type Post = {
-  id: string
+  _id: string
   communityId: string
   title: string
   creatorId: string
@@ -10,4 +10,15 @@ export type Post = {
   tags: string[]
   createdAt: string
   updatedAt: string
+}
+
+type ICommunity = {
+  _id: string // Required, unique
+  name: string // Required, unique
+  description: string // Required
+  picture?: string // Optional, defaults to null
+  banner?: string // Optional, defaults to null
+  members?: string[] // Optional, defaults to []
+  tags?: string[] // Optional, defaults to []
+  moderators?: string[] // Optional, defaults to []
 }

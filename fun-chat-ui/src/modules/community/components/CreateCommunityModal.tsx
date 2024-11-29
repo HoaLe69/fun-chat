@@ -2,6 +2,9 @@ import classNames from 'classnames'
 import { AppModalHeadless } from 'modules/core/components'
 import { CloseIcon, ImageIcon, CommunityDefaultPictureIcon, DeleteIcon } from 'modules/core/components/icons'
 import { useCallback, useState } from 'react'
+import { useAppSelector } from 'modules/core/hooks'
+import { useNavigate } from 'react-router-dom'
+import { communityServices } from '../services/communityServices'
 
 interface Props {
   isOpen: boolean
@@ -24,6 +27,9 @@ const CreateCommunityModal: React.FC<Props> = ({ isOpen, onClose }) => {
     },
   }
   const [ableToSubmit, setAbleToSubmit] = useState<boolean>(false)
+  const [creattionLoading, setCreationLoading] = useState<boolean>(false)
+  const userLogin = useAppSelector((state) => state.auth.user)
+  const navigate = useNavigate()
 
   const [formData, setFormData] = useState(formDataInitialState)
 
@@ -70,17 +76,25 @@ const CreateCommunityModal: React.FC<Props> = ({ isOpen, onClose }) => {
   }
 
   const handleSubmit = useCallback(async () => {
+    setCreationLoading(true)
     try {
       const form = new FormData()
       form.append('name', formData.name)
       form.append('description', formData.description)
       if (formData.picture.file) form.append('picture', formData.picture.file)
       if (formData.banner.file) form.append('banner', formData.banner.file)
-      // api call
+      if (userLogin?._id) {
+        form.append('moderators', userLogin._id)
+        form.append('members', userLogin._id)
+      } // api call
+      const community = await communityServices.createCommunity(form)
+      navigate(`/community/${community?.name}`)
     } catch (error) {
       console.log(error)
+    } finally {
+      setCreationLoading(false)
     }
-  }, [formData])
+  }, [formData, userLogin])
 
   return (
     <AppModalHeadless isOpen={isOpen} onClose={onClose} title="Tell us about your community">
@@ -227,7 +241,7 @@ const CreateCommunityModal: React.FC<Props> = ({ isOpen, onClose }) => {
               },
             )}
           >
-            Create
+            {creattionLoading ? 'Creating...' : 'Create'}
           </button>
         </div>
       </div>

@@ -51,6 +51,8 @@ import ImageAttachmentIcon from './assets/image-attach.svg?react'
 import QouteIcon from './assets/qoute.svg?react'
 import HeadingIcon from './assets/heading.svg?react'
 import CommunityDefaultPictureIcon from './assets/community-picture-default.svg?react'
+import CommunityDetailPictureIconLarge from './assets/community-picture-default-xl.svg?react'
+import PlusRawIcon from './assets/plus-raw.svg?react'
 
 export {
   MenuBurgerIcon,
@@ -107,6 +109,8 @@ export {
   QouteIcon,
   HeadingIcon,
   CommunityDefaultPictureIcon,
+  CommunityDetailPictureIconLarge,
+  PlusRawIcon,
 }
 
 export const LaughSmallIcon = () => {
