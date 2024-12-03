@@ -26,7 +26,24 @@ const getCommunityByName = async name => {
   return community
 }
 
+const searchCommunity = async query => {
+  const communities = await Community.find({
+    name: { $regex: query, $options: "i" },
+  })
+  return communities
+}
+
+const getCommunityByUserId = async userId => {
+  if (userId === undefined) throw new APIError("User id is required", 400)
+  const communities = await Community.find({
+    members: { $in: [userId] },
+  })
+  return communities
+}
+
 module.exports = {
   createCommunity,
   getCommunityByName,
+  searchCommunity,
+  getCommunityByUserId,
 }

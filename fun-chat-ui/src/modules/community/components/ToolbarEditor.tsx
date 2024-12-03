@@ -24,13 +24,19 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({ type, icon, onClick }) =>
   return (
     <Tippy
       render={(attrs) => (
-        <div className="p-2 text-xs font-semibold shadow-xl rounded-md" {...attrs}>
+        <div
+          className="p-2 text-xs font-semibold text-gray-950 dark:text-gray-50 shadow-xl rounded-md bg-zin-50 dark:bg-zinc-800"
+          {...attrs}
+        >
           {type}
         </div>
       )}
       placement="bottom"
     >
-      <button onClick={onClick} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-300">
+      <button
+        onClick={onClick}
+        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-300 dark:hover:bg-zinc-800"
+      >
         {icon}
       </button>
     </Tippy>

@@ -96,7 +96,7 @@ const MessageContentFile = ({ files }: { files?: IMessageContentFile[] }) => {
 
   return (
     <div>
-      <ul>
+      <ul className="list-none">
         {files &&
           files.length > 0 &&
           files?.map((file, index) => {

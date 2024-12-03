@@ -24,6 +24,10 @@
     appearance: none;
     outline: none;
   }
+  ul,
+  ol {
+    list-style: revert;
+  }
 }
 
 @layer components {

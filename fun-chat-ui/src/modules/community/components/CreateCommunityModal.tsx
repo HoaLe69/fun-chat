@@ -98,12 +98,12 @@ const CreateCommunityModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
   return (
     <AppModalHeadless isOpen={isOpen} onClose={onClose} title="Tell us about your community">
-      <div className="max-w-[768px] w-full bg-white p-4 rounded-xl">
+      <div className="max-w-[768px] w-full bg-white dark:bg-zinc-800 shadow-xl p-4 rounded-xl text-zinc-950 dark:text-zinc-50">
         <header className="flex items-center">
           <h3 className="text-2xl font-bold">Tell us about your community</h3>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 ml-auto"
+            className="w-8 h-8 rounded-full flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 ml-auto"
           >
             <CloseIcon />
           </button>
@@ -115,11 +115,11 @@ const CreateCommunityModal: React.FC<Props> = ({ isOpen, onClose }) => {
         <div className="flex gap-4">
           <div className="min-w-[55%]">
             <div className="form-group">
-              <label className="block text-sm font-medium mb-2 text-gray-700">Community name</label>
+              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Community name</label>
               <input
                 onChange={handleChange}
                 value={formData.name}
-                className="w-full bg-zinc-200 px-2 py-3 rounded-xl outline-none"
+                className="w-full bg-zinc-200 dark:bg-zinc-900  px-2 py-3 rounded-xl outline-none"
                 type="text"
                 name="name"
                 placeholder="Enter your community name"
@@ -127,16 +127,16 @@ const CreateCommunityModal: React.FC<Props> = ({ isOpen, onClose }) => {
               />
             </div>
             <div className="form-group mt-4">
-              <label className="block text-sm font-medium mb-2 text-gray-700">Description</label>
+              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Description</label>
               <textarea
                 value={formData.description}
                 onChange={handleChange}
-                className="resize-none w-full bg-zinc-200 px-2 py-3 rounded-xl outline-none min-h-40"
+                className="resize-none w-full bg-zinc-200 dark:bg-zinc-900 px-2 py-3 rounded-xl outline-none min-h-40"
                 name="description"
                 placeholder="Enter your community name"
               />
             </div>
-            <div className="flex items-center mt-4 hover:bg-zinc-100 py-2 px-2 rounded-xl">
+            <div className="flex items-center mt-4 hover:bg-zinc-100 dark:hover:bg-zinc-900 py-2 px-2 rounded-xl">
               {formData.picture?.name ? (
                 <div className="flex items-center gap-1 text-sm font-light">
                   <span>{formData?.picture?.name}</span>
@@ -153,7 +153,7 @@ const CreateCommunityModal: React.FC<Props> = ({ isOpen, onClose }) => {
               <div className="ml-auto">
                 <label
                   htmlFor="picture"
-                  className="flex items-center gap-2 px-3 py-2 rounded-full text-sm bg-zinc-200 cursor-pointer"
+                  className="flex items-center gap-2 px-3 py-2 rounded-full text-sm bg-zinc-200 dark:bg-zinc-900 hover:opacity-80 cursor-pointer"
                 >
                   <ImageIcon />
                   Add
@@ -168,7 +168,7 @@ const CreateCommunityModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 />
               </div>
             </div>
-            <div className="flex items-center mt-2 hover:bg-zinc-100 py-2 px-2 rounded-xl">
+            <div className="flex items-center mt-2 hover:bg-zinc-100 dark:hover:bg-zinc-900  py-2 px-2 rounded-xl">
               {formData.banner?.name ? (
                 <div className="flex items-center gap-1 text-sm font-light">
                   <span>{formData?.banner?.name}</span>
@@ -185,7 +185,7 @@ const CreateCommunityModal: React.FC<Props> = ({ isOpen, onClose }) => {
               <div className="ml-auto">
                 <label
                   htmlFor="banner"
-                  className="flex items-center text-sm gap-2 px-3 py-2 rounded-full bg-zinc-200 cursor-pointer"
+                  className="flex items-center text-sm gap-2 px-3 py-2 rounded-full bg-zinc-200  dark:bg-zinc-900 hover:opacity-80 cursor-pointer"
                 >
                   <ImageIcon />
                   Add
@@ -234,12 +234,10 @@ const CreateCommunityModal: React.FC<Props> = ({ isOpen, onClose }) => {
           <button
             onClick={handleSubmit}
             disabled={!ableToSubmit}
-            className={classNames(
-              'px-3 py-2 rounded-full bg-blue-700 hover:bg-blue-800 text-sm font-semibold text-white',
-              {
-                'bg-neutral-600': !ableToSubmit,
-              },
-            )}
+            className={classNames('px-3 py-2 rounded-full bg-blue-700  text-sm font-semibold text-white', {
+              'bg-neutral-600': !ableToSubmit,
+              'hover:bg-blue-800': ableToSubmit,
+            })}
           >
             {creattionLoading ? 'Creating...' : 'Create'}
           </button>

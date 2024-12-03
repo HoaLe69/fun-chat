@@ -1,27 +1,18 @@
 import { CommunityDetailPictureIconLarge, PlusRawIcon } from 'modules/core/components/icons'
 import type { ICommunity } from '../types'
-import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { communityServices } from '../services/communityServices'
+import { useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-const CommunityDetailMasthead = () => {
-  const { name } = useParams()
-  const [communityInfo, setCommunityInfo] = useState<ICommunity | null>(null)
+interface Props {
+  communityInfo: ICommunity | null
+}
 
-  useEffect(() => {
-    if (!name) return
-    const loadCommunityInformation = async () => {
-      try {
-        const community = await communityServices.getCommunityByName(name)
-        setCommunityInfo(community.data)
-      } catch (error) {
-        console.error(error)
-      }
-    }
-    loadCommunityInformation()
-  }, [name])
+const CommunityDetailMasthead: React.FC<Props> = ({ communityInfo }) => {
+  const navigate = useNavigate()
 
-  console.log({ communityInfo })
+  const handleNavigate = useCallback(() => {
+    navigate('/community/create/post')
+  }, [])
 
   return (
     <header>
@@ -41,7 +32,10 @@ const CommunityDetailMasthead = () => {
           </span>
           <h1 className="text-3xl font-bold">d/{communityInfo?.name}</h1>
           <div className="ml-auto flex items-center gap-2">
-            <button className="flex gap-2 text-sm font-bold items-center border border-zinc-300 hover:border-zinc-500 rounded-full py-2 px-3">
+            <button
+              onClick={handleNavigate}
+              className="flex gap-2 text-sm font-bold items-center border border-zinc-300 hover:border-zinc-500 rounded-full py-2 px-3"
+            >
               <PlusRawIcon />
               Create Post
             </button>

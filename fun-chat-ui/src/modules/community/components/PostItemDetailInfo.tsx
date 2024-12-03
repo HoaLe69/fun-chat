@@ -1,30 +1,59 @@
-import { useAppSelector } from 'modules/core/hooks'
 import moment from 'moment'
+import type { ICommunity, IPost, IPostCustom } from 'modules/community/types'
+import MarkdownPreview from '@uiw/react-markdown-preview'
+import './PreviewContent.css'
+import PostActionButtons from './PostActionButtons'
+import { useCallback, useEffect, useState } from 'react'
+import usePostActions from '../hooks/usePostActions'
 
-const PostItemDetailInfo = () => {
-  const userLogin = useAppSelector((state) => state.auth.user)
+interface Props {
+  communityInfo: ICommunity | null
+  postInfo: IPostCustom
+}
 
+const PostItemDetailInfo: React.FC<Props> = ({ communityInfo, postInfo }) => {
+  const [postState, setPostState] = useState<IPost | null>(null)
+
+  useEffect(() => {
+    if (!postInfo) return
+    setPostState(postInfo)
+  }, [postInfo])
+
+  const updatePostState = useCallback((newPost: IPost) => {
+    setPostState(newPost)
+  }, [])
+
+  const { handleUpvote, handleDownvote, handleComment, activeVoteButton, numberOfVote } = usePostActions({
+    postState,
+    updatePostState,
+  })
   return (
-    <section className="post-item-detail-info">
+    <section className="post-item-detail-info min-w-0">
       <header className="post-item-detail-info-header">
         <div className="flex items-center">
-          <img src={userLogin?.picture} alt={userLogin?.display_name} className="w-8 h-8 rounded-full" />
+          <img src={communityInfo?.picture} alt={communityInfo?.name} className="w-8 h-8 rounded-full" />
           <div className="flex flex-col ml-2">
             <div>
-              <span className="text-xs font-bold">Javascript</span>
+              <span className="text-xs font-bold">{communityInfo?.name}</span>
               <span className="inline-block my-0 mx-2">•</span>
-              <span className="text-xs text-gray-500">{moment(new Date()).fromNow()}</span>
+              <span className="text-xs text-gray-500">{moment(postInfo?.createdAt).format('LL')}</span>
             </div>
-            <span className="text-gray-600 text-xs hover:cursor-pointer">{userLogin?.display_name}</span>
+            <span className="text-gray-600 text-xs hover:cursor-pointer">{postInfo?.creator?.display_name}</span>
           </div>
         </div>
       </header>
-      <div className="post-item-detail-info-body">
-        <h1 className="text-2xl font-bold mt-2 mb-4">
-          Ukrainian media reports 500 N. Korean soldiers killed in Kyiv's missile strike on Kursk
-        </h1>
-        <div>post content here</div>
+      <div className="post-item-detail-info-body mb-4">
+        <h1 className="text-2xl text-zinc-700 dark:text-zinc-100 font-bold mt-2 mb-4">{postInfo?.title}</h1>
+        <MarkdownPreview className="post-preview-content" source={postInfo?.content} />
       </div>
+      <PostActionButtons
+        onDownvote={(event) => handleDownvote(event, postInfo?._id)}
+        onUpvote={(event) => handleUpvote(event, postInfo?._id)}
+        numberOfComment={postInfo?.comments}
+        onComment={handleComment}
+        numberOfVote={numberOfVote}
+        activeVoteButton={activeVoteButton}
+      />
     </section>
   )
 }

@@ -124,9 +124,9 @@ const useChatArea = () => {
   useEffect(() => {
     if (roomSelectedId) {
       emitEvent('join', roomSelectedId)
-      subscribeEvent('chat:userTypingStatus', (msg: any) => {
-        setTypingIndicator((pre) => ({ ...pre, ...msg }))
-      })
+      // subscribeEvent('chat:userTypingStatus', (msg: any) => {
+      //   setTypingIndicator((pre) => ({ ...pre, ...msg }))
+      // })
       console.log(`user join ${roomSelectedId} `)
       // update single msg
       subscribeEvent('chat:updateStatusMessage', (msg: any) => {

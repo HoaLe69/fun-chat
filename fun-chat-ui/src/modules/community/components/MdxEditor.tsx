@@ -9,13 +9,15 @@ import ToolbarEditor from './ToolbarEditor'
 const editorCustomTheme = EditorView.theme(
   {
     '&': {
-      backgroundColor: ' !important',
+      backgroundColor: 'transparent !important',
       height: '100%',
     },
     '&.cm-editor': {
-      border: '1px solid #cbd5e1',
       borderRadius: '10px',
       padding: '5px',
+    },
+    '.cm-content': {
+      caretColor: '#0e9',
     },
     '&.cm-focused': {
       outline: 'none',
@@ -24,21 +26,28 @@ const editorCustomTheme = EditorView.theme(
   { dark: false },
 )
 
-const MdxEditor = () => {
+interface Props {
+  onChange: (value: string) => void
+  doc: string
+}
+
+const MdxEditor: React.FC<Props> = (props) => {
+  const { onChange, doc } = props
+
   const editor = useRef<HTMLDivElement>(null)
   const [tab, setTab] = useState<string>('write')
-  const [markdownContent, setMarkdownContent] = useState<string>('')
 
   const { setContainer, view } = useCodeMirror({
     container: editor.current,
-    autoFocus: true,
+    autoFocus: false,
     basicSetup: false,
     placeholder: 'Body',
-    value: markdownContent,
     minHeight: '120px',
+    value: doc,
     extensions: [markdown({ base: markdownLanguage, codeLanguages: languages }), editorCustomTheme],
     onChange: (val, viewUpdate) => {
-      setMarkdownContent(val)
+      console.log(val)
+      onChange(val)
     },
   })
 
@@ -55,32 +64,41 @@ const MdxEditor = () => {
   }, [editor])
 
   return (
-    <div className="border rounded-xl">
-      <div className="flex items-center border-b bg-slate-100 rounded-md">
-        <div className="ml-[-1px] mt-[-1px] mb-[-1px] flex-shrink-0 flex">
+    <div className="border border-zinc-300 dark:border-zinc-500 rounded-xl">
+      <div className="flex h-[41px] items-center border-b border-zinc-300  dark:border-zinc-500  bg-slate-100 dark:bg-zinc-900 rounded-t-xl">
+        <div className="flex">
           <button
-            className={classNames('text-sm py-2 px-4', { 'bg-slate-300': tab === 'write' })}
+            className={classNames('text-sm py-2 px-4', {
+              'bg-slate-300 dark:bg-zinc-700  my-[-3px] border-r border-t border-l rounded-t-xl border-zinc-300  dark:border-zinc-500':
+                tab === 'write',
+            })}
             onClick={() => handleTabChange('write')}
           >
             Write
           </button>
           <button
             onClick={() => handleTabChange('preview')}
-            className={classNames('text-sm py-2 px-4', { 'bg-slate-300': tab === 'preview' })}
+            className={classNames('text-sm py-2 px-4 ', {
+              'bg-slate-300 dark:bg-zinc-700  my-[-3px] border-r border-t border-l rounded-t-xl border-zinc-300  dark:border-zinc-500':
+                tab === 'preview',
+            })}
           >
             Preview
           </button>
         </div>
         {tab === 'write' && <ToolbarEditor view={view} />}
       </div>
-      <div className="p-1">
-        {tab === 'write' && <div className="max-h-96 overflow-auto" ref={editor} />}
+      <div className="p-1 dark:bg-zinc-900 rounded-b-xl">
+        {tab === 'write' && <div className="max-h-96 overflow-auto text-zinc-950 dark:text-zinc-50" ref={editor} />}
         {tab === 'preview' && (
           <div className="min-h-[120px] max-h-96 overflow-auto">
-            {markdownContent ? (
-              <MarkdownPreview source={markdownContent} wrapperElement={{ 'data-color-mode': 'light' }} />
+            {doc ? (
+              <MarkdownPreview
+                style={{ background: 'transparent', fontSize: '0.875em', padding: '9px' }}
+                source={doc}
+              />
             ) : (
-              <span>Nothing to preview</span>
+              <span className="p-2">Nothing to preview</span>
             )}
           </div>
         )}

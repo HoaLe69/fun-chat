@@ -19,7 +19,7 @@ const MessageReaction: React.FC<MessageSectionProps> = ({ react }) => {
 
   return (
     <>
-      <ul className="flex flex-wrap items-center gap-2">
+      <ul className="flex flex-wrap items-center gap-2 list-none">
         {groupReactionByEmoji(react || []).map((r) => (
           <li
             key={r.emoji}

@@ -53,6 +53,13 @@ import HeadingIcon from './assets/heading.svg?react'
 import CommunityDefaultPictureIcon from './assets/community-picture-default.svg?react'
 import CommunityDetailPictureIconLarge from './assets/community-picture-default-xl.svg?react'
 import PlusRawIcon from './assets/plus-raw.svg?react'
+import CakeIcon from './assets/cake.svg?react'
+import WorldOutlineIcon from './assets/world-outline.svg?react'
+import UpvoteFillIcon from './assets/upvote-fill.svg?react'
+import DownvoteFillIcon from './assets/downvote-fill.svg?react'
+import DiscoverIcon from './assets/discover.svg?react'
+import MessageFillIcon from './assets/message-fill.svg?react'
+import SettingIcon from './assets/setting.svg?react'
 
 export {
   MenuBurgerIcon,
@@ -111,6 +118,13 @@ export {
   CommunityDefaultPictureIcon,
   CommunityDetailPictureIconLarge,
   PlusRawIcon,
+  CakeIcon,
+  WorldOutlineIcon,
+  UpvoteFillIcon,
+  DownvoteFillIcon,
+  DiscoverIcon,
+  MessageFillIcon,
+  SettingIcon,
 }
 
 export const LaughSmallIcon = () => {

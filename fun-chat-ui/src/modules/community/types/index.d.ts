@@ -1,15 +1,21 @@
-export type Post = {
+import type { IUser } from 'modules/user/types'
+export type IPost = {
   _id: string
-  communityId: string
+  community: string
   title: string
-  creatorId: string
+  creator: string
   content: string //TODO: adjust type
-  comment: number
+  comments: number
   upvoted: string[]
   downvoted: string[]
   tags: string[]
   createdAt: string
   updatedAt: string
+}
+
+export type IPostCustom = IPost & {
+  creator?: IUser
+  community?: ICommunity
 }
 
 type ICommunity = {
@@ -21,4 +27,6 @@ type ICommunity = {
   members?: string[] // Optional, defaults to []
   tags?: string[] // Optional, defaults to []
   moderators?: string[] // Optional, defaults to []
+  createdAt: string
+  updatedAt: string
 }

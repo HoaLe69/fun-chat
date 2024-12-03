@@ -13,7 +13,11 @@ const ThemeToggleButton = (): JSX.Element => {
     const root = document.documentElement
     if (theme === 'light') {
       root.classList.remove('dark')
-    } else root.classList.add('dark')
+      root.setAttribute('data-color-mode', 'light')
+    } else {
+      root.classList.add('dark')
+      root.setAttribute('data-color-mode', 'dark')
+    }
   }, [theme])
   const handleChangeTheme = useCallback(() => {
     const t = theme === 'light' ? 'dark' : 'light'

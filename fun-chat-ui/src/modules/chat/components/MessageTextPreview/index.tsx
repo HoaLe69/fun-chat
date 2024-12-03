@@ -7,9 +7,11 @@ import * as prod from 'react/jsx-runtime'
 //import 'github-markdown-css/github-markdown.css'
 //import 'github-markdown-css/github-markdown-dark.css'
 //import 'github-markdown-css/github-markdown-light.css'
-import './Preview.css'
+//import './Preview.css'
 import React from 'react'
 import { CodeBlock, Link, H1, H2, H3 } from './PreviewCustomComp'
+import MarkdownPreview from '@uiw/react-markdown-preview'
+
 //import { visit } from 'unist-util-visit'
 
 /*
@@ -49,15 +51,15 @@ const options: Options = {
 //   }
 // }
 const Preview: React.FC<Props> = ({ doc }) => {
-  const md = unified() // initiate the pipeline
-    .use(remarkRehype, { allowDangerousHtml: true })
-    .use(remarkParse)
-    .use(remarkGfm)
-    //    .use(remarkNewLineToBreak)
-    .use(rehypeReact, options)
-
-    .processSync(doc).result
-  return <div className="preview markdown-body">{md}</div>
+  // const md = unified() // initiate the pipeline
+  //   .use(remarkRehype, { allowDangerousHtml: true })
+  //   .use(remarkParse)
+  //   .use(remarkGfm)
+  //   //    .use(remarkNewLineToBreak)
+  //   .use(rehypeReact, options)
+  //
+  //   .processSync(doc).result
+  return <MarkdownPreview className="post-preview-content" source={doc}></MarkdownPreview>
 }
 
 export default Preview
