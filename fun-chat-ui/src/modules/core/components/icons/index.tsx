@@ -60,6 +60,9 @@ import DownvoteFillIcon from './assets/downvote-fill.svg?react'
 import DiscoverIcon from './assets/discover.svg?react'
 import MessageFillIcon from './assets/message-fill.svg?react'
 import SettingIcon from './assets/setting.svg?react'
+import CaretdownFillIcon from './assets/caret-down-fill.svg?react'
+import CaretupFillIcon from './assets/caret-up-fill.svg?react'
+import MinusCircleIcon from './assets/minus-cricle.svg?react'
 
 export {
   MenuBurgerIcon,
@@ -125,6 +128,9 @@ export {
   DiscoverIcon,
   MessageFillIcon,
   SettingIcon,
+  CaretdownFillIcon,
+  CaretupFillIcon,
+  MinusCircleIcon,
 }
 
 export const LaughSmallIcon = () => {

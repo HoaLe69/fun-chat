@@ -29,24 +29,24 @@ const editorCustomTheme = EditorView.theme(
 interface Props {
   onChange: (value: string) => void
   doc: string
+  autoFocus?: boolean
 }
 
 const MdxEditor: React.FC<Props> = (props) => {
-  const { onChange, doc } = props
+  const { onChange, doc, autoFocus } = props
 
   const editor = useRef<HTMLDivElement>(null)
   const [tab, setTab] = useState<string>('write')
 
   const { setContainer, view } = useCodeMirror({
     container: editor.current,
-    autoFocus: false,
+    autoFocus: autoFocus || false,
     basicSetup: false,
     placeholder: 'Body',
     minHeight: '120px',
     value: doc,
     extensions: [markdown({ base: markdownLanguage, codeLanguages: languages }), editorCustomTheme],
     onChange: (val, viewUpdate) => {
-      console.log(val)
       onChange(val)
     },
   })

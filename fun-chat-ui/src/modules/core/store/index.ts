@@ -3,6 +3,7 @@ import authReducer from 'modules/auth/states/authSlice'
 import messageReducer from 'modules/chat/states/messageSlice'
 import roomReducer from 'modules/chat/states/roomSlice'
 import userReducer from 'modules/user/states/userSlice'
+import commentReducer from 'modules/community/states/commentSlice'
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     user: userReducer,
     message: messageReducer,
     room: roomReducer,
+    comment: commentReducer,
   },
 })
 

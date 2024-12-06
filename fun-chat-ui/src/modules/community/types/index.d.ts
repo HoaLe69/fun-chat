@@ -13,6 +13,24 @@ export type IPost = {
   updatedAt: string
 }
 
+export type IComment = {
+  _id: string
+  postId: string
+  ownerId: string
+  content: string
+  createdAt: string
+  replyTo: string | null
+  updatedAt: string
+  upvoted: String[]
+  downvoted: String[]
+  status: { accepted: boolean; acceptedDate: string }
+}
+
+export type ICommentCustom = IComment & {
+  replies: ICommentCustom[]
+  depth: number
+}
+
 export type IPostCustom = IPost & {
   creator?: IUser
   community?: ICommunity
