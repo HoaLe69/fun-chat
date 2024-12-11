@@ -2,16 +2,20 @@ import { LayoutWithMasthead } from 'modules/community/components/Layout'
 import CommunityDetailMasthead from 'modules/community/components/CommunityDetailMasthead'
 import PostContainer from 'modules/community/components/PostContainer'
 import SidebarRightContainer from 'modules/community/components/SidebarRightContainer'
-import type { ICommunity, IPostCustom } from 'modules/community/types'
-import { useState, useEffect } from 'react'
+import type { ICommunity } from 'modules/community/types'
+import { useState, useEffect, useRef } from 'react'
 import { communityServices } from 'modules/community/services/communityServices'
 import { useParams } from 'react-router-dom'
-import { postServices } from 'modules/community/services/postServices'
+import { useAppSelector } from 'modules/core/hooks'
+import { authSelector } from 'modules/auth/states/authSlice'
+import { PostContainerLoadingSkeleton } from 'modules/community/components/Loading'
 
 const CommunityDetailPage = () => {
   const { name } = useParams()
   const [communityInfo, setCommunityInfo] = useState<ICommunity | null>(null)
-  const [posts, setPosts] = useState<IPostCustom[]>([])
+  const userLoginId = useAppSelector(authSelector.selectUserId)
+  const refTimeStayOnCommunity = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   useEffect(() => {
     if (!name) return
     const loadCommunityInformation = async () => {
@@ -26,26 +30,30 @@ const CommunityDetailPage = () => {
   }, [name])
 
   useEffect(() => {
-    if (!communityInfo?._id) return
-    const fetchPosts = async () => {
+    if (!userLoginId || !communityInfo) return
+    const addUserRecentCommunity = async () => {
       try {
-        const posts = await postServices.getPostByCommunityId(communityInfo?._id)
-        setPosts(posts)
+        await communityServices.addUserRecentCommunityAsync(communityInfo?._id, userLoginId)
       } catch (error) {
-        console.error(error)
+        console.log(error)
       }
     }
-    fetchPosts()
-  }, [communityInfo])
+    refTimeStayOnCommunity.current = setTimeout(() => {
+      addUserRecentCommunity()
+    }, 5000)
+    return () => {
+      if (refTimeStayOnCommunity.current) clearTimeout(refTimeStayOnCommunity.current)
+    }
+  }, [userLoginId, communityInfo])
 
   return (
     <LayoutWithMasthead>
-      <CommunityDetailMasthead communityInfo={communityInfo} />
+      <CommunityDetailMasthead />
       <div className="w-full flex ">
         <div className="max-w-[756px] w-full">
-          <PostContainer name={communityInfo?.name} posts={posts} />
+          <PostContainer name={communityInfo?.name} isUserPost />
         </div>
-        <SidebarRightContainer communityInfo={communityInfo} />
+        <SidebarRightContainer typeOfContent="community" />
       </div>
     </LayoutWithMasthead>
   )

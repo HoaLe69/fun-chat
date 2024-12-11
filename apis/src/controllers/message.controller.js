@@ -128,25 +128,14 @@ const messageController = {
   getList: async (req, res) => {
     try {
       const roomId = req.params.roomId
+      //     const page = req.query.page || 1
       if (!roomId) return res.status(400).send("Invalid params ")
       const messages = await Message.find({
         roomId,
       }).populate("replyTo")
+      //      const paginatedMessages = await messageServices.getPaginatedMessages(page)
+
       return res.status(200).json(messages)
-      // const groupMessage = await Message.aggregate([
-      //   {
-      //     $match: { roomId },
-      //   },
-      //   {
-      //     $group: {
-      //       _id: {
-      //         $dateToString: { format: "%d/%m/%Y", date: "$createdAt" },
-      //       },
-      //       messages: { $push: "$$ROOT" },
-      //     },
-      //   },
-      //   { $sort: { _id: -1 } }, // sort by date descending
-      // ])
     } catch (err) {
       console.log(err)
     }

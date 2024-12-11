@@ -63,6 +63,7 @@ import SettingIcon from './assets/setting.svg?react'
 import CaretdownFillIcon from './assets/caret-down-fill.svg?react'
 import CaretupFillIcon from './assets/caret-up-fill.svg?react'
 import MinusCircleIcon from './assets/minus-cricle.svg?react'
+import NotificationIcon from './assets/notify.svg?react'
 
 export {
   MenuBurgerIcon,
@@ -131,6 +132,7 @@ export {
   CaretdownFillIcon,
   CaretupFillIcon,
   MinusCircleIcon,
+  NotificationIcon,
 }
 
 export const LaughSmallIcon = () => {

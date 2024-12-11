@@ -1,9 +1,47 @@
 const Post = require("@models/Post")
+const UserActivity = require("@models/UserActivity")
 const { APIError } = require("@errors")
 
 const createPost = async postInfo => {
   const newPost = new Post(postInfo)
   return await newPost.save()
+}
+
+const addUserRecentPostVisitedAsync = async data => {
+  const { userId, postId } = data
+  if (!userId) throw new APIError(400, "userId is required")
+  if (!postId) throw new APIError(400, "postId is required")
+  const userActivity = await UserActivity.findOne({ userId })
+
+  if (!userActivity) {
+    await new UserActivity({ userId }).save()
+  }
+
+  const currentRecentPosts = userActivity.recent_post_visited
+
+  if (currentRecentPosts.includes(postId)) return
+
+  if (currentRecentPosts.length > 10) {
+    currentRecentPosts.shift()
+  }
+  currentRecentPosts.push(postId)
+
+  return await userActivity.save()
+}
+
+const getUserRecentPostsVisitedAsync = async userId => {
+  if (!userId) throw new APIError(400, "userId is required")
+  const userActivity = await UserActivity.findOne({ userId })
+
+  const postIds = userActivity.recent_post_visited
+
+  const posts = await Post.find({
+    _id: { $in: postIds },
+  })
+    .populate("community", "name picture")
+    .select("title createdAt comments upvoted downvoted")
+  console.log({ posts, postIds })
+  return posts
 }
 
 const getPostByCommunity = async communityId => {
@@ -51,4 +89,6 @@ module.exports = {
   upvote,
   downvote,
   getAllPost,
+  getUserRecentPostsVisitedAsync,
+  addUserRecentPostVisitedAsync,
 }

@@ -1,4 +1,4 @@
-import { ChevronDownIcon, SearchIcon } from 'modules/core/components/icons'
+import { ChevronDownIcon, SearchIcon, CommunityDefaultPictureIcon } from 'modules/core/components/icons'
 import { useDebounce } from 'modules/core/hooks'
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import type { ICommunity } from '../types'
@@ -6,12 +6,17 @@ import Tippy from '@tippyjs/react/headless'
 import { communityServices } from '../services/communityServices'
 
 const CommunitySelectItem = ({ community, onClick }: { community: ICommunity; onClick: () => void }) => {
+  console.log({ community })
   return (
     <div
       onClick={onClick}
       className="p-2 flex items-center gap-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md hover:cursor-pointer"
     >
-      <img src={community.picture} alt={community.name} className="h-8 w-8 rounded-full" />
+      {community.picture != null ? (
+        <img src={community.picture} alt={community.name} className="h-8 w-8 rounded-full" />
+      ) : (
+        <CommunityDefaultPictureIcon className="w-8 h-8" />
+      )}
       <div className="flex flex-col items-start">
         <span className="text-sm">{community.name}</span>
         <span className="text-xs text-gray-500">{community.members?.length} members</span>
@@ -124,7 +129,15 @@ const SelectCommunity: React.FC<Props> = ({ onSelectCommunity, selectedCommunity
           >
             {selectedCommunity ? (
               <>
-                <img src={selectedCommunity?.picture} alt={selectedCommunity?.name} className="h-6 w-6 rounded-full" />
+                {selectedCommunity.picture != null ? (
+                  <img
+                    src={selectedCommunity?.picture}
+                    alt={selectedCommunity?.name}
+                    className="h-6 w-6 rounded-full"
+                  />
+                ) : (
+                  <CommunityDefaultPictureIcon className="w-8 h-8" />
+                )}
                 <span className="mx-2 font-semibold text-sm">{selectedCommunity?.name}</span>
                 <ChevronDownIcon />
               </>

@@ -1,3 +1,5 @@
+const Message = require("@models/Message")
+
 const cheerio = require("cheerio")
 const getFileDetail = (request, files) => {
   const attachements = {
@@ -62,4 +64,21 @@ const fetchLinkPreview = async url => {
   }
 }
 
-module.exports = { getFileDetail, fetchLinkPreview }
+const getPaginatedMessages = async (page = 1, limit = 15) => {
+  const messages = await Message.find()
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .populate("replyTo")
+
+  const totalMessages = await Message.countDocuments()
+  const totalPages = Math.ceil(totalMessages / limit)
+  return {
+    currentPage: page,
+    totalMessages,
+    totalPages,
+    msgs: messages,
+  }
+}
+
+module.exports = { getFileDetail, fetchLinkPreview, getPaginatedMessages }

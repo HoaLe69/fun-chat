@@ -1,20 +1,24 @@
 import PostItem from './PostItem'
-import type { IPostCustom } from '../types'
-import { Link } from 'react-router-dom'
+import usePostContainer from '../hooks/usePostContainer'
+import { PostContainerLoadingSkeleton } from './Loading'
 
 interface Props {
   name?: string // name of the community
-  posts: IPostCustom[]
+  isUserPost?: boolean
 }
-const PostContainer: React.FC<Props> = ({ name, posts }) => {
+const PostContainer: React.FC<Props> = ({ name, isUserPost }) => {
+  const { posts, loading } = usePostContainer()
+
   return (
     <div className="pt-4 px-4 flex-1">
       <div className="flex-1">
-        {posts?.map((post) => (
-          <Link key={post?._id} to={`/community/${name || post?.community.name}/${post?._id}`}>
-            <PostItem postInfo={post} />
-          </Link>
-        ))}
+        {loading ? (
+          <PostContainerLoadingSkeleton />
+        ) : (
+          posts?.map((post) => (
+            <PostItem nameOfCommunity={name} isUserPost={isUserPost} key={post?._id} postInfo={post} />
+          ))
+        )}
       </div>
     </div>
   )

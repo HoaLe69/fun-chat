@@ -1,7 +1,6 @@
 import CodeMirror, { useCodeMirror } from '@uiw/react-codemirror'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { languages } from '@codemirror/language-data'
-import { oneDark } from '@codemirror/theme-one-dark'
 import { EditorView } from '@uiw/react-codemirror'
 import { keymap } from '@uiw/react-codemirror'
 import { useEffect, useRef } from 'react'
@@ -45,7 +44,12 @@ const MdxEditor: React.FC<Props> = (props) => {
     autoFocus: true,
     basicSetup: false,
     placeholder: 'Enter your message',
-    extensions: [markdown({ base: markdownLanguage, codeLanguages: languages }), transparentTheme, keyBinding],
+    extensions: [
+      markdown({ base: markdownLanguage, codeLanguages: languages }),
+      transparentTheme,
+      keyBinding,
+      EditorView.lineWrapping,
+    ],
     value: value,
     onChange,
   })

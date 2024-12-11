@@ -42,9 +42,9 @@ type ICommunity = {
   description: string // Required
   picture?: string // Optional, defaults to null
   banner?: string // Optional, defaults to null
-  members?: string[] // Optional, defaults to []
-  tags?: string[] // Optional, defaults to []
-  moderators?: string[] // Optional, defaults to []
+  members: string[] // Optional, defaults to []
+  tags: string[] // Optional, defaults to []
+  moderators: string[] // Optional, defaults to []
   createdAt: string
   updatedAt: string
 }

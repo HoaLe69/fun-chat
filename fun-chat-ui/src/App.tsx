@@ -36,7 +36,7 @@ function App() {
               <Route path="/login/redirect/:method" element={<LoginLoungePage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route
-                path="/community/:name"
+                path="/community/:name/:id"
                 element={
                   <ProtectedRoute>
                     <CommunityDetailPage />
@@ -52,7 +52,7 @@ function App() {
                 }
               />
               <Route
-                path="/community/:name/:postId"
+                path="/community/:name/p/:postId"
                 element={
                   <ProtectedRoute>
                     <CommunityPostPage />

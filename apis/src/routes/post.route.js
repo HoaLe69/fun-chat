@@ -9,5 +9,7 @@ router.get("/get-all", postController.getAllPost)
 router.get("/get-by-id/:id", postController.getPostById)
 router.patch("/upvote", postController.upvotePost)
 router.patch("/downvote", postController.downvotePost)
+router.get("/recent/:userId", postController.getUserRecentPostsVisited)
+router.post("/add-user-recent", postController.addUserRecentPostVisited)
 
 module.exports = router

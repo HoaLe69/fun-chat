@@ -15,6 +15,7 @@ import moment from 'moment'
 import { IUser } from 'modules/user/types'
 import { userServices } from 'modules/user/services'
 import CommentActionButtons from './CommentActionButtons'
+import UserInformationCardContainer from './UserInformationCard'
 
 const CommentTreeNode = ({ node, rootId }: { node: ICommentCustom; rootId: string }) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(true)
@@ -52,7 +53,11 @@ const CommentTreeNode = ({ node, rootId }: { node: ICommentCustom; rootId: strin
           alt={userCommentInfo?.display_name}
           className="rounded-full w-8 h-8"
         />
-        <p className="text-xs font-medium ml-2">{userCommentInfo?.display_name || 'd/devchatter'}</p>
+        <UserInformationCardContainer userId={userCommentInfo?._id}>
+          <p className="text-xs font-medium ml-2 hover:cursor-pointer hover:underline">
+            {userCommentInfo?.display_name || 'd/devchatter'}
+          </p>
+        </UserInformationCardContainer>
         <span className="inline-block my-0 mx-1 text-12 text-neutral-300">•</span>
         <span className="text-xs text-zinc-400">{moment(node.createdAt).fromNow()}</span>
       </div>

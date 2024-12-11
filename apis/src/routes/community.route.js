@@ -19,7 +19,10 @@ router.post(
 )
 
 router.get("/get-list-by-name", communityController.searchCommunity)
-router.get("/:name", communityController.getCommunityByName)
+router.get("/get-by-name/:name", communityController.getCommunityByName)
 router.get("/get-list-by-user/:userId", communityController.getCommunityByUserId)
+router.patch("/add-member", communityController.addMember)
+router.get("/recent/:userId", communityController.getUserRecentCommunitiesVisisted)
+router.post("/add-user-recent", communityController.addUserRecentCommunityVisited)
 
 module.exports = router

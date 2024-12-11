@@ -29,7 +29,6 @@ const ChatArea: React.FC = () => {
     historyMsgsStatus,
     handleJumpToBottom,
   } = useChatArea()
-
   console.log('render')
 
   const renderHeaderChatArea = useCallback(

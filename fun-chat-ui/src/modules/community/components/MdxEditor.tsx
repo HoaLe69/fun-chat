@@ -45,7 +45,11 @@ const MdxEditor: React.FC<Props> = (props) => {
     placeholder: 'Body',
     minHeight: '120px',
     value: doc,
-    extensions: [markdown({ base: markdownLanguage, codeLanguages: languages }), editorCustomTheme],
+    extensions: [
+      markdown({ base: markdownLanguage, codeLanguages: languages }),
+      editorCustomTheme,
+      EditorView.lineWrapping,
+    ],
     onChange: (val, viewUpdate) => {
       onChange(val)
     },

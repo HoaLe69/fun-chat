@@ -6,9 +6,10 @@ export const MessageInner = ({ children }: { children: React.ReactNode }) => {
   return <div className="py-1 flex">{children}</div>
 }
 
-export const MessageContainer: React.FC<MessageSectionProps> = ({ children, messageId, className }) => {
+export const MessageContainer: React.FC<MessageSectionProps> = ({ children, messageId, className, style }) => {
   return (
     <div
+      style={style}
       id={messageId}
       className={classNames(
         'relative group hover:bg-secondary-bg-light/80  dark:hover:bg-secondary-bg-dark/80 pr-10',

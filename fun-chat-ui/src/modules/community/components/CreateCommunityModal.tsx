@@ -88,6 +88,7 @@ const CreateCommunityModal: React.FC<Props> = ({ isOpen, onClose }) => {
         form.append('members', userLogin._id)
       } // api call
       const community = await communityServices.createCommunity(form)
+      onClose()
       navigate(`/community/${community?.name}`)
     } catch (error) {
       console.log(error)

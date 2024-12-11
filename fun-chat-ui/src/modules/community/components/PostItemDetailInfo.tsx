@@ -5,6 +5,8 @@ import './PreviewContent.css'
 import PostActionButtons from './PostActionButtons'
 import { useCallback, useEffect, useState } from 'react'
 import usePostActions from '../hooks/usePostActions'
+import UserInformationCardContainer from './UserInformationCard'
+import { CommunityDefaultPictureIcon } from 'modules/core/components/icons'
 
 interface Props {
   communityInfo: ICommunity | null
@@ -31,14 +33,22 @@ const PostItemDetailInfo: React.FC<Props> = ({ communityInfo, postInfo }) => {
     <section className="post-item-detail-info min-w-0">
       <header className="post-item-detail-info-header">
         <div className="flex items-center">
-          <img src={communityInfo?.picture} alt={communityInfo?.name} className="w-8 h-8 rounded-full" />
+          {communityInfo?.picture ? (
+            <img src={communityInfo?.picture} alt={communityInfo?.name} className="w-8 h-8 rounded-full" />
+          ) : (
+            <CommunityDefaultPictureIcon className="w-8 h-8" />
+          )}
           <div className="flex flex-col ml-2">
             <div>
               <span className="text-xs font-bold">{communityInfo?.name}</span>
               <span className="inline-block my-0 mx-2">•</span>
               <span className="text-xs text-gray-500">{moment(postInfo?.createdAt).format('LL')}</span>
             </div>
-            <span className="text-gray-600 text-xs hover:cursor-pointer">{postInfo?.creator?.display_name}</span>
+            <UserInformationCardContainer userId={postInfo?.creator?._id}>
+              <span className="text-gray-600 text-xs hover:text-gray-300 hover:cursor-pointer">
+                {postInfo?.creator?.display_name}
+              </span>
+            </UserInformationCardContainer>
           </div>
         </div>
       </header>

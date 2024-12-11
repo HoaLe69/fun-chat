@@ -1,6 +1,22 @@
 const postServices = require("@services/postServices")
 
 const postController = {
+  async addUserRecentPostVisited(req, res, next) {
+    try {
+      await postServices.addUserRecentPostVisitedAsync(req.body)
+      res.status(204).send("ok")
+    } catch (error) {
+      next(error)
+    }
+  },
+  async getUserRecentPostsVisited(req, res, next) {
+    try {
+      const recentPosts = await postServices.getUserRecentPostsVisitedAsync(req.params.userId)
+      return res.status(200).json(recentPosts)
+    } catch (error) {
+      next(error)
+    }
+  },
   async createPost(req, res, next) {
     try {
       const postInfo = req.body

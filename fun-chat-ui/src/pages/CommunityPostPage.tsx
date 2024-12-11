@@ -2,17 +2,21 @@ import MainLayout from 'modules/community/components/Layout'
 import PostItemDetailInfo from 'modules/community/components/PostItemDetailInfo'
 import PostItemDetailComment from 'modules/community/components/PostItemDetailComment'
 import { ArrowLeftSmallIcon } from 'modules/core/components/icons'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
 import { postServices } from 'modules/community/services/postServices'
 import { communityServices } from 'modules/community/services/communityServices'
 import { useNavigate, useParams } from 'react-router-dom'
 import type { ICommunity, IPostCustom } from 'modules/community/types'
+import { useAppSelector } from 'modules/core/hooks'
+import { authSelector } from 'modules/auth/states/authSlice'
 
 const CommunityPostPage = () => {
   const [communityInfo, setCommunityInfo] = useState<ICommunity | null>(null)
   const [postInfo, setPostInfo] = useState<IPostCustom | null>(null)
   const navigate = useNavigate()
   const { postId, name } = useParams()
+  const refTimerStayOnPost = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const userLoginId = useAppSelector(authSelector.selectUserId)
 
   useEffect(() => {
     if (!postId) return
@@ -40,11 +44,28 @@ const CommunityPostPage = () => {
     loadCommunityInformation()
   }, [name])
 
+  useEffect(() => {
+    if (!postInfo?._id || !userLoginId) return
+    const addUserRecentPost = async () => {
+      try {
+        await postServices.addUserRecentPostAsync(postInfo?._id, userLoginId)
+      } catch (error) {
+        console.error(error)
+      }
+    }
+    refTimerStayOnPost.current = setTimeout(() => {
+      addUserRecentPost()
+    }, 5000)
+    return () => {
+      if (refTimerStayOnPost.current) clearTimeout(refTimerStayOnPost.current)
+    }
+  }, [userLoginId, postInfo])
+
   const handleNavigateBack = useCallback(() => {
     navigate(-1)
   }, [])
   return (
-    <MainLayout sidebarRightInfo={communityInfo}>
+    <MainLayout typeOfSidebarRight="community">
       <div className="flex items-start pt-4 flex-1">
         <button
           onClick={handleNavigateBack}
