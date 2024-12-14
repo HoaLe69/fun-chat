@@ -37,7 +37,9 @@ const postController = {
   },
   async getAllPost(req, res, next) {
     try {
-      const posts = await postServices.getAllPost()
+      const page = req.query.page || 1
+      console.log("page", page)
+      const posts = await postServices.getAllPost(page)
       return res.status(200).json(posts)
     } catch (error) {
       next(error)
@@ -46,7 +48,8 @@ const postController = {
   async getPostByCommunity(req, res, next) {
     try {
       const communityId = req.params.communityId
-      const posts = await postServices.getPostByCommunity(communityId)
+      const { page } = req.query
+      const posts = await postServices.getPostByCommunity(communityId, page)
       res.status(200).json(posts)
     } catch (error) {
       next(error)

@@ -44,16 +44,59 @@ const getUserRecentPostsVisitedAsync = async userId => {
   return posts
 }
 
-const getPostByCommunity = async communityId => {
-  return await Post.find({ community: communityId }).populate("creator")
+const getPostByCommunity = async (communityId, page = 1, limit = 10) => {
+  const pageNumber = Math.max(1, parseInt(page)) // Ensure page is at least 1
+  const pageSize = Math.max(1, parseInt(limit)) // Ensure limit is at least 1
+
+  // fetch paginate posts
+  const posts = await Post.find({ community: communityId })
+    .populate("creator")
+    .sort({ createdAt: -1 })
+    .skip((pageNumber - 1) * pageSize) // skip previous pages
+    .limit(pageSize) // limit the result
+
+  //Count total post in community
+  const totalDocuments = await Post.countDocuments({ community: communityId })
+
+  return {
+    data: posts,
+    meta: {
+      currentPage: page,
+      totalPages: Math.ceil(totalDocuments / pageSize),
+      pageSize,
+      totalDocuments,
+    },
+  }
+
+  //  return await Post.find({ community: communityId }).populate("creator")
 }
 
 const getPostByCreator = async id => {
   return await Post.findOne({ _id: id }).populate("creator")
 }
 
-const getAllPost = async () => {
-  return await Post.find().populate("community")
+const getAllPost = async (page = 1, limit = 10) => {
+  const pageNumber = Math.max(1, parseInt(page)) // Ensure page is at least 1
+  const pageSize = Math.max(1, parseInt(limit)) //Ensure limit is as least 1
+
+  // fetch paginate posts
+  const posts = await Post.find()
+    .populate("community")
+    .sort({ createdAt: -1 })
+    .skip((pageNumber - 1) * pageSize) // skip previous pages
+    .limit(pageSize) // limit the result
+
+  //Count total post
+  const totalDocuments = await Post.countDocuments()
+  return {
+    data: posts,
+    meta: {
+      currentPage: page,
+      totalPages: Math.ceil(totalDocuments / pageSize),
+      pageSize,
+      totalDocuments,
+    },
+  }
 }
 
 const upvote = async (postId, userId) => {

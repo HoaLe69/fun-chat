@@ -21,12 +21,12 @@ export const postServices = {
     const response = await apiClient.post('/post/create', postForm)
     return response.data
   },
-  async getPostByCommunityId(communityId: string) {
-    const response = await apiClient.get(`/post/get-by-community/${communityId}`)
+  async getPostByCommunityId(communityId: string, page: number) {
+    const response = await apiClient.get(`/post/get-by-community/${communityId}?page=${page}`)
     return response.data
   },
-  async getAllPostPopulateCommunity() {
-    const response = await apiClient.get('/post/get-all')
+  async getAllPostPopulateCommunity(page: number) {
+    const response = await apiClient.get(`/post/get-all?page=${page}`)
     return response.data
   },
   async getPostById(id: string) {

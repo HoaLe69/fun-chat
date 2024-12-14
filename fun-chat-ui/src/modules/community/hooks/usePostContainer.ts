@@ -1,36 +1,65 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
 import { postServices } from '../services'
+import { useInView } from 'react-intersection-observer'
 import type { IPostCustom } from '../types'
 
 const usePostContainer = () => {
-  const params = useParams()
-  const path = useLocation()
-  const [loading, setLoading] = useState<boolean>(false)
+  const { ref, inView } = useInView()
   const [posts, setPosts] = useState<IPostCustom[]>([])
+  const [loading, setLoading] = useState<boolean>(false)
+  const [page, setPage] = useState<number>(1)
+  const [hasMore, setHasMore] = useState<boolean>(true)
+  const { id } = useParams()
+  const path = useLocation()
   const { getPostByCommunityId, getAllPostPopulateCommunity } = postServices
 
   const isHomeCommunity = path.pathname === '/community'
 
-  useEffect(() => {
-    let apiCallFunc = getAllPostPopulateCommunity()
+  const loadPostAsync = useCallback(async () => {
+    if (loading || !hasMore) return
 
-    if (!isHomeCommunity) {
-      const { id } = params
-      if (!id) return
-      apiCallFunc = getPostByCommunityId(id)
+    try {
+      setLoading(true)
+      let apiCallFunc = getAllPostPopulateCommunity(page)
+
+      if (!isHomeCommunity) {
+        if (!id) return
+        apiCallFunc = getPostByCommunityId(id, page)
+      }
+
+      const response = await apiCallFunc
+      const { data } = response
+      if (!data?.length) {
+        setHasMore(false)
+        return
+      }
+      setPosts((pre) => [...pre, ...data])
+      setPage((pre) => pre + 1)
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setLoading(false)
     }
-    setLoading(true)
+  }, [page, hasMore, id, loading])
 
-    apiCallFunc
-      .then((data) => {
-        setPosts(data)
-      })
-      .catch((error) => console.log(error))
-      .finally(() => setLoading(false))
-  }, [isHomeCommunity, params])
+  // Reset states when the URL changes
+  useEffect(() => {
+    setPosts([])
+    setLoading(false)
+    setPage(1)
+    setHasMore(true)
 
-  return { posts, loading }
+    // Optionally, fetch posts for the new community
+  }, [id, path.pathname]) // Dependen
+
+  useEffect(() => {
+    if (inView) {
+      loadPostAsync()
+    }
+  }, [inView, hasMore])
+
+  return { posts, loading, ref }
 }
 
 export default usePostContainer

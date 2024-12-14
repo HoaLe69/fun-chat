@@ -7,18 +7,17 @@ interface Props {
   isUserPost?: boolean
 }
 const PostContainer: React.FC<Props> = ({ name, isUserPost }) => {
-  const { posts, loading } = usePostContainer()
+  const { posts, loading, ref } = usePostContainer()
 
   return (
     <div className="pt-4 px-4 flex-1">
       <div className="flex-1">
-        {loading ? (
-          <PostContainerLoadingSkeleton />
-        ) : (
-          posts?.map((post) => (
-            <PostItem nameOfCommunity={name} isUserPost={isUserPost} key={post?._id} postInfo={post} />
-          ))
-        )}
+        {posts?.map((post) => (
+          <PostItem nameOfCommunity={name} isUserPost={isUserPost} key={post?._id} postInfo={post} />
+        ))}
+      </div>
+      <div ref={ref} className="min-h-10">
+        {loading && <PostContainerLoadingSkeleton />}
       </div>
     </div>
   )

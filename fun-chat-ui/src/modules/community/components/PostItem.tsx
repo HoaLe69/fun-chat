@@ -68,11 +68,6 @@ const PostItem: React.FC<Props> = ({ postInfo, nameOfCommunity, isUserPost }) =>
               <span className="inline-block my-0 mx-2">•</span>
               <span className="text-xs text-gray-500">{moment(post.createdAt).fromNow()}</span>
             </div>
-            <div className="flex items-center ml-auto">
-              <button className="text-xs px-3 py-1 bg-blue-700 hover:bg-blue-800 text-white rounded-full font-semibold">
-                Join
-              </button>
-            </div>
           </div>
         </header>
         <Link to={`/community/${community?.name || nameOfCommunity}/p/${post?._id}`}>

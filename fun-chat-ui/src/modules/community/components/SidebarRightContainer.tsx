@@ -54,7 +54,7 @@ const SidebarRightContainerRecentPost = () => {
         </div>
         <div className="flex flex-col gap-2 mt-4">
           {recentPost.map((post) => (
-            <Link key={post._id} to={`/community/${post?.community.name}/${post?._id}`}>
+            <Link key={post._id} to={`/community/${post?.community.name}/p/${post?._id}`}>
               <div className="border-b dark:border-zinc-500 pb-3 group">
                 <div className="flex items-center gap-2">
                   {post?.community?.picture ? (
