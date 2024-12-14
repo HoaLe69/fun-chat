@@ -26,4 +26,14 @@ const AppModal: React.FC<Props> = ({ isOpen, onClose, title, children }) => {
   )
 }
 
+export const AppModalHeadless: React.FC<Props> = ({ isOpen, onClose, children }) => {
+  return (
+    <Dialog onClose={onClose} open={isOpen} as="div" className="relative z-10 focus:outline-none">
+      <div className="fixed inset-0 z-10 w-screen bg-black/20 dark:bg-black/40 overflow-y-auto">
+        <div className="flex min-h-full items-center justify-center p-4">{children}</div>
+      </div>
+    </Dialog>
+  )
+}
+
 export default AppModal

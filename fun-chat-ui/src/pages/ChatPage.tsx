@@ -3,6 +3,7 @@ import { useSocket, useAppSelector, useAppDispatch } from 'modules/core/hooks'
 import { authSelector } from 'modules/auth/states/authSlice'
 import { getUsersOnline } from 'modules/user/states/userSlice'
 import { useEffect } from 'react'
+import CommonLayout from 'modules/core/components/CommonLayout'
 
 const ChatPage = (): JSX.Element => {
   const userLogin = useAppSelector(authSelector.selectUser)
@@ -28,10 +29,10 @@ const ChatPage = (): JSX.Element => {
   }, [userLogin])
 
   return (
-    <main className="flex text-grey-950 dark:text-white h-screen">
+    <CommonLayout>
       <ChatList />
       <ChatArea />
-    </main>
+    </CommonLayout>
   )
 }
 export default ChatPage

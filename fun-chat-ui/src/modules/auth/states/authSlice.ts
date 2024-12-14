@@ -36,6 +36,7 @@ const authSlice = createSlice({
 export const authSelector = {
   selectUser: (state: RootState) => state.auth.user,
   selectIsAuthenticate: (state: RootState) => state.auth.isAuthenticated,
+  selectUserId: (state: RootState) => state.auth.user?._id,
 }
 export const { logOut } = authSlice.actions
 export default authSlice.reducer

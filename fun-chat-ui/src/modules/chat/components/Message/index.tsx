@@ -19,9 +19,10 @@ interface Props {
   position?: string
   showAvatar?: boolean
   showTimeDivider?: string
+  style: React.CSSProperties
 }
 
-const Message: React.FC<Props> = ({ message, ...extra }) => {
+const Message: React.FC<Props> = ({ style, message, ...extra }) => {
   const [contextualMenuOpen, setContextualMenuOpen] = useState<boolean>(false)
   const { showAvatar, showTimeDivider, msgType } = extra
 
@@ -43,7 +44,7 @@ const Message: React.FC<Props> = ({ message, ...extra }) => {
   return (
     <>
       {showTimeDivider && <MessageDivider divider={showTimeDivider} />}
-      <MessageContainer className={classNames({ 'mt-4': msgType === 'single' })} messageId={message._id}>
+      <MessageContainer style={style} className={classNames({ 'mt-4': msgType === 'single' })} messageId={message._id}>
         {message.replyTo && (
           <MessageReply
             handleMoveToReplyMessage={handleMoveToReplyMessage}

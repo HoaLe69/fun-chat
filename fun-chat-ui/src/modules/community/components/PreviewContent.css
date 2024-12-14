@@ -1,0 +1,18 @@
+.post-preview-content {
+  background: none;
+}
+.post-preview-content p {
+  font-size: 14px;
+  line-height: 1.6;
+}
+.post-preview-content h1,
+.post-preview-content h2 {
+  border: none;
+  font-size: 16px;
+}
+.post-preview-content h3,
+.post-preview-content h4,
+.post-preview-content h5,
+.post-preview-content h6 {
+  font-size: 14px;
+}

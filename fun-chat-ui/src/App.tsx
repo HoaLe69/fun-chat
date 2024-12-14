@@ -6,7 +6,15 @@ import { Provider } from 'react-redux'
 import { store } from 'modules/core/store'
 import { Suspense } from 'react'
 import { LoadingSplashScreen } from 'modules/core/components/loadings'
-import { LoginPage, ChatPage, LoginLoungePage } from 'pages'
+import {
+  LoginPage,
+  ChatPage,
+  LoginLoungePage,
+  CommunityPage,
+  CommunityPostPage,
+  CommunityMakePostPage,
+  CommunityDetailPage,
+} from 'pages'
 
 function App() {
   //  TODO: move logic code to another file
@@ -27,6 +35,38 @@ function App() {
             <Routes>
               <Route path="/login/redirect/:method" element={<LoginLoungePage />} />
               <Route path="/login" element={<LoginPage />} />
+              <Route
+                path="/community/:name/:id"
+                element={
+                  <ProtectedRoute>
+                    <CommunityDetailPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/community/create/post"
+                element={
+                  <ProtectedRoute>
+                    <CommunityMakePostPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/community/:name/p/:postId"
+                element={
+                  <ProtectedRoute>
+                    <CommunityPostPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/community"
+                element={
+                  <ProtectedRoute>
+                    <CommunityPage />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/"
                 element={

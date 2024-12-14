@@ -1,5 +1,6 @@
 export { default as Button } from './Button'
 export { default as AppModal } from './AppModal'
+export { AppModalHeadless } from './AppModal'
 export { default as UserAvatar } from './UserAvatar'
 export { default as EmptyState } from './EmptyState'
 export { default as Menu } from './Menu'

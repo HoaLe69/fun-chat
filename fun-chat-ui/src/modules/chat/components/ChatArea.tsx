@@ -10,7 +10,9 @@ import Message from './Message'
 import { isTimeDiffInMins } from '../utils/dateTimeFormat'
 
 const Wrapper = ({ children }: { children: React.ReactNode }) => (
-  <div className="relative w-3/4 flex flex-col bg-main-bg-light dark:bg-main-bg-dark">{children}</div>
+  <div className="w-full overflow-hidden text-gray-950 dark:text-gray-50 relative flex flex-col bg-zinc-50 dark:bg-zinc-800">
+    {children}
+  </div>
 )
 
 const ChatArea: React.FC = () => {
@@ -27,6 +29,7 @@ const ChatArea: React.FC = () => {
     historyMsgsStatus,
     handleJumpToBottom,
   } = useChatArea()
+  console.log('render')
 
   const renderHeaderChatArea = useCallback(
     () => (

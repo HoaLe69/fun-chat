@@ -1,3 +1,7 @@
 export { default as LoginPage } from './LoginPage'
 export { default as ChatPage } from './ChatPage'
 export { default as LoginLoungePage } from './LoginHandlerPage'
+export { default as CommunityPage } from './CommunityPage'
+export { default as CommunityPostPage } from './CommunityPostPage'
+export { default as CommunityMakePostPage } from './CommunityMakePostPage'
+export { default as CommunityDetailPage } from './CommunityDetailPage'

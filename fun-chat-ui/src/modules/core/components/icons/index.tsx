@@ -33,6 +33,37 @@ import FilePresentationIcon from './assets/file-presentation.svg?react'
 import ChevronLeftIcon from './assets/chevron-left.svg?react'
 import ChevronRightIcon from './assets/chevron-right.svg?react'
 import SaveIcon from './assets/save.svg?react'
+import DeleteIcon from './assets/delete.svg?react'
+import UpvoteIcon from './assets/upvote.svg?react'
+import DownvoteIcon from './assets/downvote.svg?react'
+import CommentBoxIcon from './assets/comment-box.svg?react'
+import ArrowLeftSmallIcon from './assets/arrow-left-small.svg?react'
+import ChevronDownIcon from './assets/chevron-down.svg?react'
+import BoldIcon from './assets/bold.svg?react'
+import ItalicIcon from './assets/italic.svg?react'
+import StrikethroughIcon from './assets/strikethrough.svg?react'
+import LinkIcon from './assets/link.svg?react'
+import OrderedListIcon from './assets/list-bulleted.svg?react'
+import UnorderedListIcon from './assets/unorder-list.svg?react'
+import CodeIcon from './assets/code.svg?react'
+import CodeBlockIcon from './assets/code-block.svg?react'
+import ImageAttachmentIcon from './assets/image-attach.svg?react'
+import QouteIcon from './assets/qoute.svg?react'
+import HeadingIcon from './assets/heading.svg?react'
+import CommunityDefaultPictureIcon from './assets/community-picture-default.svg?react'
+import CommunityDetailPictureIconLarge from './assets/community-picture-default-xl.svg?react'
+import PlusRawIcon from './assets/plus-raw.svg?react'
+import CakeIcon from './assets/cake.svg?react'
+import WorldOutlineIcon from './assets/world-outline.svg?react'
+import UpvoteFillIcon from './assets/upvote-fill.svg?react'
+import DownvoteFillIcon from './assets/downvote-fill.svg?react'
+import DiscoverIcon from './assets/discover.svg?react'
+import MessageFillIcon from './assets/message-fill.svg?react'
+import SettingIcon from './assets/setting.svg?react'
+import CaretdownFillIcon from './assets/caret-down-fill.svg?react'
+import CaretupFillIcon from './assets/caret-up-fill.svg?react'
+import MinusCircleIcon from './assets/minus-cricle.svg?react'
+import NotificationIcon from './assets/notify.svg?react'
 
 export {
   MenuBurgerIcon,
@@ -70,6 +101,38 @@ export {
   ChevronLeftIcon,
   ChevronRightIcon,
   SaveIcon,
+  DeleteIcon,
+  UpvoteIcon,
+  DownvoteIcon,
+  CommentBoxIcon,
+  ArrowLeftSmallIcon,
+  ChevronDownIcon,
+  // markdown editor icons
+  BoldIcon,
+  ItalicIcon,
+  StrikethroughIcon,
+  LinkIcon,
+  OrderedListIcon,
+  UnorderedListIcon,
+  CodeIcon,
+  CodeBlockIcon,
+  ImageAttachmentIcon,
+  QouteIcon,
+  HeadingIcon,
+  CommunityDefaultPictureIcon,
+  CommunityDetailPictureIconLarge,
+  PlusRawIcon,
+  CakeIcon,
+  WorldOutlineIcon,
+  UpvoteFillIcon,
+  DownvoteFillIcon,
+  DiscoverIcon,
+  MessageFillIcon,
+  SettingIcon,
+  CaretdownFillIcon,
+  CaretupFillIcon,
+  MinusCircleIcon,
+  NotificationIcon,
 }
 
 export const LaughSmallIcon = () => {

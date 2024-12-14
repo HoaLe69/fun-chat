@@ -37,7 +37,7 @@ const userSchema = new Schema(
       default: true,
     },
   },
-  { timestamps: { createAt: "created_at" } },
+  { timestamps: true },
 )
 
 // Pre-save hook to normalize display name
