@@ -49,6 +49,11 @@ const MdxEditor: React.FC<Props> = (props) => {
       markdown({ base: markdownLanguage, codeLanguages: languages }),
       editorCustomTheme,
       EditorView.lineWrapping,
+      EditorView.domEventHandlers({
+        paste: (view, event) => {
+          console.log('paste', view.clipboardData?.files)
+        }
+      })
     ],
     onChange: (val, viewUpdate) => {
       onChange(val)

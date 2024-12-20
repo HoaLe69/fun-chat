@@ -8,7 +8,6 @@ type Props = {
   onClick?: () => void
 }
 const Button: React.FC<Props> = ({ type, title, onClick, className, textBold }) => {
-  console.log({ type })
   return (
     <button
       onClick={onClick}

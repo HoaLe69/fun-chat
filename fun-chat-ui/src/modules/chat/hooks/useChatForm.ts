@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { useAppDispatch, useAppSelector, useDebounce, useSocket } from 'modules/core/hooks'
 import type { IFileUpload, IMessageContentFile, IMessageContentImage } from '../types'
-import { selectCurrentRoomId, selectCurrentRoomInfo, selectStatusCurrentRoom } from '../states/roomSlice'
-import { cancelReplyMessage, messageSelector } from '../states/messageSlice'
+import { addMessage, cancelReplyMessage, messageSelector } from '../states/messageSlice'
 import { authSelector } from 'modules/auth/states/authSlice'
 import { messageServices } from '../services'
+import { SOCKET_EVENTS } from 'const'
+import { useParams } from 'react-router-dom'
 
 const useChatForm = () => {
   const [fileSelections, setFileSelections] = useState<IFileUpload[]>([])
@@ -13,44 +14,16 @@ const useChatForm = () => {
   const [visibleEmojiPicker, setVisibleEmojiPicker] = useState<boolean>(false)
   const [visibleMenuMessageExtra, setVisibleMenuMessageExtra] = useState<boolean>(false)
 
-  const refTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const { roomId, userId: recipientId } = useParams()
 
   const dispatch = useAppDispatch()
   const { emitEvent } = useSocket()
-  //room state
-  const roomSelectedId = useAppSelector(selectCurrentRoomId)
-  const roomSelectedInfo = useAppSelector(selectCurrentRoomInfo)
-  const roomSelectedStatus = useAppSelector(selectStatusCurrentRoom)
-  //msg state
   const replyMessage = useAppSelector(messageSelector.selectReplyMessage)
-  //user state
-  const userLogin = useAppSelector(authSelector.selectUser)
-
+  const userLoginId = useAppSelector(authSelector.selectUserId)
   const debounceValue = useDebounce(markdownContent, 200)
-  /*-----------------Bussiess logic-------------------*/
-  const createNewConversation = useCallback(
-    (filePaths: Array<{ url: string; altText: string }>) => {
-      if (!userLogin?._id || !roomSelectedInfo?._id) return
-      const data = {
-        roomInfo: {
-          _id: roomSelectedId,
-          sender: userLogin?._id,
-          recipient: roomSelectedInfo?._id,
-        },
-        message: {
-          content: {
-            text: markdownContent,
-            images: filePaths,
-          },
-          ownerId: userLogin?._id,
-        },
-      }
-      emitEvent('room:createRoomChat', data)
-    },
-    [markdownContent],
-  )
 
-  const sendMsgWithExistConversation = useCallback(
+  /*-----------------Bussiess logic-------------------*/
+  const sendMessage = useCallback(
     (uploadedFile?: { images: IMessageContentImage[]; files: IMessageContentFile[] }) => {
       const msg = {
         content: {
@@ -58,15 +31,21 @@ const useChatForm = () => {
           images: uploadedFile?.images || [],
           files: uploadedFile?.files || [],
         },
-        ownerId: userLogin?._id,
-        roomId: roomSelectedId,
+        ownerId: userLoginId,
+        roomId,
         replyTo: replyMessage?._id,
       }
-      emitEvent('chat:sendMessage', {
-        msg,
-        replyMessage,
-        recipientId: roomSelectedInfo?._id,
-      })
+      emitEvent(
+        SOCKET_EVENTS.MESSAGE.SEND,
+        {
+          msg,
+          replyMessage,
+          recipientId,
+        },
+        (response: any) => {
+          dispatch(addMessage(response))
+        },
+      )
       if (replyMessage) dispatch(cancelReplyMessage())
     },
     [replyMessage, markdownContent],
@@ -140,15 +119,6 @@ const useChatForm = () => {
 
   const handleEditorChange = useCallback((markdown: string) => {
     setMarkdownContent(markdown)
-    // detect user stop typing after one seconds
-    if (typeof refTimer.current === 'number') clearTimeout(refTimer.current)
-    refTimer.current = setTimeout(() => {
-      emitEvent('chat:typing', {
-        roomId: roomSelectedId,
-        isTyping: false,
-        userId: userLogin?._id,
-      })
-    }, 1000)
   }, [])
 
   const handleSubmit = async () => {
@@ -160,8 +130,7 @@ const useChatForm = () => {
     if (fileSelections.length > 0 && !uploadedFile) return
 
     try {
-      if (roomSelectedStatus) createNewConversation(uploadedFile)
-      else sendMsgWithExistConversation(uploadedFile)
+      sendMessage(uploadedFile)
       //clear files preview
       setFileSelections([])
       setMarkdownContent('')
@@ -173,24 +142,17 @@ const useChatForm = () => {
   /*--------------------------Side effect-----------*/
 
   useEffect(() => {
-    if (!debounceValue) return
-    emitEvent('chat:typing', {
-      roomId: roomSelectedId,
-      isTyping: true,
-      userId: userLogin?._id,
-    })
-  }, [debounceValue])
-
-  useEffect(() => {
     // reset
     setMarkdownContent('')
     setFileSelections([])
-  }, [roomSelectedId])
+    if (replyMessage) {
+      dispatch(cancelReplyMessage())
+    }
+  }, [roomId])
 
   return {
     markdownContent,
-    userLogin,
-    roomSelectedInfo,
+    userLoginId,
     replyMessage,
     fileSelections,
     visibleEmojiPicker,

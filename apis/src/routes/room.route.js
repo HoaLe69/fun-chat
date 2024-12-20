@@ -9,5 +9,6 @@ router.patch(
   "/update/latestMessage/:roomId",
   roomController.updateLatestMessage,
 )
+router.patch("/mark-as-read", roomController.markAsRead)
 
 module.exports = router

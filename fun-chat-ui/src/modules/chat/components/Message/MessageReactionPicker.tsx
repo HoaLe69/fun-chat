@@ -1,12 +1,14 @@
-import { CloseButton } from '@headlessui/react'
 import { LaughSmallIcon } from 'modules/core/components/icons'
 import classNames from 'classnames'
 import Tippy from '@tippyjs/react/headless'
-import { useCallback, useMemo, useState } from 'react'
-import { useAppSelector, useSocket } from 'modules/core/hooks'
+import { useCallback, useState } from 'react'
+import { useAppSelector, useSocket, useAppDispatch } from 'modules/core/hooks'
 import { authSelector } from 'modules/auth/states/authSlice'
-import { selectCurrentRoomId } from 'modules/chat/states/roomSlice'
 import { IMessageReact } from 'modules/chat/types'
+import { SOCKET_EVENTS } from 'const'
+import { updateMessageReaction } from 'modules/chat/states/messageSlice'
+import { useParams } from 'react-router-dom'
+import Picker from '@emoji-mart/react'
 
 type Props = {
   messageId?: string
@@ -16,10 +18,10 @@ type Props = {
 
 const MessageReactionPicker: React.FC<Props> = ({ messageId, react, setContextualMenuOpen }) => {
   const [visible, setVisible] = useState<boolean>(false)
+  const { roomId } = useParams()
   const { emitEvent } = useSocket()
-  const userLogin = useAppSelector(authSelector.selectUser)
-  const roomSelectedId = useAppSelector(selectCurrentRoomId)
-  const reactIcons = ['❤️', '👍', '👎', '😂', '😮', '😞']
+  const userLoginId = useAppSelector(authSelector.selectUserId)
+  const dispatch = useAppDispatch()
 
   const show = () => {
     setVisible(true)
@@ -31,50 +33,39 @@ const MessageReactionPicker: React.FC<Props> = ({ messageId, react, setContextua
     if (typeof setContextualMenuOpen === 'function') setContextualMenuOpen(false)
   }
 
-  const userReaction = useMemo(() => {
-    return react?.find((r) => r.ownerId === userLogin?._id)
-  }, [react])
-
-  const handleDropEmoji = useCallback((emoji: string) => {
-    if (!emoji) return
-    emitEvent('chat:messageActions', {
-      type: 'reaction',
-      roomId: roomSelectedId,
-      msgId: messageId,
-      body: {
-        ownerId: userLogin?._id,
-        emoji,
-      },
-    })
-    hide()
-  }, [])
+  const handleDropEmoji = useCallback(
+    (emoji: Record<string, string>) => {
+      if (!emoji) return
+      emitEvent(
+        SOCKET_EVENTS.MESSAGE.REACT,
+        {
+          roomId: roomId,
+          msgId: messageId,
+          body: {
+            ownerId: userLoginId,
+            emoji: emoji?.native,
+          },
+        },
+        (response: any) => {
+          dispatch(updateMessageReaction({ react: response.react, _id: response._id }))
+        },
+      )
+      hide()
+    },
+    [userLoginId],
+  )
 
   return (
     <div>
       <Tippy
         onClickOutside={hide}
         interactive
+        placement="top-start"
+        zIndex={100}
         visible={visible}
         render={(attrs) => (
           <div {...attrs} className="p-2 rounded-2xl bg-grey-50  dark:bg-grey-900 shadow-xl">
-            <ul className="flex items-center">
-              {reactIcons.map((icon) => (
-                <CloseButton
-                  key={icon}
-                  onClick={() => {
-                    handleDropEmoji(icon)
-                  }}
-                >
-                  <li
-                    className={classNames('reaction_icon', {
-                      'bg-blue-100 dark:bg-blue-900': userReaction?.emoji === icon,
-                    })}
-                  >
-                    {icon}
-                  </li>
-                </CloseButton>
-              ))}
-            </ul>
+            <Picker onEmojiSelect={handleDropEmoji} />
           </div>
         )}
       >

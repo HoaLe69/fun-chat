@@ -41,7 +41,7 @@ const MakePost = () => {
       }
 
       const post = await postServices.createPost(formData)
-      navigate(`/community/${selectedCommunity?.name}/${post._id}`)
+      navigate(`/community/${selectedCommunity?.name}/p/${post._id}`)
     } catch (error) {
       console.log(error)
     } finally {

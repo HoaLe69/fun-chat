@@ -1,10 +1,18 @@
 import Tippy from '@tippyjs/react/headless'
 import type { IUser } from 'modules/user/types'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { userServices } from 'modules/user/services'
 import ReactLoading from 'react-loading'
-import { CakeIcon } from 'modules/core/components/icons'
+import { useNavigate } from 'react-router-dom'
+import { CakeIcon, CommentBoxIcon, PlusCircleIcon } from 'modules/core/components/icons'
 import moment from 'moment'
+import { useAppSelector, useSocket } from 'modules/core/hooks'
+import { authSelector } from 'modules/auth/states/authSlice'
+import { IConversation } from 'modules/chat/types'
+import { roomServices } from 'modules/chat/services'
+import { SOCKET_EVENTS } from 'const'
+import classNames from 'classnames'
+import Image from 'modules/core/components/Image'
 
 interface UserInformationCardPros {
   children: JSX.Element
@@ -15,6 +23,7 @@ const UserInformationCardContainer: React.FC<UserInformationCardPros> = ({ child
   return (
     <Tippy
       onMount={() => setMounted(true)}
+      onHide={() => setMounted(false)}
       delay={500}
       interactive
       placement="bottom-start"
@@ -28,12 +37,17 @@ const UserInformationCardContainer: React.FC<UserInformationCardPros> = ({ child
     </Tippy>
   )
 }
-
 export default UserInformationCardContainer
 
 const UserInformationCard = ({ userId, isMounted }: { userId: string; isMounted: boolean }) => {
-  const [userInfo, setUserInfo] = useState<IUser | null>(null)
+  const [message, setMessage] = useState<string>('')
+  const { emitEvent } = useSocket()
   const [loading, setLoading] = useState<boolean>(false)
+  const [userInfo, setUserInfo] = useState<IUser | null>(null)
+  const [openChatBox, setOpenChatBox] = useState<boolean>(false)
+  const [room, setRoom] = useState<IConversation | null>(null)
+  const userLoginId = useAppSelector(authSelector.selectUserId)
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (!userId || !isMounted) return
@@ -49,6 +63,71 @@ const UserInformationCard = ({ userId, isMounted }: { userId: string; isMounted:
         setLoading(false)
       })
   }, [userId, isMounted])
+
+  useEffect(() => {
+    if (isMounted) return
+    setOpenChatBox(false)
+  }, [isMounted])
+
+  useEffect(() => {
+    if (!openChatBox || !userLoginId || !userInfo) return
+    roomServices
+      .checkRoomExistAsync([userLoginId, userInfo?._id])
+      .then((res) => {
+        setRoom(res)
+      })
+      .catch((error) => {
+        console.log(error)
+        setRoom(null)
+      })
+  }, [openChatBox])
+
+  const handleSubmitMessage = useCallback(
+    async (e: React.KeyboardEvent<HTMLFormElement>) => {
+      if (e.key !== 'Enter') return
+      if (!message) return
+      try {
+        if (!room) {
+          emitEvent(
+            SOCKET_EVENTS.ROOM.CREATE,
+            {
+              msg: {
+                content: { text: message },
+                ownerId: userLoginId,
+              },
+              room: { members: [userLoginId, userInfo?._id] },
+              recipient: userInfo?._id,
+            },
+            (response: any) => {
+              navigate(`/devchat/@me/${response?.room?._id}/${userInfo?._id}`)
+            },
+          )
+          return
+        }
+        emitEvent(
+          SOCKET_EVENTS.MESSAGE.SEND,
+          {
+            msg: {
+              content: { text: message },
+              ownerId: userLoginId,
+              roomId: room._id,
+            },
+            recipientId: userInfo?._id,
+          },
+          (response: any) => {
+            //ignore
+            console.log(response)
+          },
+        )
+        console.log('send an message')
+        navigate(`/devchat/@me/${room?._id}/${userInfo?._id}`)
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    [message, room, userLoginId, userInfo],
+  )
+
   return (
     <div className="rounded-xl w-80 min-h-24 shadow-xl bg-zinc-50 dark:bg-zinc-900">
       {loading || !userInfo ? (
@@ -58,7 +137,11 @@ const UserInformationCard = ({ userId, isMounted }: { userId: string; isMounted:
       ) : (
         <div className="p-3">
           <div className="flex items-center">
-            <img src={userInfo?.picture} alt={userInfo?.display_name} className="w-12 h-12 rounded-full object-cover" />
+            <Image
+              src={userInfo?.picture}
+              alt={userInfo?.display_name}
+              className="w-12 h-12 rounded-full object-cover"
+            />
             <div className="flex flex-col ml-3">
               <p className="dark:text-zinc-100 font-semibold text-base hover:cursor-pointer">
                 {userInfo?.display_name}
@@ -71,15 +154,102 @@ const UserInformationCard = ({ userId, isMounted }: { userId: string; isMounted:
             <span>{moment(userInfo?.createdAt).format('LL')}</span>
           </div>
           <div className="flex items-center gap-2 mt-4">
-            <button className="hover:opacity-80 p-3 py-1 bg-purple-800 rounded-full text-sm font-semibold text-zinc-100">
-              Follow
-            </button>
-            <button className="hover:opacity-80 p-3 py-1 bg-zinc-200 dark:bg-zinc-800 rounded-full text-sm font-semibold">
-              Chat
-            </button>
+            {userLoginId !== userInfo?._id &&
+              (openChatBox ? (
+                <div className="w-full">
+                  <form onSubmit={(e: React.FormEvent) => e.preventDefault()} onKeyDown={handleSubmitMessage}>
+                    <input
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      className="outline-none w-full p-1 py-2 rounded-md bg-zinc-950 text-sm"
+                      placeholder="Enter your message..."
+                      name="message"
+                    />
+                  </form>
+                </div>
+              ) : (
+                <>
+                  <RelationshipButton userLoginId={userLoginId} userDestinationId={userInfo?._id} />
+                  <button
+                    onClick={() => setOpenChatBox(true)}
+                    className="flex items-center gap-2 hover:opacity-80 p-3 py-1 bg-zinc-200 dark:bg-zinc-800 rounded-full text-sm font-semibold"
+                  >
+                    <CommentBoxIcon /> Chat
+                  </button>
+                </>
+              ))}
           </div>
         </div>
       )}
     </div>
+  )
+}
+
+const RelationshipButton = ({ userLoginId, userDestinationId }: { userLoginId: string; userDestinationId: string }) => {
+  const [userLogin, setUserLogin] = useState<IUser | null>(null)
+
+  useEffect(() => {
+    if (!userLoginId) return
+    userServices
+      .getUserById(userLoginId)
+      .then((res) => {
+        setUserLogin(res)
+      })
+      .catch((error) => console.log(error))
+  }, [userLoginId])
+
+  const buttonTextContent = useMemo(() => {
+    if (!userLogin || !userDestinationId) return
+
+    if (userLogin.friends.includes(userDestinationId)) return 'Friends'
+    if (userLogin.friends_waiting.includes(userDestinationId)) return 'Accept'
+    if (userLogin.friends_request.includes(userDestinationId)) return 'Friend Request Sent'
+    return 'Add Friend'
+  }, [userLogin, userDestinationId])
+
+  const handleAddFriend = useCallback(async () => {
+    if (!userDestinationId || !userLoginId) return
+    try {
+      if (buttonTextContent === 'Accept') {
+        handleAcceptFriend(userDestinationId, userLoginId)
+        return
+      }
+      const response = await userServices.makeFriendRequest({
+        userRequestId: userLoginId,
+        userDestinationId,
+      })
+      setUserLogin(response.userReq)
+    } catch (error) {
+      console.log(error)
+    }
+  }, [userLoginId, userDestinationId])
+
+  const handleAcceptFriend = useCallback(async (userDestinationId: string, userLoginId: string) => {
+    userServices
+      .acceptFriendRequestAsync({ userRequestId: userLoginId, userDestinationId: userDestinationId })
+      .then((res) => {
+        setUserLogin(res.userReq)
+      })
+      .catch((err) => console.log(err))
+  }, [])
+
+  return (
+    <button
+      onClick={handleAddFriend}
+      disabled={buttonTextContent === 'Friends' || buttonTextContent === 'Friend Request Sent'}
+      className={classNames(
+        'flex items-center gap-2 hover:opacity-80 p-3 py-1 bg-purple-800 rounded-full text-sm font-semibold text-zinc-100',
+        { 'opacity-80': buttonTextContent === 'Friends' || buttonTextContent === 'Friend Request Sent' },
+      )}
+    >
+      {buttonTextContent == 'Add Friend' ? (
+        <>
+          <PlusCircleIcon className="w-4 h-4" />
+          {buttonTextContent}
+        </>
+      ) : (
+        buttonTextContent
+      )}
+    </button>
   )
 }

@@ -1,16 +1,17 @@
+import Image from 'modules/core/components/Image'
 import type { MessageSectionProps } from './type'
 
 const MessageReply: React.FC<MessageSectionProps> = ({ userLogin, replyMessage, handleMoveToReplyMessage }) => {
   return (
     <div className="pl-[72px] text-grey-500 mb-1">
       <div className="flex items-center text-xs gap-2  relative">
-        <img src={userLogin?.picture} alt="test" className="w-4 h-4 rounded-full" />
+        <Image src={userLogin?.picture || ''} alt="test" className="w-4 h-4 rounded-full" />
         <span className="dark:text-grey-300/70 text-sm text-grey-600/70">{userLogin?.display_name}</span>
         <p
           onClick={handleMoveToReplyMessage}
           className="text-sm truncate dark:hover:text-grey-50 hover:text-grey-950 text-grey-600/70 dark:text-grey-300/70 hover:cursor-pointer"
         >
-          {replyMessage?.content?.text}
+          {replyMessage?.isDeleted ? <i>reply removed message</i> : replyMessage?.content?.text || <i>Reply a file</i>}
         </p>
         <div
           onClick={handleMoveToReplyMessage}

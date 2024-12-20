@@ -16,6 +16,17 @@ const roomSchema = new Schema(
       enum: ["spam", "offical"],
       required: false,
     },
+    unreadMessage: {
+      type: [{
+        userId: String,
+        count: {
+          type: Number,
+          default: 0,
+        },
+      }],
+      default: [],
+      _id: false
+    },
   },
   { timestamps: true },
 )

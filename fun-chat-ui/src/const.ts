@@ -28,3 +28,21 @@ export const discordAuthorizeURL = () => {
 export const googleAuthorizeURL = (access_token: string) => {
   return `http://localhost:5173/login/redirect/google?code=${access_token}`
 }
+
+export const SOCKET_EVENTS = Object.freeze({
+  MESSAGE: {
+    SEND: 'message:send',
+    RECEIVE: 'message:sent',
+    REACT: 'message:react',
+    REACTED: 'message:reacted',
+    DELETE: 'message:delete',
+    DELETED: 'message:deleted',
+  },
+  ROOM: {
+    CREATE: 'room:create',
+    CREATED: 'room:created',
+  },
+  NOTIFYCATION: {
+    ROOM_UNREAD: 'notification-room-message:unread',
+  }
+})

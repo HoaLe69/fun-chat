@@ -1,4 +1,5 @@
 const Room = require("@models/Room")
+const roomServices = require("@services/roomServices")
 
 const roomController = {
   // create new room
@@ -8,6 +9,16 @@ const roomController = {
       return res.status(201).json(room)
     } catch (err) {
       console.error(err)
+    }
+  },
+  markAsRead: async (req, res, next) => {
+    try {
+      const { roomId, userId } = req.body
+      const updatedRoom = await roomServices.markAsReadAsync(roomId, userId)
+      return res.status(200).json(updatedRoom)
+    } catch (error) {
+      console.log(error)
+      next(error)
     }
   },
   // get list room by userId
@@ -45,20 +56,14 @@ const roomController = {
       console.error(error)
     }
   },
-  checkRoomExist: async (req, res) => {
+  checkRoomExist: async (req, res, next) => {
     try {
-      const { first, second } = req.query
-      console.log({ first, second })
-      const room = await Room.findOne({
-        members: { $all: [first, second] },
-      })
-      if (!room) {
-        const tempRoom = new Room({ members: [first, second] })
-        return res.status(200).json({ ...tempRoom._doc, new: true })
-      }
+      const room = await roomServices.checkRoomAsync(req.query)
+      if (!room) return res.status(404).send("room not found")
       return res.status(200).json(room)
     } catch (error) {
       console.log(error)
+      next(error)
     }
   },
 }

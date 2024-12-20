@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import Image from './Image'
 import { SettingIcon } from './icons'
 import { useAppSelector } from '../hooks'
 import Tippy from '@tippyjs/react/headless'
@@ -15,7 +16,7 @@ const UserSetting = () => {
     {
       tag: '@logout',
       name: 'Sign Out',
-      onClick: async () => {},
+      onClick: async () => { },
       press: true,
     },
   ]
@@ -25,7 +26,7 @@ const UserSetting = () => {
   return (
     <div className="py-2 px-2 bg-zinc-200 dark:bg-zinc-950 flex items-center justify-between text-gray-950 dark:text-gray-50">
       <div className="flex items-center gap-2">
-        <img src={userLogin?.picture} alt="placeholder" className="w-8 h-8 rounded-full" />
+        <Image src={userLogin?.picture} alt="placeholder" className="w-8 h-8 rounded-full" />
         <span className="text-sm font-semibold">{userLogin?.display_name}</span>
       </div>
       <Tippy

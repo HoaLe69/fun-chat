@@ -40,12 +40,12 @@ const PostItem: React.FC<Props> = ({ postInfo, nameOfCommunity, isUserPost }) =>
             <div className="flex items-center">
               {isUserPost ? (
                 <UserInformationCard userId={creator?._id}>
-                  <Link to={`/community/${nameOfCommunity}`} className="hover:cursor-pointer flex items-center group">
+                  <div className="hover:cursor-pointer flex items-center group">
                     <img src={creator?.picture} alt="JavaScript" className="w-6 h-6 rounded-full" />
                     <span className="ml-2 font-semibold text-gray-700 dark:text-gray-200 text-xs group-hover:text-blue-500">
                       {creator?.display_name || community?.name}
                     </span>
-                  </Link>
+                  </div>
                 </UserInformationCard>
               ) : (
                 <CommunityCardContainer nameOfCommunity={community?.name}>

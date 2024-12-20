@@ -21,6 +21,6 @@ router.use("/comment", comment)
 /// fake data
 router.post("/faker/user", fakerController.createFakerUser)
 router.post("/faker/community", fakerController.createFakerCommunity)
-router.post("/faker/post", fakerController.createFakerPost)
+router.post("/faker/post/:userId", fakerController.createFakerPost)
 
 module.exports = router

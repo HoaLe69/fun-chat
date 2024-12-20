@@ -8,6 +8,7 @@ import './MdxEditor.css'
 import FilePreview from './FilePreview'
 import { useChatForm } from 'modules/chat/hooks'
 import MdxEditor from './MdxEditor'
+import type { IUser } from '../types'
 
 interface MenuMessageExtraProps {
   children: JSX.Element
@@ -26,7 +27,7 @@ const MenuMessageExtra: React.FC<MenuMessageExtraProps> = ({ children, onClose, 
       render={(attrs) => (
         <ul
           {...attrs}
-          className="w-40 p-1 rounded-md bg-grey-50 shadow-[0_0_4px_rgba(0,0,0,0.2)] dark:shadow-[0_0_4px_rgba(0,0,0,0.9)] dark:bg-grey-900"
+          className="list-none w-40 p-1 rounded-md bg-grey-50 shadow-[0_0_4px_rgba(0,0,0,0.2)] dark:shadow-[0_0_4px_rgba(0,0,0,0.9)] dark:bg-grey-900"
         >
           <li>
             <label
@@ -54,14 +55,17 @@ const MenuMessageExtra: React.FC<MenuMessageExtraProps> = ({ children, onClose, 
   </div>
 )
 
-const ChatForm: React.FC = () => {
+interface Props {
+  chatMembers: Record<string, IUser>
+}
+
+const ChatForm: React.FC<Props> = ({ chatMembers }) => {
   const {
     markdownContent,
     replyMessage,
     visibleMenuMessageExtra,
     visibleEmojiPicker,
-    userLogin,
-    roomSelectedInfo,
+    userLoginId,
     fileSelections,
     setFileSelections,
     handleRemoveReplyMessage,
@@ -75,18 +79,13 @@ const ChatForm: React.FC = () => {
     handleAppendEmojiToMarkdownContent,
   } = useChatForm()
 
-  const renderReplyMessageContent = useCallback(() => {
-    if (replyMessage?.content.text) return replyMessage.content.text
-    if (!replyMessage?.content.text && replyMessage?.content.images) return 'image'
-    if (!replyMessage?.content.text && replyMessage?.content.links) return 'link'
-  }, [replyMessage])
-
   const renderReplyMessageElement = useCallback(() => {
     return (
       <div className="px-3 pb-3">
         <div className="flex items-center justify-between">
           <span className="text-xl/8 block font-semibold">
-            Reply to {replyMessage?.ownerId === userLogin?._id ? 'yourself' : roomSelectedInfo?.name}
+            Reply to{' '}
+            {replyMessage?.ownerId === userLoginId ? 'yourself' : chatMembers[replyMessage?.ownerId]?.display_name}
           </span>
           <button
             onClick={handleRemoveReplyMessage}
@@ -95,10 +94,9 @@ const ChatForm: React.FC = () => {
             <CloseIcon />
           </button>
         </div>
-        <p className="truncate text-sm text-grey-500">{renderReplyMessageContent()}</p>
       </div>
     )
-  }, [replyMessage])
+  }, [replyMessage, userLoginId, chatMembers])
 
   return (
     <div className="bg-transparent py-2 px-2">
@@ -127,7 +125,7 @@ const ChatForm: React.FC = () => {
           </span>
         </form>
         <button
-          //          onClick={handleSubmit}
+          onClick={handleSubmit}
           className={classNames(
             'w-10 h-10 rounded-full inline-flex items-center justify-center',
             markdownContent.trim().length === 0 ? 'bg-grey-400 dark:bg-grey-600' : 'bg-blue-500 dark:bg-blue-400',

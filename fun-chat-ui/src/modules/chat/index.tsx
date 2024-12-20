@@ -1,2 +1,2 @@
 export { default as ChatArea } from './components/ChatArea'
-export { default as ChatList } from './components/ChatList'
+export { default as Sidebar } from './components/Sidebar'

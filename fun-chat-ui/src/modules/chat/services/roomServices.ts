@@ -18,7 +18,7 @@ export const roomServices = {
     const res = await apiClient.get(`/room/list/${userId}`)
     return res.data
   },
-  async checkRoomExist(members: Array<string>) {
+  async checkRoomExistAsync(members: Array<string>) {
     const [first, second] = members
 
     const res = await apiClient.get(`/room/check-room`, {
@@ -29,4 +29,9 @@ export const roomServices = {
     })
     return res.data
   },
+  async markAsRead(roomId: string, userId: string) {
+    const response = await apiClient.patch('/room/mark-as-read', { roomId, userId })
+    return response.data
+  }
 }
+

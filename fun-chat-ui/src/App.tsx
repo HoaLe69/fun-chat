@@ -8,12 +8,12 @@ import { Suspense } from 'react'
 import { LoadingSplashScreen } from 'modules/core/components/loadings'
 import {
   LoginPage,
-  ChatPage,
   LoginLoungePage,
   CommunityPage,
   CommunityPostPage,
   CommunityMakePostPage,
   CommunityDetailPage,
+  ChatMePage,
 } from 'pages'
 
 function App() {
@@ -68,10 +68,18 @@ function App() {
                 }
               />
               <Route
-                path="/"
+                path="/devchat/@me"
                 element={
                   <ProtectedRoute>
-                    <ChatPage />
+                    <ChatMePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/devchat/@me/:roomId/:userId"
+                element={
+                  <ProtectedRoute>
+                    <ChatMePage />
                   </ProtectedRoute>
                 }
               />
