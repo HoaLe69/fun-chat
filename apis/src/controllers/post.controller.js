@@ -1,6 +1,17 @@
 const postServices = require("@services/postServices")
 
 const postController = {
+  async getListPostByCreatorId(req, res, next) {
+    try {
+      const userId = req.params.userId
+      const page = req.query.page
+      const posts = await postServices.getListPostByCreatorIdAsync(userId, page)
+      return res.status(200).json(posts)
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  },
   async addUserRecentPostVisited(req, res, next) {
     try {
       await postServices.addUserRecentPostVisitedAsync(req.body)
@@ -29,7 +40,7 @@ const postController = {
   async getPostById(req, res, next) {
     try {
       const id = req.params.id
-      const posts = await postServices.getPostByCreator(id)
+      const posts = await postServices.getPostPopulateCreatorAsync(id)
       res.status(200).json(posts)
     } catch (error) {
       next(error)

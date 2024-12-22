@@ -14,6 +14,7 @@ import {
   CommunityMakePostPage,
   CommunityDetailPage,
   ChatMePage,
+  UserProfilePage,
 } from 'pages'
 
 function App() {
@@ -80,6 +81,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <ChatMePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/user/profile/:userId"
+                element={
+                  <ProtectedRoute>
+                    <UserProfilePage />
                   </ProtectedRoute>
                 }
               />

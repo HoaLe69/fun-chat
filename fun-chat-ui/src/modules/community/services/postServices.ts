@@ -12,7 +12,10 @@ export const postServices = {
     console.log({ response })
     return response.data
   },
-
+  async getListPostByCreatorId(userId: string, page: number) {
+    const response = await apiClient.get(`/post/get-by-creator-id/${userId}?page=${page}`)
+    return response.data
+  },
   async getRecentPostVisitedAsync(userId: string) {
     const response = await apiClient.get(`/post/recent/${userId}`)
     return response.data

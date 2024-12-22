@@ -71,7 +71,7 @@ const getPostByCommunity = async (communityId, page = 1, limit = 10) => {
   //  return await Post.find({ community: communityId }).populate("creator")
 }
 
-const getPostByCreator = async id => {
+const getPostPopulateCreatorAsync = async id => {
   return await Post.findOne({ _id: id }).populate("creator")
 }
 
@@ -81,6 +81,30 @@ const getAllPost = async (page = 1, limit = 10) => {
 
   // fetch paginate posts
   const posts = await Post.find()
+    .populate("community")
+    .sort({ createdAt: -1 })
+    .skip((pageNumber - 1) * pageSize) // skip previous pages
+    .limit(pageSize) // limit the result
+
+  //Count total post
+  const totalDocuments = await Post.countDocuments()
+  return {
+    data: posts,
+    meta: {
+      currentPage: page,
+      totalPages: Math.ceil(totalDocuments / pageSize),
+      pageSize,
+      totalDocuments,
+    },
+  }
+}
+
+const getListPostByCreatorIdAsync = async (userId, page = 1, limit = 10) => {
+  const pageNumber = Math.max(1, parseInt(page)) // Ensure page is at least 1
+  const pageSize = Math.max(1, parseInt(limit)) //Ensure limit is as least 1
+
+  // fetch paginate posts
+  const posts = await Post.find({ creator: userId })
     .populate("community")
     .sort({ createdAt: -1 })
     .skip((pageNumber - 1) * pageSize) // skip previous pages
@@ -127,11 +151,12 @@ const downvote = async (postId, userId) => {
 
 module.exports = {
   createPost,
-  getPostByCommunity,
-  getPostByCreator,
   upvote,
   downvote,
   getAllPost,
+  getPostByCommunity,
+  getListPostByCreatorIdAsync,
+  getPostPopulateCreatorAsync,
   getUserRecentPostsVisitedAsync,
   addUserRecentPostVisitedAsync,
 }
