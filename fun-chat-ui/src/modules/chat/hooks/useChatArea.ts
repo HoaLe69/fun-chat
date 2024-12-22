@@ -50,11 +50,12 @@ const useChatArea = () => {
 
   useEffect(() => {
     if (!roomId || !userLogin) return
-    roomServices.markAsRead(roomId, userLogin?._id)
+    roomServices
+      .markAsRead(roomId, userLogin?._id)
       .then((res) => {
         dispatch(updateRoomUnreadMessage(res))
       })
-      .catch(error => console.log(error))
+      .catch((error) => console.log(error))
   }, [userLogin, roomId, historyMsgs])
 
   useEffect(() => {

@@ -54,8 +54,14 @@ const roomSlice = createSlice({
 
 export const roomSelector = {}
 
-export const { selectRoom, addRoom, markLatestMessageAsSeen, markCurrentRoomCreated, updateRoomLatestMessage, updateRoomUnreadMessage } =
-  roomSlice.actions
+export const {
+  selectRoom,
+  addRoom,
+  markLatestMessageAsSeen,
+  markCurrentRoomCreated,
+  updateRoomLatestMessage,
+  updateRoomUnreadMessage,
+} = roomSlice.actions
 
 export default roomSlice.reducer
 

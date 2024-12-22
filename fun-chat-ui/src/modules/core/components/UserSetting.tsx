@@ -16,7 +16,7 @@ const UserSetting = () => {
     {
       tag: '@logout',
       name: 'Sign Out',
-      onClick: async () => { },
+      onClick: async () => {},
       press: true,
     },
   ]

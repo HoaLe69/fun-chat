@@ -1,12 +1,15 @@
 import { useCallback, useState } from 'react'
+import { useSocket } from 'modules/core/hooks'
 import MdxEditor from './MdxEditor'
 import SelectCommunity from './SelectCommunity'
 import { ICommunity } from '../types'
 import { useAppSelector } from 'modules/core/hooks'
-import { postServices } from '../services/postServices'
+import { postServices, notifyServices } from '../services'
 import { useNavigate } from 'react-router-dom'
+import { SOCKET_EVENTS } from 'const'
 
 const MakePost = () => {
+  const { emitEvent } = useSocket()
   const userLogin = useAppSelector((state) => state.auth.user)
   const navigate = useNavigate()
   const [creating, setCreating] = useState<boolean>(false)
@@ -41,7 +44,18 @@ const MakePost = () => {
       }
 
       const post = await postServices.createPost(formData)
-      navigate(`/community/${selectedCommunity?.name}/p/${post._id}`)
+      const notifyData = await notifyServices.createNotify({
+        type: 'new_post',
+        sender: userLogin?._id,
+        friends: userLogin?.friends,
+        resource_url: `/community/${selectedCommunity?.name}/p/${post._id}`,
+        message: `<strong>${userLogin?.display_name}</strong> has created a new post in <strong>${selectedCommunity?.name} community</strong>`,
+      })
+
+      emitEvent(SOCKET_EVENTS.NOTIFYCATION.SEND, notifyData, (response: any) => {
+        console.log(response)
+        navigate(`/community/${selectedCommunity?.name}/p/${post._id}`)
+      })
     } catch (error) {
       console.log(error)
     } finally {
@@ -50,6 +64,7 @@ const MakePost = () => {
 
     //api call  to create post
   }, [postForm, selectedCommunity, userLogin])
+  console.log({ userLogin })
 
   return (
     <div className="pt-3 flex-1">

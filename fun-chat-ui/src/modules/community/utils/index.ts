@@ -1,7 +1,6 @@
 import { ICommentCustom } from '../types'
 
 export const restructureCommentArray = (comments: ICommentCustom[]) => {
-  console.log('running....')
   if (!comments) return []
   // // deep clone the comments
   const cloneComments: ICommentCustom[] = JSON.parse(JSON.stringify(comments))

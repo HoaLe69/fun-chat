@@ -32,6 +32,5 @@ export const roomServices = {
   async markAsRead(roomId: string, userId: string) {
     const response = await apiClient.patch('/room/mark-as-read', { roomId, userId })
     return response.data
-  }
+  },
 }
-

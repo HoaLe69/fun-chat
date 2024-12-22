@@ -13,6 +13,7 @@ import { roomServices } from 'modules/chat/services'
 import { SOCKET_EVENTS } from 'const'
 import classNames from 'classnames'
 import Image from 'modules/core/components/Image'
+import { notifyServices } from '../services'
 
 interface UserInformationCardPros {
   children: JSX.Element
@@ -187,6 +188,7 @@ const UserInformationCard = ({ userId, isMounted }: { userId: string; isMounted:
 
 const RelationshipButton = ({ userLoginId, userDestinationId }: { userLoginId: string; userDestinationId: string }) => {
   const [userLogin, setUserLogin] = useState<IUser | null>(null)
+  const { emitEvent } = useSocket()
 
   useEffect(() => {
     if (!userLoginId) return
@@ -212,17 +214,45 @@ const RelationshipButton = ({ userLoginId, userDestinationId }: { userLoginId: s
     try {
       if (buttonTextContent === 'Accept') {
         handleAcceptFriend(userDestinationId, userLoginId)
+        const notificationResponse = await notifyServices.createNotify({
+          type: 'friend_request',
+          senderId: userLoginId,
+          recipient: userDestinationId,
+          metadata: {
+            message: `<strong>${userLogin?.display_name}</strong> accept your friend request`,
+            resource_url: '/devchat/@me',
+          },
+        })
+        console.log('accept friend response data', notificationResponse)
+        emitEvent(SOCKET_EVENTS.NOTIFYCATION.SEND, [notificationResponse], (response: any) => {
+          console.log('socket response', response)
+        })
         return
       }
       const response = await userServices.makeFriendRequest({
         userRequestId: userLoginId,
         userDestinationId,
       })
+      const notificationResponse = await notifyServices.createNotify({
+        type: 'friend_request',
+        senderId: userLoginId,
+        recipient: userDestinationId,
+        metadata: {
+          message: `<strong>${userLogin?.display_name}</strong> sent you a friend request`,
+          resource_url: '/devchat/@me',
+        },
+      })
+      console.log('NotificationResponse', notificationResponse)
+
+      emitEvent(SOCKET_EVENTS.NOTIFYCATION.SEND, [notificationResponse], (response: any) => {
+        console.log('socket response', response)
+      })
+
       setUserLogin(response.userReq)
     } catch (error) {
       console.log(error)
     }
-  }, [userLoginId, userDestinationId])
+  }, [userLoginId, userDestinationId, userLogin])
 
   const handleAcceptFriend = useCallback(async (userDestinationId: string, userLoginId: string) => {
     userServices

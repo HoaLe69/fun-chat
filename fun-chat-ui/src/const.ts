@@ -44,5 +44,7 @@ export const SOCKET_EVENTS = Object.freeze({
   },
   NOTIFYCATION: {
     ROOM_UNREAD: 'notification-room-message:unread',
-  }
+    SENT: 'notification:sent',
+    SEND: 'notification:send',
+  },
 })

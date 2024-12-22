@@ -52,12 +52,9 @@ const ChatListItem: React.FC<Props> = (props) => {
   return (
     <li
       onClick={() => handleSelectedRoom(_id)}
-      className={classNames(
-        'hover:bg-zinc-200 dark:hover:bg-zinc-800/80 cursor-pointer rounded-md h-11 px-2',
-        {
-          'bg-zinc-200 dark:bg-zinc-800/80': roomId === _id,
-        },
-      )}
+      className={classNames('hover:bg-zinc-200 dark:hover:bg-zinc-800/80 cursor-pointer rounded-md h-11 px-2', {
+        'bg-zinc-200 dark:bg-zinc-800/80': roomId === _id,
+      })}
     >
       <div className="flex items-center h-full">
         <div className="relative">
@@ -74,14 +71,12 @@ const ChatListItem: React.FC<Props> = (props) => {
           )}
         </div>
         <div className="pl-2 flex-1 min-w-0 flex items-center">
-          <span className="font-medium text-gray-700 dark:text-gray-300 tracking-wide">
-            {recipient?.display_name}
-          </span>
-          {
-            unreadMessageCount > 0 && (
-              <span className='ml-auto w-6 h-6 text-xs flex items-center justify-center rounded-full bg-red-600 text-zinc-50 font-bold'>{unreadMessageCount}</span>
-            )
-          }
+          <span className="font-medium text-gray-700 dark:text-gray-300 tracking-wide">{recipient?.display_name}</span>
+          {unreadMessageCount > 0 && (
+            <span className="ml-auto w-6 h-6 text-xs flex items-center justify-center rounded-full bg-red-600 text-zinc-50 font-bold">
+              {unreadMessageCount}
+            </span>
+          )}
         </div>
       </div>
     </li>

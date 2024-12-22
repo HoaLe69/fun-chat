@@ -1,5 +1,6 @@
 const messageEvent = require("./message.event")
 const roomEvent = require("./room.event")
+const notifyEvent = require("./notify.event")
 
 const onlines = {}
 const handleSocket = io => {
@@ -35,6 +36,7 @@ const handleSocket = io => {
 
     messageEvent(socket)
     roomEvent(socket)
+    notifyEvent(socket)
   })
 }
 

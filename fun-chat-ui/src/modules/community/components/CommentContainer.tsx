@@ -7,9 +7,10 @@ import { restructureCommentArray } from '../utils'
 
 interface Props {
   postId?: string
+  userOfPost?: string
 }
 
-const CommentContainer: React.FC<Props> = ({ postId }) => {
+const CommentContainer: React.FC<Props> = ({ postId, userOfPost }) => {
   const dispatch = useAppDispatch()
   const comments = useAppSelector(commentSelector.selectHistoryCommentData)
   const status = useAppSelector(commentSelector.selecteHistoryCommentStatus)
@@ -19,8 +20,6 @@ const CommentContainer: React.FC<Props> = ({ postId }) => {
     dispatch(fetchHistoryCommentAsync({ postId }))
   }, [postId])
 
-  console.log({ comments })
-
   return (
     <div className="flex flex-col gap-4">
       {status === 'loading' ? (
@@ -28,7 +27,9 @@ const CommentContainer: React.FC<Props> = ({ postId }) => {
       ) : (
         status === 'successful' &&
         (comments.length > 0 ? (
-          restructureCommentArray(comments)?.map((comment) => <CommentTreeView key={comment?._id} comment={comment} />)
+          restructureCommentArray(comments)?.map((comment) => (
+            <CommentTreeView userOfPost={userOfPost} key={comment?._id} comment={comment} />
+          ))
         ) : (
           <div>
             <p className="text-base font-bold">Be the first to comment</p>

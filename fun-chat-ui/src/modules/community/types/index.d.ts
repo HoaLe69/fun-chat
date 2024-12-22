@@ -13,6 +13,19 @@ export type IPost = {
   updatedAt: string
 }
 
+export type INotification = {
+  _id: string
+  recipient: string
+  sender: string
+  type: string
+  metadata: {
+    resource_url: string
+    message: string
+  }
+  isRead: booleand
+  createdAt: string
+  updatedAt: string
+}
 export type IComment = {
   _id: string
   postId: string

@@ -52,8 +52,8 @@ const MdxEditor: React.FC<Props> = (props) => {
       EditorView.domEventHandlers({
         paste: (view, event) => {
           console.log('paste', view.clipboardData?.files)
-        }
-      })
+        },
+      }),
     ],
     onChange: (val, viewUpdate) => {
       onChange(val)

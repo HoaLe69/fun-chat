@@ -19,3 +19,12 @@ const PostItemLoadingSkeleton = () => (
     </div>
   </div>
 )
+export const NotificationItemLoadingSkeleton = () => (
+  <div className="flex items-center gap-2 py-4 animate-pulse">
+    <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700" />
+    <div className="w-full flex-1">
+      <div className="w-full h-5 rounded-2xl bg-gray-300 dark:bg-gray-600" />
+      <div className="w-40 h-3 rounded-2xl bg-gray-300 dark:bg-gray-600 mt-2" />
+    </div>
+  </div>
+)

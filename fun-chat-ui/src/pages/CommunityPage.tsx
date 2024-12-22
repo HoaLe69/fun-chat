@@ -12,8 +12,14 @@ const CommunityPage = () => {
   }, [])
   return (
     <MainLayout typeOfSidebarRight="recent">
-      <div className='flex justify-end pr-8'>
-        <button onClick={handleNavigate} className='p-2 rounded-full text-sm font-medium flex items-center gap-2 bg-zinc-200 dark:bg-zinc-700 hover:opacity-90'><PlusRawIcon className='w-4 h-4' />Create Post</button>
+      <div className="flex justify-end pr-8">
+        <button
+          onClick={handleNavigate}
+          className="p-2 rounded-full text-sm font-medium flex items-center gap-2 bg-zinc-200 dark:bg-zinc-700 hover:opacity-90"
+        >
+          <PlusRawIcon className="w-4 h-4" />
+          Create Post
+        </button>
       </div>
       <PostContainer />
     </MainLayout>

@@ -6,6 +6,7 @@ const auth = require("@routes/auth.route")
 const post = require("@routes/post.route")
 const community = require("@routes/community.route")
 const comment = require("@routes/comment.route")
+const notify = require("@routes/notify.route")
 
 const fakerController = require("@controller/faker.controller.js")
 
@@ -18,6 +19,7 @@ router.use("/auth", auth)
 router.use("/post", post)
 router.use("/community", verifyToken, community)
 router.use("/comment", comment)
+router.use("/notify", verifyToken, notify)
 /// fake data
 router.post("/faker/user", fakerController.createFakerUser)
 router.post("/faker/community", fakerController.createFakerCommunity)

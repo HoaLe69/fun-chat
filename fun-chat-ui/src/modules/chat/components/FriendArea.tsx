@@ -2,19 +2,21 @@ import { Button } from '@headlessui/react'
 import { authSelector } from 'modules/auth/states/authSlice'
 import Image from 'modules/core/components/Image'
 import { CloseIcon, FriendUserIcon } from 'modules/core/components/icons'
-import { useAppSelector } from 'modules/core/hooks'
+import { useAppSelector, useSocket } from 'modules/core/hooks'
 import { userServices } from 'modules/user/services'
 import { IUser } from 'modules/user/types'
 import { useState, useCallback, useEffect } from 'react'
 import ReactLoading from 'react-loading'
 import { CheckRawIcon } from 'modules/core/components/icons'
 import classNames from 'classnames'
+import { notifyServices } from 'modules/community/services'
+import { SOCKET_EVENTS } from 'const'
 
 const FriendArea = () => {
   const [activeTab, setActiveTab] = useState<string>('All')
   const [userData, setUserData] = useState<IUser[]>([])
   const [loading, setLoading] = useState<boolean>(false)
-  const userLoginId = useAppSelector(authSelector.selectUserId)
+  const userLogin = useAppSelector(authSelector.selectUser)
 
   const handleChangeTab = useCallback((tab: string) => {
     setActiveTab(tab)
@@ -28,10 +30,10 @@ const FriendArea = () => {
   }, [])
 
   useEffect(() => {
-    if (!userLoginId) return
+    if (!userLogin?._id) return
     setLoading(true)
     userServices
-      .getUserById(userLoginId)
+      .getUserById(userLogin?._id)
       .then((res) => {
         if (activeTab == 'All') {
           processFetchFriendList(res?.friends).then((users) => setUserData(users))
@@ -46,7 +48,7 @@ const FriendArea = () => {
       .finally(() => {
         setLoading(false)
       })
-  }, [activeTab, userLoginId])
+  }, [activeTab, userLogin?._id])
 
   return (
     <main className="bg-zinc-50 dark:bg-zinc-800">
@@ -63,11 +65,12 @@ const FriendArea = () => {
       </header>
       <div className="max-w-5xl">
         <TabPanel
-          setUserData={setUserData}
-          userLoginId={userLoginId}
           tab={activeTab}
           data={userData}
           loading={loading}
+          setUserData={setUserData}
+          userLoginId={userLogin?._id}
+          userLoginDisplayName={userLogin?.display_name}
         />
       </div>
     </main>
@@ -93,13 +96,17 @@ const TabPanel = ({
   loading,
   userLoginId,
   setUserData,
+  userLoginDisplayName,
 }: {
   tab: string
   data: IUser[]
   loading: boolean
   userLoginId?: string
+  userLoginDisplayName?: string
   setUserData: React.Dispatch<React.SetStateAction<IUser[]>>
 }) => {
+  const { emitEvent } = useSocket()
+
   const getTypeOfUserPending = useCallback(
     (user: IUser) => {
       if (tab !== 'Pending') return { text: user?.email, actions: null }
@@ -120,8 +127,25 @@ const TabPanel = ({
           setUserData((prev) => prev.filter((user) => user._id !== userId))
         })
         .catch((err) => console.log(err))
+
+      notifyServices
+        .createNotify({
+          type: 'friend_request',
+          senderId: userLoginId,
+          recipient: userId,
+          metadata: {
+            message: `<strong>${userLoginDisplayName}</strong> accept your friend request[;`,
+            resource_url: '/devchat/@me',
+          },
+        })
+        .then((res) => {
+          emitEvent(SOCKET_EVENTS.NOTIFYCATION.SEND, [res], (response: any) => {
+            console.log('send notification response', response)
+          })
+        })
+        .catch((error) => console.log(error))
     },
-    [userLoginId],
+    [userLoginId, userLoginDisplayName],
   )
 
   const handleCancelFriend = useCallback(
