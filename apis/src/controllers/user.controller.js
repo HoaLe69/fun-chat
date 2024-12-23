@@ -58,7 +58,7 @@ const userController = {
   search: async (req, res, next) => {
     try {
       const email = req.query?.q
-      const users = await User.findUsersByEmail(email)
+      const users = await userServices.searchUserByEmailAsync(email)
       return res.status(200).json(users)
     } catch (err) {
       next(err)

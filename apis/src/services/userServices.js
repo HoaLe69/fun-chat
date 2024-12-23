@@ -45,8 +45,14 @@ const acceptFriendRequestAsync = async (userRequestId, userDestinationId) => {
   return { userReq, userDes }
 }
 
+const searchUserByEmailAsync = async email => {
+  const users = await User.find({ email: { $regex: email, $options: "i" } })
+  return users
+}
+
 module.exports = {
   addNewFriendRequestAsync,
   acceptFriendRequestAsync,
   cancelFriendRequestAsync,
+  searchUserByEmailAsync,
 }
