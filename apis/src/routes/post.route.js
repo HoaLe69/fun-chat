@@ -1,5 +1,6 @@
 const express = require("express")
 const router = express.Router()
+const upload = require("@config/multer")
 
 const postController = require("@controller/post.controller")
 
@@ -12,6 +13,7 @@ router.patch("/upvote", postController.upvotePost)
 router.patch("/downvote", postController.downvotePost)
 router.get("/recent/:userId", postController.getUserRecentPostsVisited)
 router.post("/add-user-recent", postController.addUserRecentPostVisited)
+router.post("/upload", upload.single("file"), postController.uploadFile)
 router.patch("/edit-content/:postId", postController.updatePostContent)
 
 module.exports = router

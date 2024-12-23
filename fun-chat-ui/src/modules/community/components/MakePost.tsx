@@ -27,10 +27,12 @@ const MakePost = () => {
     const { name, value } = event.target
     setPostForm((prev) => ({ ...prev, [name]: value }))
   }, [])
-  const handleEditorChange = useCallback((value: string) => {
-    console.log({ value })
-    setPostForm((prev) => ({ ...prev, description: value }))
-  }, [])
+  const handleEditorChange = useCallback(
+    (value: string) => {
+      setPostForm((prev) => ({ ...prev, description: value }))
+    },
+    [postForm],
+  )
 
   const handleSubmit = useCallback(async () => {
     if (!userLogin?._id || !selectedCommunity?._id) return
@@ -64,7 +66,6 @@ const MakePost = () => {
 
     //api call  to create post
   }, [postForm, selectedCommunity, userLogin])
-  console.log({ userLogin })
 
   return (
     <div className="pt-3 flex-1">

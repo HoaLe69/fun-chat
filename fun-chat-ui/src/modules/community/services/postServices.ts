@@ -48,4 +48,10 @@ export const postServices = {
     const response = await apiClient.patch(`/post/edit-content/${postId}`, { content })
     return response.data
   },
+  async uploadFile(file: File) {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await apiClient.post('/post/upload', formData)
+    return response.data
+  },
 }

@@ -99,39 +99,46 @@ const ChatForm: React.FC<Props> = ({ chatMembers }) => {
   }, [replyMessage, userLoginId, chatMembers])
 
   return (
-    <div className="bg-transparent py-2 px-2">
+    <div className="py-2 px-2">
       {fileSelections.length > 0 && <FilePreview files={fileSelections} setFiles={setFileSelections} />}
       {replyMessage && renderReplyMessageElement()}
-      <div className="flex items-center px-3 py-1 bg-zinc-300 dark:bg-zinc-700 rounded-md">
+      <div className="flex items-end px-3 py-1 bg-zinc-200 dark:bg-zinc-700 rounded-md">
         {/*options menu*/}
         <MenuMessageExtra
           onSelect={handleFileSelectionAndPreview}
           onClose={handleCloseMenuMessageExtra}
           visible={visibleMenuMessageExtra}
         >
-          <span onClick={handleOpenMenuMessageExtra} className="text-grey-500 cursor-pointer">
-            <PlusCircleIcon />
+          <span onClick={handleOpenMenuMessageExtra} className="text-grey-500 cursor-pointer w-6 h-6  inline-block">
+            <PlusCircleIcon className="w-6 h-6" />
           </span>
         </MenuMessageExtra>
         <form className="flex-1 flex gap-2 items-center px-2">
-          <MdxEditor value={markdownContent} className="editor" onChange={handleEditorChange} onSubmit={handleSubmit} />
-          <span className="text-grey-500 relative">
-            <LaughIcon className="cursor-pointer" onClick={handleOpenEmojiPicker} />
-            <EmojiPicker
-              appendEmojiToText={handleAppendEmojiToMarkdownContent}
-              isOpen={visibleEmojiPicker}
-              onClose={handleCloseEmojiPicker}
-            />
-          </span>
+          <MdxEditor
+            setFiles={setFileSelections}
+            value={markdownContent}
+            className="editor"
+            onChange={handleEditorChange}
+            onSubmit={handleSubmit}
+          />
         </form>
+        <div className="text-grey-500 relative p-2 rounded-full hover:bg-zinc-300 dark:hover:bg-zinc-800">
+          <LaughIcon className="cursor-pointer" onClick={handleOpenEmojiPicker} />
+          <EmojiPicker
+            appendEmojiToText={handleAppendEmojiToMarkdownContent}
+            isOpen={visibleEmojiPicker}
+            onClose={handleCloseEmojiPicker}
+          />
+        </div>
+
         <button
           onClick={handleSubmit}
           className={classNames(
-            'w-10 h-10 rounded-full inline-flex items-center justify-center',
+            'w-8 h-8 rounded-full flex items-center justify-center mb-1',
             markdownContent.trim().length === 0 ? 'bg-grey-400 dark:bg-grey-600' : 'bg-blue-500 dark:bg-blue-400',
           )}
         >
-          <SendIcon />
+          <SendIcon className="w-4 h-4" />
         </button>
       </div>
     </div>

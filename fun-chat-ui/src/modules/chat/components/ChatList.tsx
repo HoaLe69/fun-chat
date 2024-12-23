@@ -32,7 +32,7 @@ const ChatList: React.FC = () => {
   }, [userLoginId])
 
   return (
-    <div className="flex-1 overflow-y-auto relative">
+    <div className="flex-1 overflow-y-auto relative px-2">
       <div className="h-full">
         <ul className="overflow-x-hidden w-full transition-all h-full">
           {rooms?.map((room: IConversation) => {

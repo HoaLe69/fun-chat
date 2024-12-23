@@ -1,6 +1,15 @@
 const postServices = require("@services/postServices")
 
 const postController = {
+  async uploadFile(req, res, next) {
+    try {
+      const uploadedFile = req.file
+      const path = `${req.protocol}://${req.get("host")}/uploads/${uploadedFile.filename}`
+      return res.status(200).json({ path, fileName: uploadedFile.originalname })
+    } catch (error) {
+      next(error)
+    }
+  },
   async updatePostContent(req, res, next) {
     try {
       const postId = req.params.postId

@@ -6,7 +6,6 @@ import Tippy from '@tippyjs/react/headless'
 import { communityServices } from '../services/communityServices'
 
 const CommunitySelectItem = ({ community, onClick }: { community: ICommunity; onClick: () => void }) => {
-  console.log({ community })
   return (
     <div
       onClick={onClick}
@@ -55,9 +54,8 @@ const SelectCommunity: React.FC<Props> = ({ onSelectCommunity, selectedCommunity
   const loadListOfCommunity = useCallback(async (searchTerm: string) => {
     setSearching(true)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2200))
+      //      await new Promise((resolve) => setTimeout(resolve, 2200))
       const communites = await communityServices.searchCommunity(searchTerm)
-      console.log({ communites })
       setListOfCommunities(communites)
     } catch (error) {
       console.log(error)
