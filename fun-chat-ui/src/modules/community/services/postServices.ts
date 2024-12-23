@@ -44,4 +44,8 @@ export const postServices = {
     const response = await apiClient.patch('/post/downvote', { postId, userId })
     return response.data
   },
+  async editPostContentAsync(postId: string, content: string) {
+    const response = await apiClient.patch(`/post/edit-content/${postId}`, { content })
+    return response.data
+  },
 }

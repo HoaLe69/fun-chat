@@ -49,7 +49,6 @@ const UserInformationCard = ({ userId, isMounted }: { userId: string; isMounted:
     userLoginId,
     handleOpenChatbox,
   } = useSendImmediateMsg(userId, isMounted)
-  console.log('openChatbox', openChatBox)
   const handleNavigateToProfile = useCallback((userId: string) => {
     navigate(`/user/profile/${userId}`)
   }, [])

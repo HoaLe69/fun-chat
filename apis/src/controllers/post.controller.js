@@ -1,6 +1,17 @@
 const postServices = require("@services/postServices")
 
 const postController = {
+  async updatePostContent(req, res, next) {
+    try {
+      const postId = req.params.postId
+      const { content } = req.body
+      const editedPost = await postServices.updatePostContentAsync(postId, content)
+      return res.status(200).json(editedPost)
+    } catch (error) {
+      next(error)
+      console.log(error)
+    }
+  },
   async getListPostByCreatorId(req, res, next) {
     try {
       const userId = req.params.userId

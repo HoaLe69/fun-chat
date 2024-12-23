@@ -10,6 +10,7 @@ export type IPost = {
   downvoted: string[]
   tags: string[]
   createdAt: string
+  isEdited: boolean
   updatedAt: string
 }
 

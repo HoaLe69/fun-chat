@@ -7,6 +7,10 @@ import { useCallback, useEffect, useState } from 'react'
 import usePostActions from '../hooks/usePostActions'
 import UserInformationCardContainer from './UserInformationCard'
 import { CommunityDefaultPictureIcon } from 'modules/core/components/icons'
+import { useAppSelector } from 'modules/core/hooks'
+import { authSelector } from 'modules/auth/states/authSlice'
+import MdxEditor from './MdxEditor'
+import { postServices } from '../services'
 
 interface Props {
   communityInfo: ICommunity | null
@@ -15,6 +19,9 @@ interface Props {
 
 const PostItemDetailInfo: React.FC<Props> = ({ communityInfo, postInfo }) => {
   const [postState, setPostState] = useState<IPost | null>(null)
+  const [isEditMode, setIsEditMode] = useState<boolean>(false)
+  const userLoginId = useAppSelector(authSelector.selectUserId)
+  const [editedContent, setEditedContent] = useState<string>('')
 
   useEffect(() => {
     if (!postInfo) return
@@ -26,12 +33,44 @@ const PostItemDetailInfo: React.FC<Props> = ({ communityInfo, postInfo }) => {
   }, [])
 
   const { handleUpvote, handleDownvote, handleComment, activeVoteButton, numberOfVote } = usePostActions({
-    postState,
     updatePostState,
+    postState,
   })
+
+  const handleEnterEditMode = useCallback(() => {
+    setIsEditMode(true)
+  }, [])
+
+  const handleEditorChange = useCallback((markdown: string) => {
+    setEditedContent(markdown)
+  }, [])
+
+  const handelCancelEdit = useCallback(() => {
+    setIsEditMode(false)
+    setEditedContent('')
+  }, [])
+
+  const handleSubmitEdit = useCallback(() => {
+    if (editedContent === postInfo.content || !editedContent) {
+      setIsEditMode(false)
+      return
+    }
+
+    postServices
+      .editPostContentAsync(postInfo?._id, editedContent)
+      .then((res) => {
+        setPostState((pre: any) => {
+          return { ...pre, content: res.content, isEdited: res.isEdited }
+        })
+        setIsEditMode(false)
+        setEditedContent('')
+      })
+      .catch((err) => console.log(err))
+  }, [editedContent, postInfo])
+
   return (
     <section className="post-item-detail-info min-w-0">
-      <header className="post-item-detail-info-header">
+      <header className="post-item-detail-info-header flex items-center">
         <div className="flex items-center">
           {communityInfo?.picture ? (
             <img src={communityInfo?.picture} alt={communityInfo?.name} className="w-8 h-8 rounded-full" />
@@ -43,6 +82,12 @@ const PostItemDetailInfo: React.FC<Props> = ({ communityInfo, postInfo }) => {
               <span className="text-xs font-bold">{communityInfo?.name}</span>
               <span className="inline-block my-0 mx-2">•</span>
               <span className="text-xs text-gray-500">{moment(postInfo?.createdAt).format('LL')}</span>
+              {postState?.isEdited && (
+                <>
+                  <span className="inline-block my-0 mx-2">•</span>
+                  <span className="text-xs text-blue-500">Edited</span>
+                </>
+              )}
             </div>
             <UserInformationCardContainer userId={postInfo?.creator?._id}>
               <span className="text-gray-600 text-xs hover:text-gray-300 hover:cursor-pointer">
@@ -51,10 +96,40 @@ const PostItemDetailInfo: React.FC<Props> = ({ communityInfo, postInfo }) => {
             </UserInformationCardContainer>
           </div>
         </div>
+        {userLoginId === postInfo?.creator?._id && (
+          <button
+            onClick={handleEnterEditMode}
+            className="ml-auto text-sm font-medium p-2 rounded-full hover:opacity-80 bg-zinc-200 dark:bg-zinc-700"
+          >
+            edit
+          </button>
+        )}
       </header>
-      <div className="post-item-detail-info-body mb-4">
+      <div className="post-item-detail-info-body mb-4 mt-2">
         <h1 className="text-2xl text-zinc-700 dark:text-zinc-100 font-bold mt-2 mb-4">{postInfo?.title}</h1>
-        <MarkdownPreview className="post-preview-content" source={postInfo?.content} />
+        {isEditMode ? (
+          <>
+            <MdxEditor onChange={handleEditorChange} doc={editedContent || postState?.content} />
+            <div className="flex items-center gap-2 justify-end mt-2">
+              <button
+                onClick={handelCancelEdit}
+                className="text-sm font-semibold bg-zinc-600 hover:bg-zinc-700 text-white px-4 py-2 rounded-full"
+              >
+                cancel
+              </button>
+              <button
+                onClick={handleSubmitEdit}
+                className="text-sm font-semibold bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-full"
+              >
+                Save
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <MarkdownPreview className="post-preview-content" source={postState?.content} />
+          </>
+        )}
       </div>
       <PostActionButtons
         onDownvote={(event) => handleDownvote(event, postInfo?._id)}

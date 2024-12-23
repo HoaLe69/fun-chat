@@ -12,5 +12,6 @@ router.patch("/upvote", postController.upvotePost)
 router.patch("/downvote", postController.downvotePost)
 router.get("/recent/:userId", postController.getUserRecentPostsVisited)
 router.post("/add-user-recent", postController.addUserRecentPostVisited)
+router.patch("/edit-content/:postId", postController.updatePostContent)
 
 module.exports = router

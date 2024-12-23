@@ -37,6 +37,10 @@ const postSchema = new Schema(
       type: Number,
       default: 0,
     },
+    isEdited: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true },
 )

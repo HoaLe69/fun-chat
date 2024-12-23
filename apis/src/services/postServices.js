@@ -149,6 +149,17 @@ const downvote = async (postId, userId) => {
   return await post.save()
 }
 
+const updatePostContentAsync = async (postId, content) => {
+  if (!postId) throw new APIError(400, "postId is required")
+
+  const post = await Post.findById(postId)
+
+  post.content = content
+  post.isEdited = true
+
+  return await post.save()
+}
+
 module.exports = {
   createPost,
   upvote,
@@ -159,4 +170,5 @@ module.exports = {
   getPostPopulateCreatorAsync,
   getUserRecentPostsVisitedAsync,
   addUserRecentPostVisitedAsync,
+  updatePostContentAsync,
 }
