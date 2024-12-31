@@ -1,6 +1,6 @@
 import UserSetting from 'modules/core/components/UserSetting'
 import ChatList from './ChatList'
-import { PlusRawIcon, FriendUserIcon } from 'modules/core/components/icons'
+import { FriendUserIcon } from 'modules/core/components/icons'
 import { useNavigate } from 'react-router-dom'
 import CreateNewDirectMessage from './CreateNewDirectMessage'
 const Sidebar = () => {

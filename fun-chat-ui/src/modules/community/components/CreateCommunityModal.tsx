@@ -89,7 +89,7 @@ const CreateCommunityModal: React.FC<Props> = ({ isOpen, onClose }) => {
       } // api call
       const community = await communityServices.createCommunity(form)
       onClose()
-      navigate(`/community/${community?.name}`)
+      navigate(`/community/${community?.name}/${community?._id}`)
     } catch (error) {
       console.log(error)
     } finally {
@@ -99,7 +99,7 @@ const CreateCommunityModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
   return (
     <AppModalHeadless isOpen={isOpen} onClose={onClose} title="Tell us about your community">
-      <div className="max-w-[768px] w-full bg-white dark:bg-zinc-800 shadow-xl p-4 rounded-xl text-zinc-950 dark:text-zinc-50">
+      <div className="w-[768px] bg-white dark:bg-zinc-800 shadow-xl p-4 rounded-xl text-zinc-950 dark:text-zinc-50">
         <header className="flex items-center">
           <h3 className="text-2xl font-bold">Tell us about your community</h3>
           <button

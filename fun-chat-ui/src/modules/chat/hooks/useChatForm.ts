@@ -1,15 +1,20 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { useAppDispatch, useAppSelector, useDebounce, useSocket } from 'modules/core/hooks'
-import type { IFileUpload, IMessageContentFile, IMessageContentImage } from '../types'
+import type { IFileUpload } from '../types'
 import { addMessage, cancelReplyMessage, messageSelector } from '../states/messageSlice'
 import { authSelector } from 'modules/auth/states/authSlice'
 import { messageServices } from '../services'
 import { SOCKET_EVENTS } from 'const'
 import { useParams } from 'react-router-dom'
+import { toast } from 'sonner'
 
-const useChatForm = () => {
+type UseChatFormProps = {
+  msgContainer: React.RefObject<HTMLDivElement>
+}
+const useChatForm = ({ msgContainer }: UseChatFormProps) => {
   const [fileSelections, setFileSelections] = useState<IFileUpload[]>([])
   const [markdownContent, setMarkdownContent] = useState<string>('')
+  const [isSending, setIsSending] = useState<boolean>(false)
 
   const [visibleEmojiPicker, setVisibleEmojiPicker] = useState<boolean>(false)
   const [visibleMenuMessageExtra, setVisibleMenuMessageExtra] = useState<boolean>(false)
@@ -23,33 +28,6 @@ const useChatForm = () => {
   const debounceValue = useDebounce(markdownContent, 200)
 
   /*-----------------Bussiess logic-------------------*/
-  const sendMessage = useCallback(
-    (uploadedFile?: { images: IMessageContentImage[]; files: IMessageContentFile[] }) => {
-      const msg = {
-        content: {
-          text: markdownContent ? markdownContent.trim() : null,
-          images: uploadedFile?.images || [],
-          files: uploadedFile?.files || [],
-        },
-        ownerId: userLoginId,
-        roomId,
-        replyTo: replyMessage?._id,
-      }
-      emitEvent(
-        SOCKET_EVENTS.MESSAGE.SEND,
-        {
-          msg,
-          replyMessage,
-          recipientId,
-        },
-        (response: any) => {
-          dispatch(addMessage(response))
-        },
-      )
-      if (replyMessage) dispatch(cancelReplyMessage())
-    },
-    [replyMessage, markdownContent],
-  )
 
   const uploadFilesToServer = useCallback(async () => {
     if (!fileSelections.length) return
@@ -65,8 +43,6 @@ const useChatForm = () => {
   const handleFileSelectionAndPreview = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const target = event?.target as HTMLInputElement
-      //FIX: it's doesn't work when change room
-      console.log('file change', target)
 
       if (target.files?.length) {
         const file = target.files[0]
@@ -123,19 +99,58 @@ const useChatForm = () => {
 
   const handleSubmit = async () => {
     if (!markdownContent.trim() && !fileSelections.length) return
-    let uploadedFile
-    if (fileSelections.length > 0) {
-      uploadedFile = await uploadFilesToServer()
-    }
-    if (fileSelections.length > 0 && !uploadedFile) return
-
+    setIsSending(true)
     try {
-      sendMessage(uploadedFile)
-      //clear files preview
+      const formData = new FormData()
+      const msg = {
+        content: {
+          text: markdownContent ? markdownContent.trim() : null,
+          images: [],
+          files: [],
+        },
+        ownerId: userLoginId,
+        roomId,
+        replyTo: replyMessage?._id,
+      }
+      console.log({ msg })
+
+      formData.append('msg', JSON.stringify(msg))
+      formData.append('recipientId', JSON.stringify(recipientId))
+      if (replyMessage) {
+        formData.append('replyMessage', JSON.stringify(replyMessage))
+      }
+
+      if (fileSelections.length > 0) {
+        const originalFiles = fileSelections.map((file) => file.original)
+        originalFiles.forEach((file) => {
+          formData.append('files', file)
+        })
+      }
+
+      const response = await messageServices.createMessage(formData)
+
+      console.log('respose', response)
+
+      emitEvent(
+        SOCKET_EVENTS.MESSAGE.SEND,
+        { data: JSON.stringify({ msg: response.message, room: response.room, replyMessage, recipientId }) },
+        (response: any) => {
+          dispatch(addMessage(response))
+          const msgContainerEl = msgContainer.current
+          if (msgContainerEl) {
+            setTimeout(() => {
+              msgContainerEl.scrollTop = msgContainerEl.scrollHeight
+            }, 0)
+          }
+        },
+      )
+    } catch (error) {
+      toast.error('Failed to send message')
+      console.log(error)
+    } finally {
       setFileSelections([])
       setMarkdownContent('')
-    } catch (error) {
-      console.log(error)
+      setIsSending(false)
     }
   }
 
@@ -151,6 +166,7 @@ const useChatForm = () => {
   }, [roomId])
 
   return {
+    isSending,
     markdownContent,
     userLoginId,
     replyMessage,

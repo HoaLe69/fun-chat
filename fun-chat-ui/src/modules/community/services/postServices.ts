@@ -36,6 +36,18 @@ export const postServices = {
     const response = await apiClient.get(`/post/get-by-id/${id}`)
     return response.data
   },
+  async approvePostAsync(postId: string) {
+    const response = await apiClient.patch(`/post/approve/${postId}`)
+    return response.data
+  },
+  async getPendingPostByCommunityId(communityId: string) {
+    const response = await apiClient.get(`/post/get-pending-post/${communityId}`)
+    return response.data
+  },
+  async getPostByIdPopulateCommunity(id: string) {
+    const response = await apiClient.get(`/post/get-by-id-populate-community/${id}`)
+    return response.data
+  },
   async upvotePost(postId: string, userId: string) {
     const response = await apiClient.patch('/post/upvote', { postId, userId })
     return response.data
@@ -48,6 +60,15 @@ export const postServices = {
     const response = await apiClient.patch(`/post/edit-content/${postId}`, { content })
     return response.data
   },
+  async deletePostByIdAsync(postId: string) {
+    const response = await apiClient.delete(`/post/delete/${postId}`)
+    return response.data
+  },
+  async savedPostAsync(postId: string, userId: string) {
+    const response = await apiClient.patch(`/post/save/${postId}`, { postId, userId })
+    return response.data
+  },
+
   async uploadFile(file: File) {
     const formData = new FormData()
     formData.append('file', file)

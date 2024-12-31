@@ -12,6 +12,7 @@ import { SOCKET_EVENTS } from 'const'
 
 const ChatList: React.FC = () => {
   const rooms = useAppSelector(selectListRoom)
+  console.log('rooms', rooms)
   const dispatch = useAppDispatch()
 
   const userLoginId = useAppSelector(authSelector.selectUserId)

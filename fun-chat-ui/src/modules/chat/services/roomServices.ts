@@ -3,11 +3,6 @@ import { apiClient } from 'modules/core/services'
 type RoomInfoType = {
   members: Array<string | null | undefined>
   status: string
-  latestMessage: {
-    text: string
-    createdAt: string
-    ownerId: string | null
-  }
 }
 export const roomServices = {
   async createRoom(roomInfo: RoomInfoType) {

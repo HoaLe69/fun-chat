@@ -4,7 +4,7 @@ import type { IMessage } from 'modules/chat/types'
 import ReactLoading from 'react-loading'
 import classNames from 'classnames'
 import { useChatArea } from '../hooks'
-import { useCallback } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import Message from './Message'
 import { isTimeDiffInMins } from '../utils/dateTimeFormat'
 import Image from 'modules/core/components/Image'
@@ -171,7 +171,7 @@ const ChatArea: React.FC = () => {
         </div>
       </div>
 
-      <ChatForm chatMembers={chatMembers} />
+      <ChatForm refContainer={refContainer} chatMembers={chatMembers} />
     </Wrapper>
   )
 }

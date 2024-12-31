@@ -149,7 +149,7 @@ export const RelationshipButton = ({
         handleAcceptFriend(userDestinationId, userLoginId)
         const notificationResponse = await notifyServices.createNotify({
           type: 'friend_request',
-          senderId: userLoginId,
+          sender: userLoginId,
           recipient: userDestinationId,
           metadata: {
             message: `<strong>${userLogin?.display_name}</strong> accept your friend request`,
@@ -168,7 +168,7 @@ export const RelationshipButton = ({
       })
       const notificationResponse = await notifyServices.createNotify({
         type: 'friend_request',
-        senderId: userLoginId,
+        sender: userLoginId,
         recipient: userDestinationId,
         metadata: {
           message: `<strong>${userLogin?.display_name}</strong> sent you a friend request`,

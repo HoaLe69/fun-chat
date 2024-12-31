@@ -14,7 +14,7 @@ const usePostContainer = () => {
   const path = useLocation()
   const { getPostByCommunityId, getAllPostPopulateCommunity, getListPostByCreatorId } = postServices
 
-  const isHomeCommunity = path.pathname === '/community'
+  const isHomeCommunity = path.pathname === '/'
   const isProfilePage = path.pathname.includes('/user/profile')
 
   const loadPostAsync = useCallback(async () => {

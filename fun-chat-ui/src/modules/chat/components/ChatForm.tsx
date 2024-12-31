@@ -42,6 +42,7 @@ const MenuMessageExtra: React.FC<MenuMessageExtraProps> = ({ children, onClose, 
             <input
               onChange={onSelect}
               type="file"
+              multiple
               id="file"
               accept="image/*, text/*, application/*"
               className="absolute hidden"
@@ -57,10 +58,12 @@ const MenuMessageExtra: React.FC<MenuMessageExtraProps> = ({ children, onClose, 
 
 interface Props {
   chatMembers: Record<string, IUser>
+  refContainer: React.RefObject<HTMLDivElement>
 }
 
-const ChatForm: React.FC<Props> = ({ chatMembers }) => {
+const ChatForm: React.FC<Props> = ({ chatMembers, refContainer }) => {
   const {
+    isSending,
     markdownContent,
     replyMessage,
     visibleMenuMessageExtra,
@@ -77,7 +80,7 @@ const ChatForm: React.FC<Props> = ({ chatMembers }) => {
     handleOpenEmojiPicker,
     handleCloseEmojiPicker,
     handleAppendEmojiToMarkdownContent,
-  } = useChatForm()
+  } = useChatForm({ msgContainer: refContainer })
 
   const renderReplyMessageElement = useCallback(() => {
     return (
@@ -99,7 +102,7 @@ const ChatForm: React.FC<Props> = ({ chatMembers }) => {
   }, [replyMessage, userLoginId, chatMembers])
 
   return (
-    <div className="py-2 px-2">
+    <div className={classNames('py-2 px-2', { 'opacity-20': isSending })}>
       {fileSelections.length > 0 && <FilePreview files={fileSelections} setFiles={setFileSelections} />}
       {replyMessage && renderReplyMessageElement()}
       <div className="flex items-end px-3 py-1 bg-zinc-200 dark:bg-zinc-700 rounded-md">

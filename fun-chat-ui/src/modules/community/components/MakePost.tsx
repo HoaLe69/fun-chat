@@ -49,8 +49,9 @@ const MakePost = () => {
       const notifyData = await notifyServices.createNotify({
         type: 'new_post',
         sender: userLogin?._id,
-        friends: userLogin?.friends,
+        friends: selectedCommunity?.moderators,
         resource_url: `/community/${selectedCommunity?.name}/p/${post._id}`,
+        picture_url: userLogin?.picture,
         message: `<strong>${userLogin?.display_name}</strong> has created a new post in <strong>${selectedCommunity?.name} community</strong>`,
       })
 

@@ -49,7 +49,7 @@ const getPostByCommunity = async (communityId, page = 1, limit = 10) => {
   const pageSize = Math.max(1, parseInt(limit)) // Ensure limit is at least 1
 
   // fetch paginate posts
-  const posts = await Post.find({ community: communityId })
+  const posts = await Post.find({ community: communityId, isVerify: true })
     .populate("creator")
     .sort({ createdAt: -1 })
     .skip((pageNumber - 1) * pageSize) // skip previous pages
@@ -75,12 +75,16 @@ const getPostPopulateCreatorAsync = async id => {
   return await Post.findOne({ _id: id }).populate("creator")
 }
 
+const getPostPopulateCommunityAsync = async id => {
+  return await Post.findOne({ _id: id }).populate("community")
+}
+
 const getAllPost = async (page = 1, limit = 10) => {
   const pageNumber = Math.max(1, parseInt(page)) // Ensure page is at least 1
   const pageSize = Math.max(1, parseInt(limit)) //Ensure limit is as least 1
 
   // fetch paginate posts
-  const posts = await Post.find()
+  const posts = await Post.find({ isVerify: true })
     .populate("community")
     .sort({ createdAt: -1 })
     .skip((pageNumber - 1) * pageSize) // skip previous pages
@@ -104,7 +108,7 @@ const getListPostByCreatorIdAsync = async (userId, page = 1, limit = 10) => {
   const pageSize = Math.max(1, parseInt(limit)) //Ensure limit is as least 1
 
   // fetch paginate posts
-  const posts = await Post.find({ creator: userId })
+  const posts = await Post.find({ creator: userId, isVerify: true })
     .populate("community")
     .sort({ createdAt: -1 })
     .skip((pageNumber - 1) * pageSize) // skip previous pages
@@ -149,6 +153,48 @@ const downvote = async (postId, userId) => {
   return await post.save()
 }
 
+const savePostAsync = async (postId, userId) => {
+  if (!userId) throw new APIError(400, "userId is required")
+  const storedPost = await Post.findOne({ _id: postId })
+
+  if (!storedPost) throw new APIError(404, "Post not found")
+
+  const userActivity = await UserActivity.findOne({ userId })
+
+  let savedPostIds = userActivity.saved_post
+  if (savedPostIds.includes(postId)) {
+    savedPostIds = savedPostIds.filter(id => id !== postId)
+  } else {
+    savedPostIds.push(postId)
+  }
+
+  userActivity.saved_post = savedPostIds
+  return await userActivity.save()
+}
+
+const deletePostAsync = async postId => {
+  if (!postId) throw new APIError(400, "postId is required")
+  const storedPost = await Post.findOne({ _id: postId })
+
+  if (!storedPost) throw new APIError(404, "Post not found")
+
+  return await storedPost.remove()
+}
+
+const getPendingPostByCommunityIdAsync = async communityId => {
+  if (!communityId) throw new APIError(400, "communityId is required")
+  const pendingPosts = await Post.find({ community: communityId, isVerify: false }).populate("creator")
+  return pendingPosts
+}
+
+const approvePostAsync = async postId => {
+  if (!postId) throw new APIError(400, "postId is required")
+  const post = await Post.findById(postId)
+
+  post.isVerify = true
+  return await post.save()
+}
+
 const updatePostContentAsync = async (postId, content) => {
   if (!postId) throw new APIError(400, "postId is required")
 
@@ -165,8 +211,13 @@ module.exports = {
   upvote,
   downvote,
   getAllPost,
+  savePostAsync,
+  deletePostAsync,
   getPostByCommunity,
+  approvePostAsync,
+  getPendingPostByCommunityIdAsync,
   getListPostByCreatorIdAsync,
+  getPostPopulateCommunityAsync,
   getPostPopulateCreatorAsync,
   getUserRecentPostsVisitedAsync,
   addUserRecentPostVisitedAsync,

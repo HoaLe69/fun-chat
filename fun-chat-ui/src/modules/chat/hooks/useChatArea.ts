@@ -85,6 +85,17 @@ const useChatArea = () => {
     subscribeEvent(SOCKET_EVENTS.MESSAGE.RECEIVE, (msg: any) => {
       console.log({ msg })
 
+      const containerEl = refContainer.current
+
+      if (containerEl) {
+        const { scrollHeight, scrollTop, clientHeight } = containerEl
+        const percent = (scrollTop / (scrollHeight - clientHeight)) * 100
+
+        if (percent > 95) {
+          containerEl.scrollTop = containerEl.scrollHeight
+        }
+      }
+
       if (msg.roomId === roomId) dispatch(addMessage(msg))
     })
     return () => {

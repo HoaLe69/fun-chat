@@ -6,11 +6,12 @@ import PostActionButtons from './PostActionButtons'
 import { useCallback, useEffect, useState } from 'react'
 import usePostActions from '../hooks/usePostActions'
 import UserInformationCardContainer from './UserInformationCard'
-import { CommunityDefaultPictureIcon } from 'modules/core/components/icons'
+import { BookMarkFillIcon, BookMarkOutlineIcon, CommunityDefaultPictureIcon } from 'modules/core/components/icons'
 import { useAppSelector } from 'modules/core/hooks'
 import { authSelector } from 'modules/auth/states/authSlice'
 import MdxEditor from './MdxEditor'
 import { postServices } from '../services'
+import { userServices } from 'modules/user/services'
 
 interface Props {
   communityInfo: ICommunity | null
@@ -22,11 +23,23 @@ const PostItemDetailInfo: React.FC<Props> = ({ communityInfo, postInfo }) => {
   const [isEditMode, setIsEditMode] = useState<boolean>(false)
   const userLoginId = useAppSelector(authSelector.selectUserId)
   const [editedContent, setEditedContent] = useState<string>('')
+  const [isSaved, setIsSaved] = useState<boolean>(false)
 
   useEffect(() => {
     if (!postInfo) return
     setPostState(postInfo)
   }, [postInfo])
+
+  useEffect(() => {
+    if (!userLoginId) return
+    userServices
+      .getUserActivity(userLoginId)
+      .then((res) => {
+        console.log('res', res)
+        setIsSaved(res.saved_post.includes(postInfo?._id))
+      })
+      .catch((err) => console.log(err))
+  }, [userLoginId, postInfo])
 
   const updatePostState = useCallback((newPost: IPost) => {
     setPostState(newPost)
@@ -68,6 +81,16 @@ const PostItemDetailInfo: React.FC<Props> = ({ communityInfo, postInfo }) => {
       .catch((err) => console.log(err))
   }, [editedContent, postInfo])
 
+  const handleSavePost = useCallback(() => {
+    if (!userLoginId || !postInfo) return
+    postServices
+      .savedPostAsync(postInfo?._id, userLoginId)
+      .then(() => {
+        setIsSaved(!isSaved)
+      })
+      .catch((err) => console.log(err))
+  }, [userLoginId, postInfo, isSaved])
+
   return (
     <section className="post-item-detail-info min-w-0">
       <header className="post-item-detail-info-header flex items-center">
@@ -96,14 +119,22 @@ const PostItemDetailInfo: React.FC<Props> = ({ communityInfo, postInfo }) => {
             </UserInformationCardContainer>
           </div>
         </div>
-        {userLoginId === postInfo?.creator?._id && (
+        <div className="ml-auto flex items-center gap-2">
           <button
-            onClick={handleEnterEditMode}
+            onClick={handleSavePost}
             className="ml-auto text-sm font-medium p-2 rounded-full hover:opacity-80 bg-zinc-200 dark:bg-zinc-700"
           >
-            edit
+            {isSaved ? <BookMarkFillIcon className="text-yellow-500" /> : <BookMarkOutlineIcon />}
           </button>
-        )}
+          {userLoginId === postInfo?.creator?._id && (
+            <button
+              onClick={handleEnterEditMode}
+              className="text-sm font-medium p-2 rounded-full hover:opacity-80 bg-zinc-200 dark:bg-zinc-700"
+            >
+              edit
+            </button>
+          )}
+        </div>
       </header>
       <div className="post-item-detail-info-body mb-4 mt-2">
         <h1 className="text-2xl text-zinc-700 dark:text-zinc-100 font-bold mt-2 mb-4">{postInfo?.title}</h1>

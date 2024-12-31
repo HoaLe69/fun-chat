@@ -6,6 +6,7 @@ const roomSchema = new Schema(
     latestMessage: {
       type: Schema.Types.ObjectId,
       ref: "Message",
+      default: null,
     },
     members: {
       type: Array,
@@ -17,15 +18,17 @@ const roomSchema = new Schema(
       required: false,
     },
     unreadMessage: {
-      type: [{
-        userId: String,
-        count: {
-          type: Number,
-          default: 0,
+      type: [
+        {
+          userId: String,
+          count: {
+            type: Number,
+            default: 0,
+          },
         },
-      }],
+      ],
       default: [],
-      _id: false
+      _id: false,
     },
   },
   { timestamps: true },

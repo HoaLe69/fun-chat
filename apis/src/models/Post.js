@@ -41,6 +41,10 @@ const postSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    isVerify: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true },
 )

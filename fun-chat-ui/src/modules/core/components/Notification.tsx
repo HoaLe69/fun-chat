@@ -82,6 +82,7 @@ const NotificationItem: React.FC<INotificationItem> = memo(({ notification, onRe
     userServices
       .getUserById(notification.sender)
       .then((res) => {
+        console.log('res >>>>', res)
         setSender(res)
       })
       .catch((error) => console.log(error))
@@ -97,6 +98,8 @@ const NotificationItem: React.FC<INotificationItem> = memo(({ notification, onRe
     [notification],
   )
 
+  const imagePath = notification?.type === 'new_post' ? notification?.metadata?.picture_url : sender?.picture
+
   return (
     <>
       {loading ? (
@@ -106,7 +109,7 @@ const NotificationItem: React.FC<INotificationItem> = memo(({ notification, onRe
           onClick={() => handleClickOnNotificationItem(notification?._id)}
           className="flex items-center gap-2 border-t border-t-zinc-200 dark:border-t-zinc-600 py-4 hover:dark:bg-zinc-800 hover:cursor-pointer px-1"
         >
-          <Image src={sender?.picture || ''} alt={sender?.display_name || ''} className="w-12 h-12 rounded-full" />
+          <Image src={imagePath} alt={sender?.display_name || ''} className="w-12 h-12 rounded-full" />
           <div>
             <div dangerouslySetInnerHTML={{ __html: notification?.metadata?.message }} />
             <span className="text-sm dark:text-gray-400 text-gray-400">

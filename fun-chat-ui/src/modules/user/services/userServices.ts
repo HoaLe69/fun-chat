@@ -8,6 +8,10 @@ export const userServices = {
     const res = await apiClient.get(`/users/search?q=${q}`)
     return res.data
   },
+  async getUserActivity(userId: string) {
+    const res = await apiClient.get(`/users/getUserActivity/${userId}`)
+    return res.data
+  },
 
   async getUserById(userId: string | undefined) {
     try {

@@ -1,12 +1,18 @@
-import { memo } from 'react'
+import { memo, useCallback } from 'react'
 import Image from './Image'
 import { SettingIcon } from './icons'
-import { useAppSelector } from '../hooks'
+import { useAppDispatch, useAppSelector, useSocket } from '../hooks'
 import Tippy from '@tippyjs/react/headless'
 import { ThemeToggleButton } from 'modules/core/components'
 import classNames from 'classnames'
+import { authServices } from 'modules/auth/services/authServices'
+import { logOut } from 'modules/auth/states/authSlice'
+import { useNavigate } from 'react-router-dom'
 
 const UserSetting = () => {
+  const { emitEvent } = useSocket()
+  const dispatch = useAppDispatch()
+  const navigate = useNavigate()
   const menu = [
     {
       tag: '@theme',
@@ -16,17 +22,29 @@ const UserSetting = () => {
     {
       tag: '@logout',
       name: 'Sign Out',
-      onClick: async () => {},
+      onClick: async () => {
+        await authServices.logOut()
+        emitEvent('offline', userLogin?._id)
+        dispatch(logOut())
+      },
       press: true,
     },
   ]
 
   const userLogin = useAppSelector((state) => state.auth.user)
 
+  const goToProfile = useCallback(() => {
+    if (!userLogin) return
+    navigate(`/user/profile/${userLogin?._id}`)
+  }, [userLogin])
+
   return (
     <div className="py-2 px-2 bg-zinc-200 dark:bg-zinc-950 flex items-center justify-between text-gray-950 dark:text-gray-50">
-      <div className="flex items-center gap-2">
-        <Image src={userLogin?.picture} alt="placeholder" className="w-8 h-8 rounded-full" />
+      <div
+        onClick={goToProfile}
+        className="flex items-center gap-2 hover:bg-zinc-800 px-2 py-1 pr-8 rounded-md transition-all hover:cursor-pointer"
+      >
+        <Image src={userLogin?.picture || ''} alt={userLogin?.display_name || ''} className="w-8 h-8 rounded-full" />
         <span className="text-sm font-semibold">{userLogin?.display_name}</span>
       </div>
       <Tippy
@@ -36,6 +54,7 @@ const UserSetting = () => {
             {menu.map((item) => (
               <li
                 key={item.name}
+                onClick={item.onClick}
                 className={classNames('rounded-xl py-1 px-2 ', {
                   'hover:bg-zinc-300 dark:hover:bg-zinc-800': item.press,
                 })}

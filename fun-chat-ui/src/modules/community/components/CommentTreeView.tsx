@@ -75,7 +75,15 @@ const CommentTreeNode = ({
         </div>
         <div>
           <div className="ml-2">
-            <MarkdownPreview source={node.content} className="post-preview-content" />
+            <MarkdownPreview
+              components={{
+                img: ({ node, ...props }) => {
+                  return <img src={props?.src} alt={props?.alt} className="max-w-80 max-h-80 block rounded-md" />
+                },
+              }}
+              source={node.content}
+              className="post-preview-content"
+            />
           </div>
           <CommentActionButtons
             onToggle={handleToggle}

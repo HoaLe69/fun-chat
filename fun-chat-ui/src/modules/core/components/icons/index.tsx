@@ -66,6 +66,8 @@ import MinusCircleIcon from './assets/minus-cricle.svg?react'
 import NotificationIcon from './assets/notify.svg?react'
 import FriendUserIcon from './assets/friend-user.svg?react'
 import CheckRawIcon from './assets/check-raw.svg?react'
+import BookMarkOutlineIcon from './assets/bookmark-outline.svg?react'
+import BookMarkFillIcon from './assets/bookmark-fill.svg?react'
 
 export {
   MenuBurgerIcon,
@@ -137,6 +139,8 @@ export {
   NotificationIcon,
   FriendUserIcon,
   CheckRawIcon,
+  BookMarkOutlineIcon,
+  BookMarkFillIcon,
 }
 
 export const LaughSmallIcon = () => {

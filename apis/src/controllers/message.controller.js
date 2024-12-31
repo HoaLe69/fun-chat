@@ -70,25 +70,59 @@ const messageController = {
       next(error)
     }
   },
-  create: async (req, res) => {
+  create: async (req, res, next) => {
     try {
-      const newMsg = await new Message(req.body).save()
-      // update latest message
-      await Room.findOneAndUpdate(
-        { _id: req.body.roomId },
-        {
-          $set: {
-            latestMessage: {
-              text: req.body.text,
-              createdAt: newMsg.createdAt,
-              ownerId: req.body.ownerId,
+      const replyMessage = req.query.replyMessage
+      const msg = JSON.parse(req.body.msg)
+      const files = req.files
+      const recipientId = JSON.parse(req.body.recipientId)
+      const fileDetails = messageServices.getFileDetail(req, files)
+
+      const newMessage = new Message({
+        ...msg,
+        content: { ...msg.content, ...fileDetails },
+      })
+
+      if (replyMessage) {
+        const _replyMessage = JSON.parse(req.body.replyMessage)
+        await Message.findOneAndUpdate(
+          { _id: _replyMessage._id },
+          {
+            $push: {
+              replyBy: newMessage._id,
             },
           },
-        },
-        { new: true },
-      )
-      return res.status(200).json(newMsg)
+        )
+      }
+
+      const savedMessage = await newMessage.save()
+
+      const storedRoom = await Room.findOne({ _id: msg.roomId })
+
+      storedRoom.latestMessage = savedMessage._id
+      //update count of unread message for recipient
+      const unReadMessage = storedRoom.unreadMessage
+      if (unReadMessage.length === 0) {
+        storedRoom.unreadMessage = [{ userId: recipientId, count: 1 }]
+      } else {
+        const user = unReadMessage.find(u => u.userId === recipientId)
+
+        if (!user) {
+          storedRoom.unreadMessage = [...unReadMessage, { userId: recipientId, count: 1 }]
+        } else {
+          storedRoom.unreadMessage = storedRoom.unreadMessage.map(u => {
+            if (u.userId === recipientId) {
+              return { ...u, count: u.count + 1 }
+            }
+            return u
+          })
+        }
+      }
+      await storedRoom.save()
+
+      return res.status(200).json({ message: savedMessage, room: storedRoom })
     } catch (err) {
+      next(err)
       console.log(err)
     }
   },

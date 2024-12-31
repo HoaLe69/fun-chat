@@ -1,4 +1,5 @@
 const User = require("@models/User")
+const UserActivity = require("@models/UserActivity")
 const { APIError } = require("@errors")
 
 const addNewFriendRequestAsync = async (userRequestId, userDestinationId) => {
@@ -50,7 +51,14 @@ const searchUserByEmailAsync = async email => {
   return users
 }
 
+const getUserActivityAsync = async userId => {
+  if (!userId) throw new APIError(400, "userId is required")
+  const userActivity = await UserActivity.findOne({ userId })
+  return userActivity
+}
+
 module.exports = {
+  getUserActivityAsync,
   addNewFriendRequestAsync,
   acceptFriendRequestAsync,
   cancelFriendRequestAsync,

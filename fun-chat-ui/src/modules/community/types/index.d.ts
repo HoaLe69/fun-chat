@@ -12,6 +12,7 @@ export type IPost = {
   createdAt: string
   isEdited: boolean
   updatedAt: string
+  isVerify: boolean
 }
 
 export type INotification = {
@@ -22,6 +23,7 @@ export type INotification = {
   metadata: {
     resource_url: string
     message: string
+    picture_url: string
   }
   isRead: booleand
   createdAt: string

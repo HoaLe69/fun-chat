@@ -37,9 +37,13 @@ export const messageServices = {
     const res = await apiClient.get(`message/list/${roomId}`)
     return res.data
   },
-  async createMessage(messageInfo: MessageRequest) {
-    const res = await apiClient.post('/message/create', { ...messageInfo })
-    return res.data
+  async createMessage(formData: FormData) {
+    try {
+      const res = await apiClient.post('/message/create', formData)
+      return res.data
+    } catch (error) {
+      console.log(error)
+    }
   },
 
   async updateMessage({

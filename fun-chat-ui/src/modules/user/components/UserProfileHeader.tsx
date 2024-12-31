@@ -1,16 +1,15 @@
-import { useParams } from 'react-router-dom'
 import Image from 'modules/core/components/Image'
 import { CommentBoxIcon } from 'modules/core/components/icons'
 import { RelationshipButton } from 'modules/community/components/UserInformationCard'
-import { useAppSelector } from 'modules/core/hooks'
-import { authSelector } from 'modules/auth/states/authSlice'
 import Tippy from '@tippyjs/react/headless'
 import useSendImmediateMsg from 'modules/community/hooks/useSendImmediateMsg'
 
-const UserProfileHeader = () => {
-  const { userId } = useParams()
-  const userLoginId = useAppSelector(authSelector.selectUserId)
+interface Props {
+  userId?: string
+  userLoginId?: string
+}
 
+const UserProfileHeader: React.FC<Props> = ({ userId, userLoginId }) => {
   const { userInfo, openChatBox, handleOpenChatbox, message, handleChange, handleCloseChatbox, handleSubmitMessage } =
     useSendImmediateMsg(userId)
 

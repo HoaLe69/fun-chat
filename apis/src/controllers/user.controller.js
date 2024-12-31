@@ -4,6 +4,15 @@ const userServices = require("@services/userServices")
 const { convertNameToSearchTerm } = require("@utils/convert-search-term")
 
 const userController = {
+  getUserActivity: async (req, res, next) => {
+    try {
+      const userId = req.params.userId
+      const userActivity = await userServices.getUserActivityAsync(userId)
+      return res.status(200).json(userActivity)
+    } catch (err) {
+      next(err)
+    }
+  },
   verifyUser: async (req, res) => {
     const userFromToken = req.user
     const user_db = await User.findOne({ _id: userFromToken._id })

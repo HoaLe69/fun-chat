@@ -1,6 +1,42 @@
 const postServices = require("@services/postServices")
 
 const postController = {
+  async approvePost(req, res, next) {
+    try {
+      const postId = req.params.postId
+      await postServices.approvePostAsync(postId)
+      return res.status(204).send("ok")
+    } catch (error) {
+      next(error)
+    }
+  },
+  async getPendingPost(req, res, next) {
+    try {
+      const communityId = req.params.id
+      const posts = await postServices.getPendingPostByCommunityIdAsync(communityId)
+      return res.status(200).json(posts)
+    } catch (error) {
+      next(error)
+    }
+  },
+  async savePost(req, res, next) {
+    try {
+      const { userId, postId } = req.body
+      await postServices.savePostAsync(postId, userId)
+      return res.status(204).send("ok")
+    } catch (error) {
+      next(error)
+    }
+  },
+  async deletePost(req, res, next) {
+    try {
+      const postId = req.params.postId
+      await postServices.deletePostAsync(postId)
+      return res.status(204).send("ok")
+    } catch (error) {
+      next(error)
+    }
+  },
   async uploadFile(req, res, next) {
     try {
       const uploadedFile = req.file
@@ -66,6 +102,16 @@ const postController = {
       next(error)
     }
   },
+  async getPostByIdPopulateCommunity(req, res, next) {
+    try {
+      const id = req.params.id
+      const posts = await postServices.getPostPopulateCommunityAsync(id)
+      res.status(200).json(posts)
+    } catch (error) {
+      next(error)
+    }
+  },
+
   async getAllPost(req, res, next) {
     try {
       const page = req.query.page || 1

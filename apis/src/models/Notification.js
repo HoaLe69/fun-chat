@@ -26,6 +26,10 @@ const notificationSchema = new Schema(
         type: String,
         required: true,
       },
+      picture_url: {
+        type: String,
+        required: false,
+      },
       message: {
         type: String,
         required: true,
@@ -41,4 +45,3 @@ const notificationSchema = new Schema(
 )
 
 module.exports = mongoose.model("Notification", notificationSchema)
-

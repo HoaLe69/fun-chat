@@ -5,7 +5,7 @@ const createNotificationAsync = async data => {
   try {
     const { type } = data
     if (type === "new_post") {
-      const { friends, sender, resource_url, message } = data
+      const { friends, sender, resource_url, message, picture_url } = data
       const notifications = friends.map(friend => ({
         recipient: friend,
         sender,
@@ -13,6 +13,7 @@ const createNotificationAsync = async data => {
         metadata: {
           resource_url,
           message,
+          picture_url,
         },
       }))
       const storedNotifications = await Notification.insertMany(notifications)

@@ -3,14 +3,16 @@ import { PlusRawIcon } from 'modules/core/components/icons'
 import { useState, useCallback, useEffect } from 'react'
 import CreateCommunityModal from './CreateCommunityModal'
 import { ICommunity } from '../types'
-import { useAppSelector } from 'modules/core/hooks'
+import { useAppSelector, useAppDispatch } from 'modules/core/hooks'
 import { communityServices } from '../services/communityServices'
 import { Link } from 'react-router-dom'
 import UserSetting from 'modules/core/components/UserSetting'
 import { CommunityDefaultPictureIcon } from 'modules/core/components/icons'
+import { communitySelector, setCommunity } from '../states/communitySlice'
 
 const Sidebar = () => {
   const userLogin = useAppSelector((state) => state.auth.user)
+  const dispatch = useAppDispatch()
   const tags = [
     'Hooks',
     'State Management',
@@ -24,7 +26,7 @@ const Sidebar = () => {
     'TypeScript',
   ]
 
-  const [communities, setCommunities] = useState<ICommunity[]>([])
+  const communities = useAppSelector(communitySelector.selectCommunity)
   const [recentCommunity, setRecentCommunity] = useState<ICommunity[]>([])
   const [isOpen, setIsOpen] = useState<boolean>(false)
 
@@ -39,15 +41,12 @@ const Sidebar = () => {
   useEffect(() => {
     if (!userLogin) return
 
-    const loadCommunities = async () => {
-      try {
-        const communitiesData = await communityServices.getCommunityByUser(userLogin._id)
-        setCommunities(communitiesData)
-      } catch (error) {
-        console.error(error)
-      }
-    }
-    loadCommunities()
+    communityServices
+      .getCommunityByUser(userLogin._id)
+      .then((res) => {
+        dispatch(setCommunity(res))
+      })
+      .catch((error) => console.log(error))
   }, [userLogin])
 
   useEffect(() => {

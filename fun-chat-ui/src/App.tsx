@@ -16,6 +16,7 @@ import {
   ChatMePage,
   UserProfilePage,
 } from 'pages'
+import { Toaster } from 'sonner'
 
 function App() {
   //  TODO: move logic code to another file
@@ -31,6 +32,7 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIEN_ID}>
       <Provider store={store}>
+        <Toaster richColors />
         <BrowserRouter>
           <Suspense fallback={<LoadingSplashScreen />}>
             <Routes>
@@ -61,7 +63,7 @@ function App() {
                 }
               />
               <Route
-                path="/community"
+                path="/"
                 element={
                   <ProtectedRoute>
                     <CommunityPage />
