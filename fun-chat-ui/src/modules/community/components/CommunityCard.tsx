@@ -78,7 +78,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({ nameOfCommunity, isMounte
                 <CommunityDefaultPictureIcon />
               )}
               <Link
-                to={`/community/${communityCard?.name}`}
+                to={`/community/${communityCard?.name}/${communityCard?._id}`}
                 className="text-xl font-bold ml-4 hover:underline hover:text-blue-800"
               >
                 d/{communityCard?.name}

@@ -158,7 +158,19 @@ const PostItemDetailInfo: React.FC<Props> = ({ communityInfo, postInfo }) => {
           </>
         ) : (
           <>
-            <MarkdownPreview className="post-preview-content" source={postState?.content} />
+            <MarkdownPreview
+              components={{
+                img: ({ node, ...props }) => {
+                  return (
+                    <div className="max-h-[600px] w-full flex items-center justify-center">
+                      <img src={props?.src} alt={props?.alt} className="max-w-80 max-h-80 block rounded-md" />
+                    </div>
+                  )
+                },
+              }}
+              className="post-preview-content"
+              source={postState?.content}
+            />
           </>
         )}
       </div>
