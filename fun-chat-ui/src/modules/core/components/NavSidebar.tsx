@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { DiscoverIcon, MessageFillIcon, NotificationIcon } from './icons'
 import { useAppSelector, useSocket, useAppDispatch } from 'modules/core/hooks'
 import { selectListRoom, updateRoomUnreadMessage } from 'modules/chat/states/roomSlice'
@@ -11,6 +11,7 @@ import { fetchListRoomAsync } from 'modules/chat/states/roomActions'
 import NotificationContainer from './Notification'
 import { notifyServices } from 'modules/community/services'
 import type { INotification } from 'modules/community/types'
+import classNames from 'classnames'
 
 const NavSidebar = () => {
   const [notifications, setNotifications] = useState<INotification[]>([])
@@ -19,6 +20,7 @@ const NavSidebar = () => {
   const { subscribeEvent, unSubcribeEvent, emitEvent } = useSocket()
   const rooms = useAppSelector(selectListRoom)
   const dispatch = useAppDispatch()
+  const location = useLocation()
 
   const onClose = useCallback(() => {
     setOpenNotification(false)
@@ -99,13 +101,28 @@ const NavSidebar = () => {
   return (
     <div className="relative z-50 text-gray-950 dark:text-gray-50 w-full h-full bg-zinc-200 dark:bg-zinc-950  flex flex-col gap-4 items-center py-3">
       <Link to="/">
-        <button className=" w-12 h-12 bg-zinc-100 dark:bg-zinc-800 hover:bg-blue-800 hover:text-white hover:rounded-xl transition-colors flex items-center justify-center rounded-full ">
+        <button
+          className={classNames(
+            'w-12 h-12 bg-zinc-100 dark:bg-zinc-800 hover:bg-blue-800 hover:text-white hover:rounded-xl transition-colors flex items-center justify-center rounded-full ',
+            {
+              '!bg-blue-800 rounded-xl':
+                location.pathname === '/' ||
+                location.pathname.includes('community') ||
+                location.pathname.includes('user/profile'),
+            },
+          )}
+        >
           <DiscoverIcon />
         </button>
       </Link>
 
       <Link to="/devchat/@me">
-        <button className="relative w-12 h-12 bg-zinc-100 dark:bg-zinc-800 hover:bg-blue-800 hover:text-white hover:rounded-xl transition-colors flex items-center justify-center rounded-full ">
+        <button
+          className={classNames(
+            'relative w-12 h-12 bg-zinc-100 dark:bg-zinc-800 hover:bg-blue-800 hover:text-white hover:rounded-xl transition-colors flex items-center justify-center rounded-full ',
+            { '!bg-blue-800 rounded-xl': location.pathname.includes('/devchat/@me') },
+          )}
+        >
           <MessageFillIcon />
           {numOfUnreadMessage > 0 && (
             <span className="absolute text-sm font-bold top-0 right-0 translate-x-1/2 w-6 h-6 flex items-center justify-center bg-red-600 rounded-full text-zinc-50">
@@ -116,7 +133,10 @@ const NavSidebar = () => {
       </Link>
       <button
         onClick={() => setOpenNotification(true)}
-        className="relative w-12 h-12 bg-zinc-100 dark:bg-zinc-800 hover:bg-blue-800 hover:text-white hover:rounded-xl transition-colors flex items-center justify-center rounded-full "
+        className={classNames(
+          'relative w-12 h-12 bg-zinc-100 dark:bg-zinc-800 hover:bg-blue-800 hover:text-white hover:rounded-xl transition-colors flex items-center justify-center rounded-full',
+          { '!bg-blue-800 rounded-xl': openNotification },
+        )}
       >
         <NotificationIcon />
         {numOfUnreadNotification > 0 && (
