@@ -117,19 +117,23 @@ const CommunityDetailPage = () => {
               </TabPanel>
               {isModerator && (
                 <TabPanel className="px-4 mt-4">
-                  {pendingPost.map((post) => (
-                    <div key={post._id}>
-                      <PostItem postInfo={post} isUserPost nameOfCommunity={communityInfo?.name} />
-                      <div className="w-full flex items-center justify-center">
-                        <button
-                          onClick={() => handleApprovePost(post?._id)}
-                          className="dark:bg-zinc-700 bg-zinc-200 hover:animate-bounce  py-1 w-40 flex items-center justify-center rounded-full"
-                        >
-                          <CheckRawIcon className="w-7 h-7" />
-                        </button>
+                  {pendingPost?.length === 0 ? (
+                    <p className="text-2xl font-medium text-center mt-4">No pending post</p>
+                  ) : (
+                    pendingPost.map((post) => (
+                      <div key={post._id}>
+                        <PostItem postInfo={post} isUserPost nameOfCommunity={communityInfo?.name} />
+                        <div className="w-full flex items-center justify-center">
+                          <button
+                            onClick={() => handleApprovePost(post?._id)}
+                            className="dark:bg-zinc-700 bg-zinc-200 hover:animate-bounce  py-1 w-40 flex items-center justify-center rounded-full"
+                          >
+                            <CheckRawIcon className="w-7 h-7" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </TabPanel>
               )}
             </TabPanels>

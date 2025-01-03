@@ -12,9 +12,13 @@ const PostContainer: React.FC<Props> = ({ name, isUserPost }) => {
   return (
     <div className="pt-4 px-4 flex-1">
       <div className="flex-1">
-        {posts?.map((post) => (
-          <PostItem nameOfCommunity={name} isUserPost={isUserPost} key={post?._id} postInfo={post} />
-        ))}
+        {!loading && !posts?.length ? (
+          <p className="text-2xl font-medium text-center mt-4">No posts yet</p>
+        ) : (
+          posts?.map((post) => (
+            <PostItem nameOfCommunity={name} isUserPost={isUserPost} key={post?._id} postInfo={post} />
+          ))
+        )}
       </div>
       <div ref={ref} className="min-h-10">
         {loading && <PostContainerLoadingSkeleton />}

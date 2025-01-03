@@ -12,6 +12,7 @@ import { authSelector } from 'modules/auth/states/authSlice'
 import MdxEditor from './MdxEditor'
 import { postServices } from '../services'
 import { userServices } from 'modules/user/services'
+import { toast } from 'sonner'
 
 interface Props {
   communityInfo: ICommunity | null
@@ -35,7 +36,6 @@ const PostItemDetailInfo: React.FC<Props> = ({ communityInfo, postInfo }) => {
     userServices
       .getUserActivity(userLoginId)
       .then((res) => {
-        console.log('res', res)
         setIsSaved(res.saved_post.includes(postInfo?._id))
       })
       .catch((err) => console.log(err))
@@ -77,6 +77,7 @@ const PostItemDetailInfo: React.FC<Props> = ({ communityInfo, postInfo }) => {
         })
         setIsEditMode(false)
         setEditedContent('')
+        toast.success('Post updated')
       })
       .catch((err) => console.log(err))
   }, [editedContent, postInfo])
@@ -86,6 +87,11 @@ const PostItemDetailInfo: React.FC<Props> = ({ communityInfo, postInfo }) => {
     postServices
       .savedPostAsync(postInfo?._id, userLoginId)
       .then(() => {
+        if (isSaved) {
+          toast.success('Unsaved post')
+        } else {
+          toast.success('Saved post')
+        }
         setIsSaved(!isSaved)
       })
       .catch((err) => console.log(err))

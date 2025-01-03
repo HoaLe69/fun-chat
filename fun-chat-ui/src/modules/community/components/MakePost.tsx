@@ -7,6 +7,7 @@ import { useAppSelector } from 'modules/core/hooks'
 import { postServices, notifyServices } from '../services'
 import { useNavigate } from 'react-router-dom'
 import { SOCKET_EVENTS } from 'const'
+import { toast } from 'sonner'
 
 const MakePost = () => {
   const { emitEvent } = useSocket()
@@ -35,7 +36,10 @@ const MakePost = () => {
   )
 
   const handleSubmit = useCallback(async () => {
-    if (!userLogin?._id || !selectedCommunity?._id) return
+    if (!userLogin?._id || !selectedCommunity?._id || !postForm?.title || !postForm?.description) {
+      toast.info('Please fill all fields')
+      return
+    }
     setCreating(true)
     try {
       const formData = {

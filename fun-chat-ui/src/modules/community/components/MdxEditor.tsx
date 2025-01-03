@@ -1,4 +1,4 @@
-import { useCodeMirror, EditorView } from '@uiw/react-codemirror'
+import { useCodeMirror, EditorView, EditorState } from '@uiw/react-codemirror'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { languages } from '@codemirror/language-data'
 import MarkdownPreview from '@uiw/react-markdown-preview'
@@ -31,6 +31,16 @@ interface Props {
   onChange: (value: string) => void
   doc: string
   autoFocus?: boolean
+}
+
+const getLines = (state: EditorState) => {
+  const from = state.selection.main.from || 0
+  const to = state.selection.main.to || 0
+
+  const startLine = state.doc.lineAt(from)
+  const endLine = state.doc.lineAt(to)
+
+  return { startLine, endLine }
 }
 
 const MdxEditor: React.FC<Props> = (props) => {
@@ -82,6 +92,9 @@ const MdxEditor: React.FC<Props> = (props) => {
     ],
     onChange: (val, viewUpdate) => {
       onChange(val)
+      const { endLine } = getLines(viewUpdate.state)
+      viewUpdate.view.dispatch({ selection: { anchor: endLine.to } })
+      viewUpdate.view.focus()
     },
   })
 

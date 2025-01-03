@@ -68,7 +68,6 @@ function messageHandler() {
       try {
         const socket = this
 
-        console.log("payload", payload)
         const { msg, room, replyMessage, recipientId } = JSON.parse(payload.data)
         // console.log("msg", msg)
         // const newMessage = new Message({ ...msg })

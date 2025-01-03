@@ -11,11 +11,11 @@ const usePostContainer = () => {
   const [page, setPage] = useState<number>(1)
   const [hasMore, setHasMore] = useState<boolean>(true)
   const { id, userId } = useParams()
-  const path = useLocation()
+  const location = useLocation()
   const { getPostByCommunityId, getAllPostPopulateCommunity, getListPostByCreatorId } = postServices
 
-  const isHomeCommunity = path.pathname === '/'
-  const isProfilePage = path.pathname.includes('/user/profile')
+  const isHomeCommunity = location.pathname === '/'
+  const isProfilePage = location.pathname.includes('/user/profile')
 
   const loadPostAsync = useCallback(async () => {
     if (loading || !hasMore) return
@@ -34,7 +34,6 @@ const usePostContainer = () => {
 
       const response = await apiCallFunc
       const { data } = response
-      console.log('usePostContainer', data)
       if (!data?.length) {
         setHasMore(false)
         return
@@ -56,7 +55,7 @@ const usePostContainer = () => {
     setHasMore(true)
 
     // Optionally, fetch posts for the new community
-  }, [id, path.pathname, userId]) // Dependen
+  }, [id, location.pathname, userId]) // Dependen
 
   useEffect(() => {
     if (inView) {
@@ -64,7 +63,7 @@ const usePostContainer = () => {
     }
   }, [inView, hasMore])
 
-  return { posts, loading, ref }
+  return { posts, loading, ref, page, hasMore }
 }
 
 export default usePostContainer
