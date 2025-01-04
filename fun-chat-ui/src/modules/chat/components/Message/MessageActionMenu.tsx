@@ -1,12 +1,13 @@
 import { ThreeDotVerticalIcon, TrashIcon, ReplyIcon } from 'modules/core/components/icons'
 import { useCallback, useState } from 'react'
 import { Button, AppModal } from 'modules/core/components'
-import { useAppDispatch, useAppSelector, useSocket } from 'modules/core/hooks'
+import { useAppDispatch, useSocket } from 'modules/core/hooks'
 import classNames from 'classnames'
 import Tippy from '@tippyjs/react/headless'
-import { replyMessage } from 'modules/chat/states/messageSlice'
+import { removeMessage, replyMessage, removeReplyMessage } from 'modules/chat/states/messageSlice'
 import type { IMessage } from 'modules/chat/types'
-import { selectCurrentRoomId, selectCurrentRoomInfo } from 'modules/chat/states/roomSlice'
+import { useParams } from 'react-router-dom'
+import { SOCKET_EVENTS } from 'const'
 
 type Props = {
   setContextualMenuOpen?: React.Dispatch<React.SetStateAction<boolean>>
@@ -14,12 +15,11 @@ type Props = {
   allowDel?: boolean
 }
 const MessageActionsMenu: React.FC<Props> = ({ allowDel, message, setContextualMenuOpen }) => {
+  const { roomId } = useParams()
   const { emitEvent } = useSocket()
   const [showModal, setShowModal] = useState<boolean>(false)
   const [visible, setVisible] = useState<boolean>(false)
   const dispatch = useAppDispatch()
-  const roomSelectedId = useAppSelector(selectCurrentRoomId)
-  const roomSelectedInfo = useAppSelector(selectCurrentRoomInfo)
 
   const show = () => {
     setVisible(true)
@@ -37,20 +37,22 @@ const MessageActionsMenu: React.FC<Props> = ({ allowDel, message, setContextualM
     if (!message?._id || !message?.content) return
     dispatch(replyMessage(message))
     hide()
-  }, [])
+  }, [message])
 
   const handleRemoveMessage = useCallback(() => {
     if (!message?._id || !allowDel) return
-    emitEvent('chat:messageActions', {
-      type: 'deletion',
-      msgId: message?._id,
-      roomId: roomSelectedId,
-      recipient: roomSelectedInfo?._id,
-      body: {
-        isDeleted: true,
+    emitEvent(
+      SOCKET_EVENTS.MESSAGE.DELETE,
+      {
+        msgId: message?._id,
+        roomId,
       },
-    })
-  }, [])
+      (response: any) => {
+        dispatch(removeMessage(response))
+        if (response?.replyBy?.length) dispatch(removeReplyMessage(response?.replyBy))
+      },
+    )
+  }, [allowDel, message])
 
   const classes = 'flex items-center py-3 px-4 cursor-pointer hover:bg-grey-200 dark:hover:bg-grey-800 '
   return (

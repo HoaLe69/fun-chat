@@ -1,10 +1,11 @@
-import { useCodeMirror, EditorView } from '@uiw/react-codemirror'
+import { useCodeMirror, EditorView, EditorState } from '@uiw/react-codemirror'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { languages } from '@codemirror/language-data'
 import MarkdownPreview from '@uiw/react-markdown-preview'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import classNames from 'classnames'
 import ToolbarEditor from './ToolbarEditor'
+import { postServices } from '../services'
 
 const editorCustomTheme = EditorView.theme(
   {
@@ -32,11 +33,40 @@ interface Props {
   autoFocus?: boolean
 }
 
+const getLines = (state: EditorState) => {
+  const from = state.selection.main.from || 0
+  const to = state.selection.main.to || 0
+
+  const startLine = state.doc.lineAt(from)
+  const endLine = state.doc.lineAt(to)
+
+  return { startLine, endLine }
+}
+
 const MdxEditor: React.FC<Props> = (props) => {
   const { onChange, doc, autoFocus } = props
 
   const editor = useRef<HTMLDivElement>(null)
   const [tab, setTab] = useState<string>('write')
+
+  const fileUploadHandler = (view: EditorView, file?: File) => {
+    const validImageTypes = ['image/gif', 'image/jpeg', 'image/png']
+    if (file && !validImageTypes.includes(file.type)) return
+    const state = view.state
+    const dispatch = view.dispatch
+    if (file) {
+      postServices
+        .uploadFile(file)
+        .then((res) => {
+          const makrdownLinkImage = `![${res.fileName}](${res.path})`
+          const transaction = view.state.update({
+            changes: { from: state.selection.main.from, to: state.selection.main.to, insert: makrdownLinkImage },
+          })
+          dispatch(transaction)
+        })
+        .catch((error) => console.log(error))
+    }
+  }
 
   const { setContainer, view } = useCodeMirror({
     container: editor.current,
@@ -49,9 +79,22 @@ const MdxEditor: React.FC<Props> = (props) => {
       markdown({ base: markdownLanguage, codeLanguages: languages }),
       editorCustomTheme,
       EditorView.lineWrapping,
+      EditorView.domEventHandlers({
+        paste: (event, view) => {
+          const file = event.clipboardData?.files[0]
+          fileUploadHandler(view, file)
+        },
+        drop: (event, view) => {
+          const file = event.dataTransfer?.files[0]
+          fileUploadHandler(view, file)
+        },
+      }),
     ],
     onChange: (val, viewUpdate) => {
       onChange(val)
+      const { endLine } = getLines(viewUpdate.state)
+      viewUpdate.view.dispatch({ selection: { anchor: endLine.to } })
+      viewUpdate.view.focus()
     },
   })
 
@@ -65,7 +108,7 @@ const MdxEditor: React.FC<Props> = (props) => {
 
   useEffect(() => {
     if (editor.current) setContainer(editor.current)
-  }, [editor])
+  }, [editor, tab])
 
   return (
     <div className="border border-zinc-300 dark:border-zinc-500 rounded-xl">

@@ -3,22 +3,20 @@ import { useCallback, useMemo, useEffect, useRef, useState } from 'react'
 import {
   addMessage,
   removeMessage,
+  removeReplyMessage,
   messageSelector,
   updateMessageReaction,
-  updateReplyMessageRemoved,
-  updateStatusMessage,
-  updateStatusMessages,
 } from '../states/messageSlice'
 import { authSelector } from 'modules/auth/states/authSlice'
-import {
-  markLatestMessageAsSeen,
-  selectCurrentRoomId,
-  selectCurrentRoomInfo,
-  updateRoomLatestMessage,
-} from '../states/roomSlice'
 import { userSelector } from 'modules/user/states/userSlice'
 import { fetchHistoryMessageAsync } from '../states/messageActions'
 import { msgTimeDividerHandler } from '../utils/dateTimeFormat'
+import { SOCKET_EVENTS } from 'const'
+import { useParams } from 'react-router-dom'
+import { userServices } from 'modules/user/services'
+import type { IUser } from 'modules/user/types'
+import { roomServices } from 'modules/chat/services'
+import { updateRoomUnreadMessage } from '../states/roomSlice'
 
 const useChatArea = () => {
   const { emitEvent, subscribeEvent, unSubcribeEvent } = useSocket()
@@ -27,11 +25,13 @@ const useChatArea = () => {
     userId: '',
   })
 
+  const params = useParams()
+  const { roomId, userId: partnerId } = params
+  const [partner, setPartner] = useState<IUser | null>(null)
+
   const dispatch = useAppDispatch()
   const historyMsgs = useAppSelector(messageSelector.selectHistoryMsgs)
   const historyMsgsStatus = useAppSelector(messageSelector.selectHistoryMsgsStatus)
-  const roomSelectedId = useAppSelector(selectCurrentRoomId)
-  const roomSelectedInfo = useAppSelector(selectCurrentRoomInfo)
   const usersOnline = useAppSelector(userSelector.selectListCurrentUserOnline)
   const userLogin = useAppSelector(authSelector.selectUser)
 
@@ -41,7 +41,25 @@ const useChatArea = () => {
   /*----------handle side effect---------------*/
 
   useEffect(() => {
-    if (!roomSelectedId) return
+    if (!partnerId) return
+    userServices
+      .getUserById(partnerId)
+      .then((res) => setPartner(res))
+      .catch((error) => console.log(error))
+  }, [partnerId])
+
+  useEffect(() => {
+    if (!roomId || !userLogin) return
+    roomServices
+      .markAsRead(roomId, userLogin?._id)
+      .then((res) => {
+        dispatch(updateRoomUnreadMessage(res))
+      })
+      .catch((error) => console.log(error))
+  }, [userLogin, roomId, historyMsgs])
+
+  useEffect(() => {
+    if (!roomId) return
     const containerMsgEl = refContainer.current
     if (containerMsgEl) {
       setTimeout(() => {
@@ -51,154 +69,45 @@ const useChatArea = () => {
   }, [historyMsgsStatus])
 
   useEffect(() => {
-    if (!roomSelectedId) return
+    if (!roomId) return
+    emitEvent('join', roomId)
+    console.log(`user join ${roomId} `)
+    // update single msg
 
-    const containerMsgEl = refContainer.current
-    const buttonEl = refJumpToButton.current
-    const lastMessage = historyMsgs[historyMsgs.length - 1]
-    const scrollHandler = () => {
-      //@ts-ignore
-      const { scrollHeight, scrollTop, clientHeight } = containerMsgEl
-      // current position of scrollbar at bottom
-      if (buttonEl) {
-        if (!(scrollHeight - scrollTop - clientHeight)) {
-          buttonEl.style.visibility = 'hidden'
-          return
-        }
-        buttonEl.style.visibility = 'visible'
-      }
-    }
-    //init scrollbar position
-    if (containerMsgEl) {
-      if (lastMessage && lastMessage.ownerId === userLogin?._id) {
-        containerMsgEl.scrollTop = containerMsgEl.scrollHeight
-      }
-      containerMsgEl?.addEventListener('scroll', scrollHandler)
-    }
-    return () => containerMsgEl?.removeEventListener('scroll', scrollHandler)
-  }, [historyMsgs.length])
-
-  useEffect(() => {
-    const containerMsgEl = refContainer.current
-    if (containerMsgEl) {
-      let lastMessage = containerMsgEl.querySelector('.last-message')
-      if (!lastMessage) return
-      console.log({ newMessage: lastMessage.getAttribute('data-msg-id') })
-      //      @ts-ignore
-      const observerCallback = (entries, observer) => {
-        if (!lastMessage) return
-        //@ts-ignore
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const unSeenMsgEls = containerMsgEl.querySelectorAll('.new-message')
-            //un seen message id list
-            const msgs = Array.from(unSeenMsgEls).map((msgEl) => msgEl.getAttribute('data-msg-id'))
-            emitEvent('chat:statusMessage', {
-              msgs,
-              recipient: roomSelectedInfo?._id,
-              roomId: roomSelectedId,
-              status: {
-                type: 'seen',
-                readBy: [
-                  {
-                    userId: userLogin?._id,
-                    readAt: new Date(),
-                  },
-                ],
-              },
-            })
-            lastMessage?.classList.remove('last-message')
-            lastMessage = null
-          }
-        })
-      }
-      const observer = new IntersectionObserver(observerCallback, {
-        root: containerMsgEl,
-        rootMargin: '0px',
-        threshold: 1.0,
-      })
-      observer.observe(lastMessage)
-    }
-  }, [historyMsgs])
-
-  useEffect(() => {
-    if (roomSelectedId) {
-      emitEvent('join', roomSelectedId)
-      // subscribeEvent('chat:userTypingStatus', (msg: any) => {
-      //   setTypingIndicator((pre) => ({ ...pre, ...msg }))
-      // })
-      console.log(`user join ${roomSelectedId} `)
-      // update single msg
-      subscribeEvent('chat:updateStatusMessage', (msg: any) => {
-        dispatch(updateStatusMessage(msg))
-      })
-    }
-    // update status multiple messages
-    subscribeEvent('chat:updateStatusMessages', (msg: any) => {
-      //mean all message in room mark as seen (the other user current online and in conversation)
-      if (msg.recipient !== userLogin?._id) {
-        dispatch(updateStatusMessages(msg))
-      }
-      dispatch(markLatestMessageAsSeen(msg))
-    })
-    subscribeEvent('chat:receiveMessageActions', (msg: any) => {
-      if (msg.type === 'deletion') {
-        if (msg.info.replyBy.length > 0) {
-          // remove all message have been replied this message
-          dispatch(updateReplyMessageRemoved(msg.info.replyBy))
-        }
-        dispatch(updateRoomLatestMessage(msg.info))
-        dispatch(removeMessage({ _id: msg.info._id, isDeleted: msg.info.isDeleted }))
-      } else if (msg.type == 'reaction') {
-        dispatch(updateMessageReaction({ react: msg.info.react, _id: msg.info._id }))
-      }
+    subscribeEvent(SOCKET_EVENTS.MESSAGE.DELETED, (msg: any) => {
+      dispatch(removeMessage(msg))
+      if (msg?.replyBy.length) dispatch(removeReplyMessage(msg.replyBy))
     })
 
-    subscribeEvent('chat:receiveMessage', (msg: any) => {
+    subscribeEvent(SOCKET_EVENTS.MESSAGE.REACTED, (msg: any) => {
+      dispatch(updateMessageReaction({ react: msg.react, _id: msg._id }))
+    })
+    subscribeEvent(SOCKET_EVENTS.MESSAGE.RECEIVE, (msg: any) => {
       console.log({ msg })
-      if (roomSelectedId && msg.roomId === roomSelectedId) {
-        // hide the tying indicator components when new message came.
-        setTypingIndicator({
-          userId: '',
-          isTyping: false,
-        })
-        dispatch(addMessage(msg))
-        // force scrollbar move to bottom on local machine
-        if (msg.ownerId === userLogin?._id) {
-          setTimeout(() => {
-            handleJumpToBottom()
-          }, 0)
+
+      const containerEl = refContainer.current
+
+      if (containerEl) {
+        const { scrollHeight, scrollTop, clientHeight } = containerEl
+        const percent = (scrollTop / (scrollHeight - clientHeight)) * 100
+
+        if (percent > 95) {
+          containerEl.scrollTop = containerEl.scrollHeight
         }
       }
-      //handler receive message on recipient machine
-      if (msg?.ownerId !== userLogin?._id) {
-        emitEvent('chat:statusMessage', {
-          msg: {
-            _id: msg?._id,
-            ownerId: msg?.ownerId,
-          },
-          status: {
-            type: 'delivered',
-            readBy: [],
-          },
-        })
-      }
-      dispatch(updateRoomLatestMessage(msg))
+
+      if (msg.roomId === roomId) dispatch(addMessage(msg))
     })
     return () => {
-      emitEvent('leave', roomSelectedId)
-      unSubcribeEvent('chat:receiveMessage')
-      unSubcribeEvent('chat:userTypingStatus')
-      unSubcribeEvent('chat:updateStatusMessage')
-      unSubcribeEvent('chat:updateStatusMessages')
-      unSubcribeEvent('chat:receiveMessageActions')
-      console.log(`user leave ${roomSelectedId} `)
+      emitEvent('leave', roomId)
+      unSubcribeEvent(SOCKET_EVENTS.MESSAGE.RECEIVE)
+      unSubcribeEvent(SOCKET_EVENTS.MESSAGE.REACTED)
     }
-  }, [roomSelectedId])
+  }, [roomId])
 
   useEffect(() => {
-    if (roomSelectedId !== undefined) dispatch(fetchHistoryMessageAsync(roomSelectedId))
-  }, [roomSelectedId])
+    if (roomId !== undefined) dispatch(fetchHistoryMessageAsync(roomId))
+  }, [roomId])
 
   /*-----------Event handler------------------*/
   const handleJumpToBottom = useCallback(() => {
@@ -210,6 +119,13 @@ const useChatArea = () => {
   }, [refContainer])
 
   /*-----------business logic--------------------*/
+  const chatMembers = useMemo(() => {
+    return {
+      [partner?._id || '']: partner,
+      [userLogin?._id || '']: userLogin,
+    }
+  }, [partner, userLogin])
+
   const processMessageStatusAndTime = useMemo(() => {
     let status = {}
     let period: Record<string, string> = {}
@@ -231,17 +147,18 @@ const useChatArea = () => {
   }, [historyMsgs])
 
   return {
+    partner,
     userLogin,
-    typingIndicator,
     usersOnline,
-    roomSelectedId,
-    roomSelectedInfo,
+    chatMembers,
     historyMsgs,
     refContainer,
+    typingIndicator,
+    roomSelectedId: roomId,
     refJumpToButton,
-    processMessageStatusAndTime,
-    handleJumpToBottom,
     historyMsgsStatus,
+    handleJumpToBottom,
+    processMessageStatusAndTime,
   }
 }
 

@@ -1,11 +1,12 @@
 import { CommunityDetailPictureIconLarge, PlusRawIcon } from 'modules/core/components/icons'
 import type { ICommunity } from '../types'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppSelector } from 'modules/core/hooks'
 import { communityServices } from '../services'
 import classNames from 'classnames'
 import { useParams } from 'react-router-dom'
+import { toast } from 'sonner'
 
 interface Props {}
 
@@ -40,9 +41,14 @@ const CommunityDetailMasthead: React.FC<Props> = () => {
     if (!userLoginId || !communityInfo) return
     try {
       const updatedCommunity = await communityServices.joinCommunity(communityInfo?._id, userLoginId)
-      setIsMember(() => {
-        return updatedCommunity.members.includes(userLoginId)
-      })
+
+      const isMember = updatedCommunity.members.includes(userLoginId)
+      if (isMember) {
+        toast.success('Joined community successfully')
+      } else {
+        toast.success('Leave community successfully')
+      }
+      setIsMember(isMember)
     } catch (error) {
       console.log(error)
     } finally {

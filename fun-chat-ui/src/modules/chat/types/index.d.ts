@@ -8,6 +8,7 @@ export type IConversation = {
   _id: string
   latestMessage: IMessage
   members: Array<string>
+  unreadMessage: Array<{ userId: string; count: number }>
   status?: string
 }
 export type IMessageContentImage = {

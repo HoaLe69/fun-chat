@@ -8,13 +8,15 @@ import { Suspense } from 'react'
 import { LoadingSplashScreen } from 'modules/core/components/loadings'
 import {
   LoginPage,
-  ChatPage,
   LoginLoungePage,
   CommunityPage,
   CommunityPostPage,
   CommunityMakePostPage,
   CommunityDetailPage,
+  ChatMePage,
+  UserProfilePage,
 } from 'pages'
+import { Toaster } from 'sonner'
 
 function App() {
   //  TODO: move logic code to another file
@@ -30,6 +32,7 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIEN_ID}>
       <Provider store={store}>
+        <Toaster richColors />
         <BrowserRouter>
           <Suspense fallback={<LoadingSplashScreen />}>
             <Routes>
@@ -60,7 +63,7 @@ function App() {
                 }
               />
               <Route
-                path="/community"
+                path="/"
                 element={
                   <ProtectedRoute>
                     <CommunityPage />
@@ -68,10 +71,26 @@ function App() {
                 }
               />
               <Route
-                path="/"
+                path="/devchat/@me"
                 element={
                   <ProtectedRoute>
-                    <ChatPage />
+                    <ChatMePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/devchat/@me/:roomId/:userId"
+                element={
+                  <ProtectedRoute>
+                    <ChatMePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/user/profile/:userId"
+                element={
+                  <ProtectedRoute>
+                    <UserProfilePage />
                   </ProtectedRoute>
                 }
               />

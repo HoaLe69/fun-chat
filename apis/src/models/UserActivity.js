@@ -15,6 +15,10 @@ const userActivitySchema = new Schema({
     type: [String],
     default: [],
   },
+  saved_post: {
+    type: [String],
+    default: [],
+  },
 })
 
 module.exports = mongoose.model("UserActivity", userActivitySchema)

@@ -9,6 +9,7 @@ const createCommentAsync = async comment => {
   if (!savedPost) throw new APIError("Post not found", 404)
   savedPost.comments = savedPost.comments + 1
   await savedPost.save()
+  console.log(comment)
   const newComment = new Comment({ ...comment })
   return await newComment.save()
 }

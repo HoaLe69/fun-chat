@@ -18,5 +18,5 @@ export interface MessageSectionProps {
   showAvatar?: boolean
   className?: string
   isDeleted?: boolean
-  style: React.CSSProperties
+  ownerId?: string
 }

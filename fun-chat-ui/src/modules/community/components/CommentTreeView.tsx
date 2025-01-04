@@ -16,8 +16,17 @@ import { IUser } from 'modules/user/types'
 import { userServices } from 'modules/user/services'
 import CommentActionButtons from './CommentActionButtons'
 import UserInformationCardContainer from './UserInformationCard'
+import Image from 'modules/core/components/Image'
 
-const CommentTreeNode = ({ node, rootId }: { node: ICommentCustom; rootId: string }) => {
+const CommentTreeNode = ({
+  node,
+  rootId,
+  userOfPost,
+}: {
+  node: ICommentCustom
+  rootId: string
+  userOfPost?: string
+}) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(true)
   const [userCommentInfo, setUserCommentInfo] = useState<IUser | null>(null)
   useEffect(() => {
@@ -35,6 +44,7 @@ const CommentTreeNode = ({ node, rootId }: { node: ICommentCustom; rootId: strin
   const { handleOpenEditor, handleCloseEditor, handleEditorChange, comment, openEditor, handleSubmit } = usePostComment(
     {
       postId: node.postId,
+      userOfPost,
     },
   )
 
@@ -42,15 +52,12 @@ const CommentTreeNode = ({ node, rootId }: { node: ICommentCustom; rootId: strin
     setIsExpanded(!isExpanded)
   }, [isExpanded])
 
-  const fallback =
-    'https://images.unsplash.com/photo-1732919258473-2e99efcfba02?q=80&w=1888&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
-
   return (
     <div className={classNames('relative w-full')}>
       <div className="flex items-center">
-        <img
-          src={userCommentInfo?.picture || fallback}
-          alt={userCommentInfo?.display_name}
+        <Image
+          src={userCommentInfo?.picture || ''}
+          alt={userCommentInfo?.display_name || ''}
           className="rounded-full w-8 h-8"
         />
         <UserInformationCardContainer userId={userCommentInfo?._id}>
@@ -68,7 +75,15 @@ const CommentTreeNode = ({ node, rootId }: { node: ICommentCustom; rootId: strin
         </div>
         <div>
           <div className="ml-2">
-            <MarkdownPreview source={node.content} className="post-preview-content" />
+            <MarkdownPreview
+              components={{
+                img: ({ node, ...props }) => {
+                  return <img src={props?.src} alt={props?.alt} className="max-w-80 max-h-80 block rounded-md" />
+                },
+              }}
+              source={node.content}
+              className="post-preview-content"
+            />
           </div>
           <CommentActionButtons
             onToggle={handleToggle}
@@ -112,7 +127,15 @@ const CommentTreeNode = ({ node, rootId }: { node: ICommentCustom; rootId: strin
                 </button>
 
                 <button
-                  onClick={() => handleSubmit({ replyTo: node._id, root: false, rootId, depth: node.depth + 1 || 0 })}
+                  onClick={() =>
+                    handleSubmit({
+                      ownerId: node?.ownerId,
+                      replyTo: node._id,
+                      root: false,
+                      rootId,
+                      depth: node.depth + 1 || 0,
+                    })
+                  }
                   className="text-zinc-50 px-3 py-2 ml-2 text-sm font-semibold rounded-full bg-blue-800 hover:bg-blue-700"
                 >
                   Comment
@@ -135,7 +158,7 @@ const CommentTreeNode = ({ node, rootId }: { node: ICommentCustom; rootId: strin
                       <div className="w-4 h-4 ml-auto  border-l border-b rounded-bl-xl border-zinc-200 dark:border-zinc-600" />
                     </div>
                     <div />
-                    <CommentTreeNode node={child} rootId={rootId} />
+                    <CommentTreeNode userOfPost={userOfPost} node={child} rootId={rootId} />
                   </li>
                 )
               })}
@@ -149,9 +172,10 @@ const CommentTreeNode = ({ node, rootId }: { node: ICommentCustom; rootId: strin
 
 interface Props {
   comment: ICommentCustom
+  userOfPost?: string
 }
-const CommentTreeView: React.FC<Props> = ({ comment }) => {
-  return <CommentTreeNode node={comment} rootId={comment?._id} />
+const CommentTreeView: React.FC<Props> = ({ comment, userOfPost }) => {
+  return <CommentTreeNode node={comment} userOfPost={userOfPost} rootId={comment?._id} />
 }
 
 export default memo(CommentTreeView)

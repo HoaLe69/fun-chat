@@ -4,11 +4,12 @@ import { usePostComment } from '../hooks/usePostComment'
 
 interface Props {
   postId?: string
+  userOfPost?: string
 }
 
-const PostItemDetailComment: React.FC<Props> = ({ postId }) => {
+const PostItemDetailComment: React.FC<Props> = ({ postId, userOfPost }) => {
   const { handleEditorChange, handleOpenEditor, handleCloseEditor, handleSubmit, comment, openEditor } = usePostComment(
-    { postId },
+    { postId, userOfPost },
   )
 
   return (
@@ -41,7 +42,7 @@ const PostItemDetailComment: React.FC<Props> = ({ postId }) => {
           </>
         )}
       </div>
-      <CommentContainer postId={postId} />
+      <CommentContainer userOfPost={userOfPost} postId={postId} />
     </section>
   )
 }

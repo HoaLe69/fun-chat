@@ -33,15 +33,16 @@ const messageSlice = createSlice({
       const historyMsgs = state.historyMsgs.msgs
       state.historyMsgs.msgs = [...historyMsgs, action.payload]
     },
-    updateMessageReaction(state, action) {
-      const updateInfo = action.payload
-      const historyMsgs = state.historyMsgs.msgs
-      state.historyMsgs.msgs = historyMsgs.map((msg) => {
-        if (msg._id === updateInfo._id) return { ...msg, react: updateInfo.react }
+
+    removeMessage(state, action) {
+      const deleted = action.payload
+      state.historyMsgs.msgs = state.historyMsgs.msgs.map((msg) => {
+        if (msg?._id === deleted?._id) return { ...msg, isDeleted: true }
         return msg
       })
     },
-    updateReplyMessageRemoved(state, action) {
+
+    removeReplyMessage(state, action) {
       const ids = action.payload
 
       const historyMsgs = state.historyMsgs.msgs
@@ -51,14 +52,16 @@ const messageSlice = createSlice({
         return msg
       })
     },
-    removeMessage(state, action) {
+
+    updateMessageReaction(state, action) {
       const updateInfo = action.payload
       const historyMsgs = state.historyMsgs.msgs
       state.historyMsgs.msgs = historyMsgs.map((msg) => {
-        if (msg._id === updateInfo._id) return { ...msg, isDeleted: updateInfo.isDeleted }
+        if (msg._id === updateInfo._id) return { ...msg, react: updateInfo.react }
         return msg
       })
     },
+
     updateStatusMessage(state, action) {
       const { _id, status } = action.payload
       const historyMsgs = state.historyMsgs.msgs
@@ -105,12 +108,12 @@ export const messageSelector = {
 export const {
   addMessage,
   replyMessage,
+  removeMessage,
+  removeReplyMessage,
   cancelReplyMessage,
   updateStatusMessage,
   updateStatusMessages,
   updateMessageReaction,
-  updateReplyMessageRemoved,
-  removeMessage,
   openMessageImageGallery,
   closeMessageImageGallery,
 } = messageSlice.actions

@@ -75,7 +75,7 @@ const CommunityPostPage = () => {
         </button>
         <div className="flex-1 px-4  min-w-0">
           <PostItemDetailInfo communityInfo={communityInfo} postInfo={postInfo} />
-          <PostItemDetailComment postId={postInfo?._id} />
+          <PostItemDetailComment userOfPost={postInfo?.creator?._id} postId={postInfo?._id} />
         </div>
       </div>
     </MainLayout>

@@ -2,7 +2,6 @@ import { useAppSelector } from 'modules/core/hooks'
 import type { IMessage } from 'modules/chat/types'
 import { authSelector } from 'modules/auth/states/authSlice'
 import { memo, useCallback, useState } from 'react'
-import { selectCurrentRoomInfo } from 'modules/chat/states/roomSlice'
 import MessageActions from './MessageActions'
 import MessageReply from './MessageReply'
 import { MessageInner, MessageContainer, MessageLeft, MessageRight, MessageRightHeader } from './MessageLayout'
@@ -12,6 +11,7 @@ import classNames from 'classnames'
 import MessageDivider from './MessageDivider'
 import MessageContent from './MessageContent'
 import MessageReaction from './MessageReaction'
+import { IUser } from 'modules/user/types'
 
 interface Props {
   message: IMessage
@@ -19,15 +19,14 @@ interface Props {
   position?: string
   showAvatar?: boolean
   showTimeDivider?: string
-  style: React.CSSProperties
+  owner?: IUser
 }
 
-const Message: React.FC<Props> = ({ style, message, ...extra }) => {
+const Message: React.FC<Props> = ({ owner, message, ...extra }) => {
   const [contextualMenuOpen, setContextualMenuOpen] = useState<boolean>(false)
   const { showAvatar, showTimeDivider, msgType } = extra
 
   const userLogin = useAppSelector(authSelector.selectUser)
-  const roomSelectedInfo = useAppSelector(selectCurrentRoomInfo)
 
   const handleMoveToReplyMessage = useCallback(() => {
     if (!message.replyTo) return
@@ -44,7 +43,7 @@ const Message: React.FC<Props> = ({ style, message, ...extra }) => {
   return (
     <>
       {showTimeDivider && <MessageDivider divider={showTimeDivider} />}
-      <MessageContainer style={style} className={classNames({ 'mt-4': msgType === 'single' })} messageId={message._id}>
+      <MessageContainer className={classNames({ 'mt-4': msgType === 'single' })} messageId={message._id}>
         {message.replyTo && (
           <MessageReply
             handleMoveToReplyMessage={handleMoveToReplyMessage}
@@ -55,10 +54,7 @@ const Message: React.FC<Props> = ({ style, message, ...extra }) => {
         <MessageInner>
           <MessageLeft>
             {showAvatar ? (
-              <UserAvatar
-                src={message?.ownerId === userLogin?._id ? userLogin?.picture : roomSelectedInfo?.picture || ''}
-                alt={message?.ownerId === userLogin?._id ? userLogin?.display_name : roomSelectedInfo?.name || ''}
-              />
+              <UserAvatar src={owner?.picture || ''} alt={owner?.display_name || ''} />
             ) : (
               <span className="text-xs pt-2 hidden group-hover:inline-block text-grey-500/90 dark:text-grey-400/90">
                 {moment(message.createdAt).format('h:mm A')}
@@ -68,14 +64,13 @@ const Message: React.FC<Props> = ({ style, message, ...extra }) => {
 
           <MessageRight>
             <MessageRightHeader
+              ownerId={owner?._id}
               showAvatar={showAvatar}
               createdAt={message.createdAt}
-              display_name={
-                message?.ownerId === userLogin?._id ? userLogin?.display_name : roomSelectedInfo?.name || ''
-              }
+              display_name={owner?.display_name}
             />
             <MessageContent content={message.content} isDeleted={message.isDeleted} msgId={message?._id} />
-            <MessageReaction react={message?.react} />
+            {!message?.isDeleted && <MessageReaction react={message?.react} />}
           </MessageRight>
         </MessageInner>
         {!message.isDeleted && (

@@ -5,6 +5,7 @@
   "type": "commonjs",
   "scripts": {
     "dev": "nodemon index.js",
+    "start": "node index.js",
     "format:check": "prettier --check .",
     "format:write": "prettier . --write",
     "lint:check": "eslint .",

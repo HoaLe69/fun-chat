@@ -1,12 +1,16 @@
 import { useCallback, useState } from 'react'
+import { useSocket } from 'modules/core/hooks'
 import MdxEditor from './MdxEditor'
 import SelectCommunity from './SelectCommunity'
 import { ICommunity } from '../types'
 import { useAppSelector } from 'modules/core/hooks'
-import { postServices } from '../services/postServices'
+import { postServices, notifyServices } from '../services'
 import { useNavigate } from 'react-router-dom'
+import { SOCKET_EVENTS } from 'const'
+import { toast } from 'sonner'
 
 const MakePost = () => {
+  const { emitEvent } = useSocket()
   const userLogin = useAppSelector((state) => state.auth.user)
   const navigate = useNavigate()
   const [creating, setCreating] = useState<boolean>(false)
@@ -24,13 +28,18 @@ const MakePost = () => {
     const { name, value } = event.target
     setPostForm((prev) => ({ ...prev, [name]: value }))
   }, [])
-  const handleEditorChange = useCallback((value: string) => {
-    console.log({ value })
-    setPostForm((prev) => ({ ...prev, description: value }))
-  }, [])
+  const handleEditorChange = useCallback(
+    (value: string) => {
+      setPostForm((prev) => ({ ...prev, description: value }))
+    },
+    [postForm],
+  )
 
   const handleSubmit = useCallback(async () => {
-    if (!userLogin?._id || !selectedCommunity?._id) return
+    if (!userLogin?._id || !selectedCommunity?._id || !postForm?.title || !postForm?.description) {
+      toast.info('Please fill all fields')
+      return
+    }
     setCreating(true)
     try {
       const formData = {
@@ -41,7 +50,19 @@ const MakePost = () => {
       }
 
       const post = await postServices.createPost(formData)
-      navigate(`/community/${selectedCommunity?.name}/${post._id}`)
+      const notifyData = await notifyServices.createNotify({
+        type: 'new_post',
+        sender: userLogin?._id,
+        friends: selectedCommunity?.moderators,
+        resource_url: `/community/${selectedCommunity?.name}/p/${post._id}`,
+        picture_url: userLogin?.picture,
+        message: `<strong>${userLogin?.display_name}</strong> has created a new post in <strong>${selectedCommunity?.name} community</strong>`,
+      })
+
+      emitEvent(SOCKET_EVENTS.NOTIFYCATION.SEND, notifyData, (response: any) => {
+        console.log(response)
+        navigate(`/community/${selectedCommunity?.name}/p/${post._id}`)
+      })
     } catch (error) {
       console.log(error)
     } finally {

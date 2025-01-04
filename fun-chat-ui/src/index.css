@@ -78,6 +78,18 @@
     background: unset;
   }
 }
+@keyframes expand {
+  0% {
+    width: 32px;
+  }
+  100% {
+    flex: 1;
+    width: full;
+  }
+}
+.expand {
+  animation: expand ease 0.2s forwards;
+}
 .highlight {
   animation: highlight ease 0.5s;
 }

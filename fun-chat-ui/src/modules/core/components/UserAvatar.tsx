@@ -1,4 +1,5 @@
 import classNames from 'classnames'
+import Image from './Image'
 
 type Props = {
   size?: 'sm' | 'lg' | 'md'
@@ -16,7 +17,7 @@ const UserAvatar: React.FC<Props> = ({ size = 'sm', src, alt, className }) => {
         className,
       )}
     >
-      <img src={src} alt={alt} className="w-full h-full rounded-full object-cover" />
+      <Image src={src} alt={alt} className="w-full h-full rounded-full object-cover" />
     </div>
   )
 }

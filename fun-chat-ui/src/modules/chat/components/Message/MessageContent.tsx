@@ -20,12 +20,6 @@ interface MessageContentProps {
 const MessageContent: React.FC<MessageContentProps> = ({ content, isDeleted, msgId }) => {
   const [linkMetadatas, setLinkMetadatas] = useState<IMessageContentLinkMetadata[]>(content.links)
   const refContainer = useRef<HTMLDivElement>(null)
-  if (isDeleted)
-    return (
-      <div className="py-1 min-h-6">
-        <i className="text-grey-500">Message was removed</i>
-      </div>
-    )
 
   useEffect(() => {
     if (content.links.length > 0) return
@@ -47,6 +41,14 @@ const MessageContent: React.FC<MessageContentProps> = ({ content, isDeleted, msg
       loadLinkMetadata(links)
     }
   }, [refContainer])
+
+  if (isDeleted)
+    return (
+      <div className="py-1 min-h-6">
+        <i className="text-grey-500">Message was removed</i>
+      </div>
+    )
+
   return (
     <div ref={refContainer} className="py-1 min-h-6">
       <Preview doc={content.text} />

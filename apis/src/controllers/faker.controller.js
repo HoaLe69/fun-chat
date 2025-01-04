@@ -24,8 +24,9 @@ const fakerController = {
   },
   async createFakerPost(req, res, next) {
     try {
-      for (let i = 0; i < 500; i++) {
-        await fakerUtils.generateSamplePost()
+      const userId = req.params.userId
+      for (let i = 0; i < 10; i++) {
+        await fakerUtils.generateSamplePost(userId)
       }
       res.status(201).json({ message: "ok" })
     } catch (error) {

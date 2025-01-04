@@ -1,14 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from 'modules/core/store'
 import { verifyUserAsync } from './authAction'
+import type { IUser } from 'modules/user/types'
 
 type AuthStore = {
-  user?: {
-    _id: string
-    display_name: string
-    picture: string
-    email: string
-  }
+  user?: IUser
   isAuthenticated?: boolean
 }
 

@@ -1,76 +1,33 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { useAppDispatch, useAppSelector, useDebounce, useSocket } from 'modules/core/hooks'
-import type { IFileUpload, IMessageContentFile, IMessageContentImage } from '../types'
-import { selectCurrentRoomId, selectCurrentRoomInfo, selectStatusCurrentRoom } from '../states/roomSlice'
-import { cancelReplyMessage, messageSelector } from '../states/messageSlice'
+import type { IFileUpload } from '../types'
+import { addMessage, cancelReplyMessage, messageSelector } from '../states/messageSlice'
 import { authSelector } from 'modules/auth/states/authSlice'
 import { messageServices } from '../services'
+import { SOCKET_EVENTS } from 'const'
+import { useParams } from 'react-router-dom'
+import { toast } from 'sonner'
 
-const useChatForm = () => {
+type UseChatFormProps = {
+  msgContainer: React.RefObject<HTMLDivElement>
+}
+const useChatForm = ({ msgContainer }: UseChatFormProps) => {
   const [fileSelections, setFileSelections] = useState<IFileUpload[]>([])
   const [markdownContent, setMarkdownContent] = useState<string>('')
+  const [isSending, setIsSending] = useState<boolean>(false)
 
   const [visibleEmojiPicker, setVisibleEmojiPicker] = useState<boolean>(false)
   const [visibleMenuMessageExtra, setVisibleMenuMessageExtra] = useState<boolean>(false)
 
-  const refTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const { roomId, userId: recipientId } = useParams()
 
   const dispatch = useAppDispatch()
   const { emitEvent } = useSocket()
-  //room state
-  const roomSelectedId = useAppSelector(selectCurrentRoomId)
-  const roomSelectedInfo = useAppSelector(selectCurrentRoomInfo)
-  const roomSelectedStatus = useAppSelector(selectStatusCurrentRoom)
-  //msg state
   const replyMessage = useAppSelector(messageSelector.selectReplyMessage)
-  //user state
-  const userLogin = useAppSelector(authSelector.selectUser)
-
+  const userLoginId = useAppSelector(authSelector.selectUserId)
   const debounceValue = useDebounce(markdownContent, 200)
-  /*-----------------Bussiess logic-------------------*/
-  const createNewConversation = useCallback(
-    (filePaths: Array<{ url: string; altText: string }>) => {
-      if (!userLogin?._id || !roomSelectedInfo?._id) return
-      const data = {
-        roomInfo: {
-          _id: roomSelectedId,
-          sender: userLogin?._id,
-          recipient: roomSelectedInfo?._id,
-        },
-        message: {
-          content: {
-            text: markdownContent,
-            images: filePaths,
-          },
-          ownerId: userLogin?._id,
-        },
-      }
-      emitEvent('room:createRoomChat', data)
-    },
-    [markdownContent],
-  )
 
-  const sendMsgWithExistConversation = useCallback(
-    (uploadedFile?: { images: IMessageContentImage[]; files: IMessageContentFile[] }) => {
-      const msg = {
-        content: {
-          text: markdownContent ? markdownContent.trim() : null,
-          images: uploadedFile?.images || [],
-          files: uploadedFile?.files || [],
-        },
-        ownerId: userLogin?._id,
-        roomId: roomSelectedId,
-        replyTo: replyMessage?._id,
-      }
-      emitEvent('chat:sendMessage', {
-        msg,
-        replyMessage,
-        recipientId: roomSelectedInfo?._id,
-      })
-      if (replyMessage) dispatch(cancelReplyMessage())
-    },
-    [replyMessage, markdownContent],
-  )
+  /*-----------------Bussiess logic-------------------*/
 
   const uploadFilesToServer = useCallback(async () => {
     if (!fileSelections.length) return
@@ -86,8 +43,6 @@ const useChatForm = () => {
   const handleFileSelectionAndPreview = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const target = event?.target as HTMLInputElement
-      //FIX: it's doesn't work when change room
-      console.log('file change', target)
 
       if (target.files?.length) {
         const file = target.files[0]
@@ -140,57 +95,80 @@ const useChatForm = () => {
 
   const handleEditorChange = useCallback((markdown: string) => {
     setMarkdownContent(markdown)
-    // detect user stop typing after one seconds
-    if (typeof refTimer.current === 'number') clearTimeout(refTimer.current)
-    refTimer.current = setTimeout(() => {
-      emitEvent('chat:typing', {
-        roomId: roomSelectedId,
-        isTyping: false,
-        userId: userLogin?._id,
-      })
-    }, 1000)
   }, [])
 
   const handleSubmit = async () => {
     if (!markdownContent.trim() && !fileSelections.length) return
-    let uploadedFile
-    if (fileSelections.length > 0) {
-      uploadedFile = await uploadFilesToServer()
-    }
-    if (fileSelections.length > 0 && !uploadedFile) return
-
+    setIsSending(true)
     try {
-      if (roomSelectedStatus) createNewConversation(uploadedFile)
-      else sendMsgWithExistConversation(uploadedFile)
-      //clear files preview
+      const formData = new FormData()
+      const msg = {
+        content: {
+          text: markdownContent ? markdownContent.trim() : null,
+          images: [],
+          files: [],
+        },
+        ownerId: userLoginId,
+        roomId,
+        replyTo: replyMessage?._id,
+      }
+      console.log({ msg })
+
+      formData.append('msg', JSON.stringify(msg))
+      formData.append('recipientId', JSON.stringify(recipientId))
+      if (replyMessage) {
+        formData.append('replyMessage', JSON.stringify(replyMessage))
+      }
+
+      if (fileSelections.length > 0) {
+        const originalFiles = fileSelections.map((file) => file.original)
+        originalFiles.forEach((file) => {
+          formData.append('files', file)
+        })
+      }
+
+      const response = await messageServices.createMessage(formData)
+
+      console.log('respose', response)
+
+      emitEvent(
+        SOCKET_EVENTS.MESSAGE.SEND,
+        { data: JSON.stringify({ msg: response.message, room: response.room, replyMessage, recipientId }) },
+        (response: any) => {
+          dispatch(addMessage(response))
+          const msgContainerEl = msgContainer.current
+          if (msgContainerEl) {
+            setTimeout(() => {
+              msgContainerEl.scrollTop = msgContainerEl.scrollHeight
+            }, 0)
+          }
+        },
+      )
+    } catch (error) {
+      toast.error('Failed to send message')
+      console.log(error)
+    } finally {
       setFileSelections([])
       setMarkdownContent('')
-    } catch (error) {
-      console.log(error)
+      setIsSending(false)
     }
   }
 
   /*--------------------------Side effect-----------*/
 
   useEffect(() => {
-    if (!debounceValue) return
-    emitEvent('chat:typing', {
-      roomId: roomSelectedId,
-      isTyping: true,
-      userId: userLogin?._id,
-    })
-  }, [debounceValue])
-
-  useEffect(() => {
     // reset
     setMarkdownContent('')
     setFileSelections([])
-  }, [roomSelectedId])
+    if (replyMessage) {
+      dispatch(cancelReplyMessage())
+    }
+  }, [roomId])
 
   return {
+    isSending,
     markdownContent,
-    userLogin,
-    roomSelectedInfo,
+    userLoginId,
     replyMessage,
     fileSelections,
     visibleEmojiPicker,

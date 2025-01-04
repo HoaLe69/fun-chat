@@ -18,7 +18,7 @@ const FilePreview: React.FC<Props> = (props) => {
   }
 
   return (
-    <div className="px-3 pb-3 flex items-center gap-4 flex-wrap">
+    <div className="bg-zinc-200 dark:bg-zinc-700 px-3 pb-3 flex items-center gap-4 flex-wrap border-b border-b-zinc-300 dark:border-b-zinc-600  rounded-t-md py-2">
       {files.map((file) => {
         console.log({ file })
         if (file.preview.type.includes('image'))

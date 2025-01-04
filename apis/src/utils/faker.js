@@ -51,12 +51,12 @@ ${faker.lorem.paragraphs(2)}
 **${faker.lorem.word()}**: ${faker.lorem.sentence()}`
 }
 
-async function generateSamplePost() {
+async function generateSamplePost(userId) {
   const community = ["6753f72c8c7b4720f92dfe37", "67496b1b5c4bb2c81e989c7a"]
   await new Post({
     title: faker.lorem.sentence(),
     content: generateMarkdownContent(),
-    creator: "67087f0905a73a0aedbd8f6f",
+    creator: userId,
     community: community[Math.floor(Math.random() * community.length)],
     tag: faker.lorem.word(),
   }).save()

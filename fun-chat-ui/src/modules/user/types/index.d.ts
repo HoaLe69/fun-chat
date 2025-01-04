@@ -5,4 +5,7 @@ export type IUser = {
   display_name: string
   createdAt: string
   updatedAt: string
+  friends: string[]
+  friends_request: string[]
+  friends_waiting: string[]
 }

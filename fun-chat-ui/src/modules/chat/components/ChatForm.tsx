@@ -8,6 +8,7 @@ import './MdxEditor.css'
 import FilePreview from './FilePreview'
 import { useChatForm } from 'modules/chat/hooks'
 import MdxEditor from './MdxEditor'
+import type { IUser } from '../types'
 
 interface MenuMessageExtraProps {
   children: JSX.Element
@@ -26,7 +27,7 @@ const MenuMessageExtra: React.FC<MenuMessageExtraProps> = ({ children, onClose, 
       render={(attrs) => (
         <ul
           {...attrs}
-          className="w-40 p-1 rounded-md bg-grey-50 shadow-[0_0_4px_rgba(0,0,0,0.2)] dark:shadow-[0_0_4px_rgba(0,0,0,0.9)] dark:bg-grey-900"
+          className="list-none w-40 p-1 rounded-md bg-grey-50 shadow-[0_0_4px_rgba(0,0,0,0.2)] dark:shadow-[0_0_4px_rgba(0,0,0,0.9)] dark:bg-grey-900"
         >
           <li>
             <label
@@ -41,6 +42,7 @@ const MenuMessageExtra: React.FC<MenuMessageExtraProps> = ({ children, onClose, 
             <input
               onChange={onSelect}
               type="file"
+              multiple
               id="file"
               accept="image/*, text/*, application/*"
               className="absolute hidden"
@@ -54,14 +56,19 @@ const MenuMessageExtra: React.FC<MenuMessageExtraProps> = ({ children, onClose, 
   </div>
 )
 
-const ChatForm: React.FC = () => {
+interface Props {
+  chatMembers: Record<string, IUser>
+  refContainer: React.RefObject<HTMLDivElement>
+}
+
+const ChatForm: React.FC<Props> = ({ chatMembers, refContainer }) => {
   const {
+    isSending,
     markdownContent,
     replyMessage,
     visibleMenuMessageExtra,
     visibleEmojiPicker,
-    userLogin,
-    roomSelectedInfo,
+    userLoginId,
     fileSelections,
     setFileSelections,
     handleRemoveReplyMessage,
@@ -73,20 +80,15 @@ const ChatForm: React.FC = () => {
     handleOpenEmojiPicker,
     handleCloseEmojiPicker,
     handleAppendEmojiToMarkdownContent,
-  } = useChatForm()
-
-  const renderReplyMessageContent = useCallback(() => {
-    if (replyMessage?.content.text) return replyMessage.content.text
-    if (!replyMessage?.content.text && replyMessage?.content.images) return 'image'
-    if (!replyMessage?.content.text && replyMessage?.content.links) return 'link'
-  }, [replyMessage])
+  } = useChatForm({ msgContainer: refContainer })
 
   const renderReplyMessageElement = useCallback(() => {
     return (
       <div className="px-3 pb-3">
         <div className="flex items-center justify-between">
           <span className="text-xl/8 block font-semibold">
-            Reply to {replyMessage?.ownerId === userLogin?._id ? 'yourself' : roomSelectedInfo?.name}
+            Reply to{' '}
+            {replyMessage?.ownerId === userLoginId ? 'yourself' : chatMembers[replyMessage?.ownerId]?.display_name}
           </span>
           <button
             onClick={handleRemoveReplyMessage}
@@ -95,45 +97,51 @@ const ChatForm: React.FC = () => {
             <CloseIcon />
           </button>
         </div>
-        <p className="truncate text-sm text-grey-500">{renderReplyMessageContent()}</p>
       </div>
     )
-  }, [replyMessage])
+  }, [replyMessage, userLoginId, chatMembers])
 
   return (
-    <div className="bg-transparent py-2 px-2">
+    <div className={classNames('py-2 px-2', { 'opacity-20': isSending })}>
       {fileSelections.length > 0 && <FilePreview files={fileSelections} setFiles={setFileSelections} />}
       {replyMessage && renderReplyMessageElement()}
-      <div className="flex items-center px-3 py-1 bg-zinc-300 dark:bg-zinc-700 rounded-md">
+      <div className="flex items-end px-3 py-1 bg-zinc-200 dark:bg-zinc-700 rounded-md">
         {/*options menu*/}
         <MenuMessageExtra
           onSelect={handleFileSelectionAndPreview}
           onClose={handleCloseMenuMessageExtra}
           visible={visibleMenuMessageExtra}
         >
-          <span onClick={handleOpenMenuMessageExtra} className="text-grey-500 cursor-pointer">
-            <PlusCircleIcon />
+          <span onClick={handleOpenMenuMessageExtra} className="text-grey-500 cursor-pointer w-6 h-6  inline-block">
+            <PlusCircleIcon className="w-6 h-6" />
           </span>
         </MenuMessageExtra>
         <form className="flex-1 flex gap-2 items-center px-2">
-          <MdxEditor value={markdownContent} className="editor" onChange={handleEditorChange} onSubmit={handleSubmit} />
-          <span className="text-grey-500 relative">
-            <LaughIcon className="cursor-pointer" onClick={handleOpenEmojiPicker} />
-            <EmojiPicker
-              appendEmojiToText={handleAppendEmojiToMarkdownContent}
-              isOpen={visibleEmojiPicker}
-              onClose={handleCloseEmojiPicker}
-            />
-          </span>
+          <MdxEditor
+            setFiles={setFileSelections}
+            value={markdownContent}
+            className="editor"
+            onChange={handleEditorChange}
+            onSubmit={handleSubmit}
+          />
         </form>
+        <div className="text-grey-500 relative p-2 rounded-full hover:bg-zinc-300 dark:hover:bg-zinc-800">
+          <LaughIcon className="cursor-pointer" onClick={handleOpenEmojiPicker} />
+          <EmojiPicker
+            appendEmojiToText={handleAppendEmojiToMarkdownContent}
+            isOpen={visibleEmojiPicker}
+            onClose={handleCloseEmojiPicker}
+          />
+        </div>
+
         <button
-          //          onClick={handleSubmit}
+          onClick={handleSubmit}
           className={classNames(
-            'w-10 h-10 rounded-full inline-flex items-center justify-center',
+            'w-8 h-8 rounded-full flex items-center justify-center mb-1',
             markdownContent.trim().length === 0 ? 'bg-grey-400 dark:bg-grey-600' : 'bg-blue-500 dark:bg-blue-400',
           )}
         >
-          <SendIcon />
+          <SendIcon className="w-4 h-4" />
         </button>
       </div>
     </div>

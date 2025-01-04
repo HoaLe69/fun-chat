@@ -10,9 +10,25 @@ export type IPost = {
   downvoted: string[]
   tags: string[]
   createdAt: string
+  isEdited: boolean
   updatedAt: string
+  isVerify: boolean
 }
 
+export type INotification = {
+  _id: string
+  recipient: string
+  sender: string
+  type: string
+  metadata: {
+    resource_url: string
+    message: string
+    picture_url: string
+  }
+  isRead: booleand
+  createdAt: string
+  updatedAt: string
+}
 export type IComment = {
   _id: string
   postId: string

@@ -1,5 +1,6 @@
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
 import { ReactNode } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 
 type Props = {
   isOpen: boolean
@@ -29,9 +30,18 @@ const AppModal: React.FC<Props> = ({ isOpen, onClose, title, children }) => {
 export const AppModalHeadless: React.FC<Props> = ({ isOpen, onClose, children }) => {
   return (
     <Dialog onClose={onClose} open={isOpen} as="div" className="relative z-10 focus:outline-none">
-      <div className="fixed inset-0 z-10 w-screen bg-black/20 dark:bg-black/40 overflow-y-auto">
-        <div className="flex min-h-full items-center justify-center p-4">{children}</div>
-      </div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-10 w-screen bg-black/20 dark:bg-black/40 overflow-y-auto"
+      >
+        <div className="fixed inset-0 flex w-screen items-center justify-center">
+          <DialogPanel as={motion.div} initial={{ opacity: 0.9, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+            {children}
+          </DialogPanel>
+        </div>
+      </motion.div>
     </Dialog>
   )
 }

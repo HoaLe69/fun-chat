@@ -1,6 +1,73 @@
 const postServices = require("@services/postServices")
 
 const postController = {
+  async approvePost(req, res, next) {
+    try {
+      const postId = req.params.postId
+      await postServices.approvePostAsync(postId)
+      return res.status(204).send("ok")
+    } catch (error) {
+      next(error)
+    }
+  },
+  async getPendingPost(req, res, next) {
+    try {
+      const communityId = req.params.id
+      const posts = await postServices.getPendingPostByCommunityIdAsync(communityId)
+      return res.status(200).json(posts)
+    } catch (error) {
+      next(error)
+    }
+  },
+  async savePost(req, res, next) {
+    try {
+      const { userId, postId } = req.body
+      await postServices.savePostAsync(postId, userId)
+      return res.status(204).send("ok")
+    } catch (error) {
+      next(error)
+    }
+  },
+  async deletePost(req, res, next) {
+    try {
+      const postId = req.params.postId
+      await postServices.deletePostAsync(postId)
+      return res.status(204).send("ok")
+    } catch (error) {
+      next(error)
+    }
+  },
+  async uploadFile(req, res, next) {
+    try {
+      const uploadedFile = req.file
+      const path = `${req.protocol}://${req.get("host")}/uploads/${uploadedFile.filename}`
+      return res.status(200).json({ path, fileName: uploadedFile.originalname })
+    } catch (error) {
+      next(error)
+    }
+  },
+  async updatePostContent(req, res, next) {
+    try {
+      const postId = req.params.postId
+      const { content } = req.body
+      const editedPost = await postServices.updatePostContentAsync(postId, content)
+      return res.status(200).json(editedPost)
+    } catch (error) {
+      next(error)
+      console.log(error)
+    }
+  },
+  async getListPostByCreatorId(req, res, next) {
+    try {
+      const userId = req.params.userId
+      const page = req.query.page
+      const posts = await postServices.getListPostByCreatorIdAsync(userId, page)
+      return res.status(200).json(posts)
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  },
   async addUserRecentPostVisited(req, res, next) {
     try {
       await postServices.addUserRecentPostVisitedAsync(req.body)
@@ -29,12 +96,22 @@ const postController = {
   async getPostById(req, res, next) {
     try {
       const id = req.params.id
-      const posts = await postServices.getPostByCreator(id)
+      const posts = await postServices.getPostPopulateCreatorAsync(id)
       res.status(200).json(posts)
     } catch (error) {
       next(error)
     }
   },
+  async getPostByIdPopulateCommunity(req, res, next) {
+    try {
+      const id = req.params.id
+      const posts = await postServices.getPostPopulateCommunityAsync(id)
+      res.status(200).json(posts)
+    } catch (error) {
+      next(error)
+    }
+  },
+
   async getAllPost(req, res, next) {
     try {
       const page = req.query.page || 1

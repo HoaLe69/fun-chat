@@ -32,6 +32,14 @@ const userSchema = new Schema(
       type: Array,
       default: [],
     },
+    friends_request: {
+      type: [String],
+      default: [],
+    },
+    friends_waiting: {
+      type: [String],
+      default: [],
+    },
     isVerified: {
       type: Boolean,
       default: true,

@@ -4,7 +4,7 @@ const upload = require("@config/multer")
 
 const messageController = require("@controller/message.controller")
 
-router.post("/create", messageController.create)
+router.post("/create", upload.array("files", 20), messageController.create)
 router.post("/uploads", upload.array("files", 10), messageController.uploadMessageAttachment)
 router.get("/download/:filename/:originalname", messageController.download)
 router.get("/list/:roomId", messageController.getList)
